@@ -1,0 +1,23 @@
+{
+  "name": "vite-plugin-module-script",
+  "version": "1.0.0",
+  "description": "A vite plugin for dynamic creating a module script tag.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengxinming/vite-plugins.git"
+  },
+  "keywords": [
+    "vite-plugin",
+    "vite-plugin-module-script"
+  ],
+  "author": "Jesse Feng <fxm0016@126.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fengxinming/vite-plugins/issues"
+  },
+  "homepage": "https://github.com/fengxinming/vite-plugins#readme"
+}

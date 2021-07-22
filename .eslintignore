@@ -1,0 +1,9 @@
+*.sh
+node_modules
+logs
+dist
+gh-pages
+coverage
+LICENSE
+README.md
+TNPM_README.md

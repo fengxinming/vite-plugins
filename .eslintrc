@@ -1,0 +1,8 @@
+{
+  "extends": [
+    "fe",
+    "fe/react",
+    "fe/ts",
+    "plugin:jsx-advanced/recommended"
+  ]
+}
