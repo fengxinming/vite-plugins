@@ -2,6 +2,8 @@
 
 > A vite plugin for dynamic creating a module script tag.
 
+## Usage
+
 ```js
 export default defineConfig({
   plugins: [
@@ -13,3 +15,5 @@ export default defineConfig({
   ]
 });
 ```
+
+dynamic creating a module script tag about `/src/index.jsx`, when visiting `/app.js`
