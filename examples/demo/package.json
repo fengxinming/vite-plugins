@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "ice-scripts dev --port=3456",
-    "build": "ice-scripts build",
+     "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
     "eslint": "eslint --fix --ext .js,.jsx ./"
   },
   "dependencies": {
