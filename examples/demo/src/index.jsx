@@ -1,4 +1,3 @@
-import '@linkdesign/components/dist/index.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router } from './config/routes';

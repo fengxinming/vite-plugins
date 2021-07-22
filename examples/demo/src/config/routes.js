@@ -1,4 +1,4 @@
-import createRouteView from 'react-route-view/es/create';
+import { create as createRouteView } from 'react-route-view';
 import { create } from '../common/router';
 import BasicLayout from '../layouts/BasicLayout';
 import Devices from '../pages/devices';

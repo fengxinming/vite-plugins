@@ -57,7 +57,7 @@ export default function () {
         <div className={styles['product-advantages']}>
           <h3>产品优势</h3>
           <ul>
-            <li x-for={(advantage, index) in productAdvantages} key={index}>
+            <li x-for={advantage in productAdvantages} key={advantage.h}>
               <span className={styles['product-advantages-u-wrapped']}>
                 <span className={styles['product-advantages-u']}>
                   <span className={styles['product-advantages-u-wrapped-img']}>
