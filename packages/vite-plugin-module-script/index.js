@@ -1,5 +1,7 @@
 'use strict';
 
+const crypto = require('crypto');
+
 /**
  * create module script string
  *
@@ -8,8 +10,9 @@
  */
 function moduleScript(id, url) {
   return `var ${id} = document.getElementById('${id}');`
-        + `${id}&&document.body.removeChild(${id})`
+        + `${id}&&document.body.removeChild(${id});`
         + `${id} = document.body.appendChild(document.createElement('script'));`
+        + `${id}.setAttribute('id', '${id}');`
         + `${id}.setAttribute('type', 'module');`
         + `${id}.setAttribute('src', '${url}');`;
 }
