@@ -6,11 +6,12 @@
  * @param {string} url
  * @returns {string}
  */
-function moduleScript(url) {
-  const varName = `__${Math.random().toString(36).slice(2)}`;
-  return `var ${varName} = document.body.appendChild(document.createElement('script'));`
-        + `${varName}.setAttribute('type', 'module');`
-        + `${varName}.setAttribute('src', '${url}');`;
+function moduleScript(id, url) {
+  return `var ${id} = document.getElementById('${id}');`
+        + `${id}&&document.body.removeChild(${id})`
+        + `${id} = document.body.appendChild(document.createElement('script'));`
+        + `${id}.setAttribute('type', 'module');`
+        + `${id}.setAttribute('src', '${url}');`;
 }
 
 module.exports = function ({
@@ -22,7 +23,8 @@ module.exports = function ({
     load(id) {
       const target = mapping[id];
       if (target) {
-        return moduleScript(target);
+        const id = `m${crypto.createHash('md5').update(target).digest('hex')}`;
+        return moduleScript(id, target);
       }
     }
   };
