@@ -53,9 +53,9 @@ function LoginForm() {
     <h2 className={styles['login-frame']}>
       <div className={styles['login-box']}>
         <h3>管理员登录</h3>
-        <div x-class={[styles['login-error'], { [styles.blank]: !errorMessage }]}>
+        {/* <div x-class={[styles['login-error'], { [styles.blank]: !errorMessage }]}>
           <Message x-if={errorMessage} type="warning">{errorMessage}</Message>
-        </div>
+        </div> */}
         <Form value={value} onChange={formChange}>
           <FormItem className={styles.formItem}>
             <Input

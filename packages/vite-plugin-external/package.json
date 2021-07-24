@@ -1,10 +1,10 @@
 {
   "name": "vite-plugin-external",
-  "version": "1.0.0",
-  "description": "Better to define externals for vite",
+  "version": "1.0.0-rc.1",
+  "description": "Better to define externals for vite.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "release": "npm publish"
   },
   "repository": {
     "type": "git",

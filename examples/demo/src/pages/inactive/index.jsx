@@ -5,28 +5,28 @@ import { Button, Icon, Message } from '@alicloud/console-components';
 import { history } from '../../config/routes';
 import { stashActiveFlag } from '@/common/user';
 
-const productAdvantages = [
-  {
-    img: 'https://gw.alicdn.com/imgextra/i3/O1CN01xikAkX1WQeumZ72ZI_!!6000000002783-55-tps-48-48.svg',
-    h: '优势一',
-    p: '优势一内容。'
-  },
-  {
-    img: 'https://img.alicdn.com/imgextra/i1/O1CN01klOrLq1C0HnFwCBBQ_!!6000000000018-55-tps-48-48.svg',
-    h: '优势二',
-    p: '优势二内容。'
-  },
-  {
-    img: 'https://img.alicdn.com/imgextra/i1/O1CN01bDSqrU1sUhxo0EJJu_!!6000000005770-55-tps-48-48.svg',
-    h: '优势三I',
-    p: '优势三内容。'
-  },
-  {
-    img: 'https://img.alicdn.com/imgextra/i2/O1CN01u76C1P1TFGDBqc8Tm_!!6000000002352-55-tps-48-48.svg',
-    h: '优势四',
-    p: '优势四内容。'
-  }
-];
+// const productAdvantages = [
+//   {
+//     img: 'https://gw.alicdn.com/imgextra/i3/O1CN01xikAkX1WQeumZ72ZI_!!6000000002783-55-tps-48-48.svg',
+//     h: '优势一',
+//     p: '优势一内容。'
+//   },
+//   {
+//     img: 'https://img.alicdn.com/imgextra/i1/O1CN01klOrLq1C0HnFwCBBQ_!!6000000000018-55-tps-48-48.svg',
+//     h: '优势二',
+//     p: '优势二内容。'
+//   },
+//   {
+//     img: 'https://img.alicdn.com/imgextra/i1/O1CN01bDSqrU1sUhxo0EJJu_!!6000000005770-55-tps-48-48.svg',
+//     h: '优势三I',
+//     p: '优势三内容。'
+//   },
+//   {
+//     img: 'https://img.alicdn.com/imgextra/i2/O1CN01u76C1P1TFGDBqc8Tm_!!6000000002352-55-tps-48-48.svg',
+//     h: '优势四',
+//     p: '优势四内容。'
+//   }
+// ];
 
 export default function () {
   const onActive = () => {
@@ -56,7 +56,7 @@ export default function () {
       <div className={styles['grey-area']}>
         <div className={styles['product-advantages']}>
           <h3>产品优势</h3>
-          <ul>
+          {/* <ul>
             <li x-for={advantage in productAdvantages} key={advantage.h}>
               <span className={styles['product-advantages-u-wrapped']}>
                 <span className={styles['product-advantages-u']}>
@@ -70,7 +70,7 @@ export default function () {
                 </span>
               </span>
             </li>
-          </ul>
+          </ul> */}
         </div>
       </div>
     </div>
