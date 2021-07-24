@@ -18,7 +18,8 @@ module.exports = function ({ externals = {} } = {}) {
   }
 
   const externalCacheDir = join(process.cwd(), 'node_modules', '.vite_external');
-  const externalPaths = {};
+  // const moduleMappingPath = {};
+  const pathMappingModule = {};
   let mode;
 
   return {
@@ -55,7 +56,8 @@ module.exports = function ({ externals = {} } = {}) {
         writeFileSync(modPath, createES5ExportDeclaration(externals[modName]));
 
         alias.push({ find: modName, replacement: modPath });
-        externalPaths[modPath] = modName;
+        // moduleMappingPath[modName] = modPath;
+        pathMappingModule[modPath] = modName;
       }
     },
 
@@ -77,7 +79,7 @@ module.exports = function ({ externals = {} } = {}) {
         external = [];
         opts.external = external;
       }
-      external.push(...Object.keys(externals));
+      external.push(...external);
     },
 
     load(id) {
@@ -85,7 +87,7 @@ module.exports = function ({ externals = {} } = {}) {
         return;
       }
 
-      const modName = externalPaths[id];
+      const modName = pathMappingModule[id];
       if (modName) {
         return createES6ExportDeclaration(modName);
       }
