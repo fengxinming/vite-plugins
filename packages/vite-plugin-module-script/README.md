@@ -23,4 +23,14 @@ export default defineConfig({
 });
 ```
 
-dynamic creating a module script tag about `/src/index.jsx`, when visiting `/app.js`
+dynamic creating a module script tag about `/src/index.jsx`, when visiting `/app.js` like below:
+
+```html
+<script src="/app.js"></script>
+```
+
+ is similar to
+
+```html
+<script type="module" src="/src/index.jsx"></script>
+```
