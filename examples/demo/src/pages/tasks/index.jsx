@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import { Layout } from '@linkdesign/components';
 
+const LayoutContainer = Layout.container;
 export default class extends Component {
   componentDidMount() {
     console.info('componentDidMount 任务管理');
@@ -9,7 +11,18 @@ export default class extends Component {
     console.info('render 任务管理');
 
     return (
-      <h2>任务管理</h2>
+      <LayoutContainer
+        title="任务管理"
+        breadcrumb={[
+          {
+            name: '本地控制台',
+            link: './'
+          },
+          {
+            name: '任务管理'
+          }
+        ]}
+      />
     );
   }
 }

@@ -32,7 +32,6 @@ export default defineConfig({
     reactRefresh()
   ],
   build: {
-    outDir: 'build',
     cssCodeSplit: false,
     rollupOptions: {
       output: {

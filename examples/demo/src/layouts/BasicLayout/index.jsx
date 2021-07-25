@@ -17,7 +17,7 @@ function BasicLayout({ children, location }) {
       </div>
       <div className={styles.body}>
         <SilderNav nav={aside} offsetHeight={50} />
-        <Panel>
+        <Panel className={styles.main} isNest>
           {children}
         </Panel>
       </div>
