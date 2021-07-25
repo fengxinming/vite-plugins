@@ -3,32 +3,23 @@
 const { writeFileSync, existsSync, mkdirSync, emptyDirSync } = require('fs-extra');
 const { join } = require('path');
 
-function createES5ExportDeclaration(external) {
+function createCJSExportDeclaration(external) {
   return `module.exports = ${external};`;
 }
 
-function createES6ExportDeclaration(external) {
-  return `export default ${external}`;
-}
-
 module.exports = function ({ externals = {} } = {}) {
-  const external = Object.keys(externals);
-  if (!external.length) {
+  const externalLibs = Object.keys(externals);
+  if (!externalLibs.length) {
     return;
   }
 
   const externalCacheDir = join(process.cwd(), 'node_modules', '.vite_external');
-  // const moduleMappingPath = {};
-  const pathMappingModule = {};
-  let mode;
 
   return {
     name: 'external',
 
-    config(config, { mode: _mode }) {
-      mode = _mode;
-
-      if (_mode !== 'development') {
+    config(config, { mode }) {
+      if (mode !== 'development') {
         return;
       }
 
@@ -51,13 +42,11 @@ module.exports = function ({ externals = {} } = {}) {
         resolve.alias = alias;
       }
 
-      for (const modName of external) {
-        const modPath = join(externalCacheDir, `${modName.replace(/\//g, '_')}.js`);
-        writeFileSync(modPath, createES5ExportDeclaration(externals[modName]));
+      for (const libName of externalLibs) {
+        const libPath = join(externalCacheDir, `${libName.replace(/\//g, '_')}.js`);
+        writeFileSync(libPath, createCJSExportDeclaration(externals[libName]));
 
-        alias.push({ find: modName, replacement: modPath });
-        // moduleMappingPath[modName] = modPath;
-        pathMappingModule[modPath] = modName;
+        alias.push({ find: libName, replacement: libPath });
       }
     },
 
@@ -79,18 +68,7 @@ module.exports = function ({ externals = {} } = {}) {
         external = [];
         opts.external = external;
       }
-      external.push(...external);
-    },
-
-    load(id) {
-      if (mode !== 'development') {
-        return;
-      }
-
-      const modName = pathMappingModule[id];
-      if (modName) {
-        return createES6ExportDeclaration(modName);
-      }
+      external.push(...externalLibs);
     }
   };
 };
