@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-external",
-  "version": "1.0.0-rc.1",
-  "description": "Better to define externals for vite.",
+  "version": "1.0.0",
+  "description": "Better to define externals for vite. It not only work on our source code, but also work on pre-bundling dependencies well.",
   "main": "index.js",
   "scripts": {
     "release": "npm publish"
