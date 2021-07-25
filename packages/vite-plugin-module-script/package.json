@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-module-script",
   "version": "1.0.1",
-  "description": "A vite plugin for dynamic creating a module script tag.",
+  "description": "A vite2 plugin for dynamic creating a module script tag.",
   "main": "index.js",
   "scripts": {
     "release": "npm publish"
