@@ -2,7 +2,7 @@ import { join } from 'path';
 import { defineConfig } from 'vite';
 import reactRefresh from '@vitejs/plugin-react-refresh';
 import moduleScript from '../../packages/vite-plugin-module-script';
-import external from '../../packages/vite-plugin-external';
+import createExternal from '../../packages/vite-plugin-external';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -17,16 +17,20 @@ export default defineConfig({
         '/app.js': '/src/index.jsx'
       }
     }),
-    external({
+    createExternal({
       externals: {
-        '@linkdesign/components': 'LinkDesignComponents',
-        '@alicloud/console-components': 'AlicloudConsoleComponents',
-        'react': '$linkdesign.React',
-        'react-dom': '$linkdesign.ReactDOM',
-        'prop-types': '$linkdesign.PropTypes',
         'history': '$linkdesign.History',
         'moment': '$linkdesign.Moment',
         'react-router': '$linkdesign.ReactRouter'
+      },
+      production: {
+        externals: {
+          '@linkdesign/components': 'LinkDesignComponents',
+          '@alicloud/console-components': 'AlicloudConsoleComponents',
+          'react': '$linkdesign.React',
+          'react-dom': '$linkdesign.ReactDOM',
+          'prop-types': '$linkdesign.PropTypes'
+        }
       }
     }),
     reactRefresh()

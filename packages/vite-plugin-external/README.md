@@ -12,13 +12,40 @@
 ## Usage
 
 ```js
-import external from 'vite-plugin-external';
+import createExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    external({
-      react: 'React'
+    createExternal({
+      externals: {
+        react: 'React'
+      }
     })
   ]
 });
 ```
+
+### Override externals by mode
+
+```js
+import createExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    createExternal({
+      externals: {
+        react: 'React'
+      },
+      development: {
+        externals: {
+          react: '$linkdesign.React'
+        }
+      }
+    })
+  ]
+});
+```
+
+## Examples
+
+**[Demo](examples/demo)**

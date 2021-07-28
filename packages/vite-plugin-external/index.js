@@ -7,11 +7,10 @@ function createCJSExportDeclaration(external) {
   return `module.exports = ${external};`;
 }
 
-module.exports = function ({ externals = {} } = {}) {
-  const externalLibs = Object.keys(externals);
-  if (!externalLibs.length) {
-    return;
-  }
+module.exports = function (opts = {}) {
+  let externals;
+  let externalLibs;
+  let shouldSkip = false;
 
   const externalCacheDir = join(process.cwd(), 'node_modules', '.vite_external');
 
@@ -19,6 +18,15 @@ module.exports = function ({ externals = {} } = {}) {
     name: 'external',
 
     config(config, { mode }) {
+      let tmp;
+      externals = Object.assign({}, opts.externals, (tmp = opts[mode]) && tmp.externals);
+      externalLibs = Object.keys(externals);
+      shouldSkip = !externalLibs.length;
+
+      if (shouldSkip) {
+        return;
+      }
+
       if (mode !== 'development') {
         return;
       }
@@ -51,6 +59,10 @@ module.exports = function ({ externals = {} } = {}) {
     },
 
     options(opts) {
+      if (shouldSkip) {
+        return;
+      }
+
       let { output, external } = opts;
       if (!output) {
         output = {};
