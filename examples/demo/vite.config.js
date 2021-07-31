@@ -1,6 +1,6 @@
 import { join } from 'path';
 import { defineConfig } from 'vite';
-import reactRefresh from '@vitejs/plugin-react-refresh';
+import reactRefresh from '../../packages/vite-plugin-react-refresh';
 import moduleScript from '../../packages/vite-plugin-module-script';
 import createExternal from '../../packages/vite-plugin-external';
 
@@ -33,7 +33,11 @@ export default defineConfig({
         }
       }
     }),
-    reactRefresh()
+    reactRefresh({
+      transformPlugins: [
+        'babel-plugin-jsx-advanced'
+      ]
+    })
   ],
   build: {
     cssCodeSplit: false,
