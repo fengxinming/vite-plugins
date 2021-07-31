@@ -13,7 +13,7 @@
     "@linkdesign/components": "^1.3.3",
     "babel-plugin-jsx-advanced": "^1.1.5",
     "babel-runtime-jsx-advanced-helper": "^1.0.0",
-    "celia": "^8.0.2",
+    "celia": "^8.0.4",
     "fast-classnames": "^1.0.0",
     "history": "^4.10.1",
     "jest": "^27.0.3",

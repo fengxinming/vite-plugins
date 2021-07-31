@@ -7,6 +7,12 @@
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-module-script.svg?style=flat)](https://npmjs.org/package/vite-plugin-module-script)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-module-script.svg?style=flat)](https://npmjs.org/package/vite-plugin-module-script)
 
+### Installation
+
+```bash
+npm install vite-plugin-module-script --save-dev
+```
+
 ## Usage
 
 ```js

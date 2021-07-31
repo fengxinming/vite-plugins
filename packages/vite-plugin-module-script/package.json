@@ -8,7 +8,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fengxinming/vite-plugins.git"
+    "url": "git+https://github.com/fengxinming/vite-plugins.git",
+    "directory": "packages/vite-plugin-module-script"
   },
   "keywords": [
     "vite-plugin",
