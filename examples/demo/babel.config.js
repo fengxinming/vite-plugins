@@ -16,6 +16,6 @@ module.exports = {
     ['@babel/plugin-proposal-decorators', { legacy: true }], // @annotation
     '@babel/plugin-syntax-import-meta', // import.meta
     'lodash', // import _ from 'lodash'; _.map() -> import _map from 'lodash/map'; _map()
-    'babel-plugin-jsx-advanced' // jsx 扩展指令
+    'jsx-advanced' // jsx 扩展指令
   ]
 };
