@@ -19,8 +19,7 @@ export default function ({ mode }) {
       createExternal({
         externals: {
           'history': '$linkdesign.History',
-          'moment': '$linkdesign.Moment',
-          'react-router': '$linkdesign.ReactRouter'
+          'moment': '$linkdesign.Moment'
         },
         production: {
           externals: {
@@ -28,6 +27,7 @@ export default function ({ mode }) {
             '@alicloud/console-components': 'AlicloudConsoleComponents',
             'react': '$linkdesign.React',
             'react-dom': '$linkdesign.ReactDOM',
+            'react-router': '$linkdesign.ReactRouter',
             'prop-types': '$linkdesign.PropTypes'
           }
         }
@@ -41,6 +41,9 @@ export default function ({ mode }) {
         babelHelpers: 'runtime'
       })
     ],
+    server: {
+      open: true
+    },
     build: {
       cssCodeSplit: false,
       rollupOptions: {

@@ -54,7 +54,7 @@ module.exports = function (opts = {}) {
         const libPath = join(externalCacheDir, `${libName.replace(/\//g, '_')}.js`);
         writeFileSync(libPath, createCJSExportDeclaration(externals[libName]));
 
-        alias.push({ find: libName, replacement: libPath });
+        alias.push({ find: new RegExp(`^${libName}$`), replacement: libPath });
       }
     },
 
