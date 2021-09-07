@@ -54,4 +54,4 @@ export default defineConfig({
 
 ## Examples
 
-**[Demo](examples/demo)**
+**[Demo](examples/demo-external)**
