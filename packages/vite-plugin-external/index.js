@@ -3,6 +3,8 @@
 const { writeFileSync, existsSync, mkdirSync, emptyDirSync } = require('fs-extra');
 const { join } = require('path');
 
+const { isArray } = Array;
+
 function createCJSExportDeclaration(external) {
   return `module.exports = ${external};`;
 }
@@ -27,6 +29,7 @@ module.exports = function (opts = {}) {
         return;
       }
 
+      // 非开发环境略过
       if (mode !== 'development') {
         return;
       }
@@ -45,9 +48,16 @@ module.exports = function (opts = {}) {
       }
 
       let { alias } = resolve;
-      if (!alias) {
+      if (!alias || typeof alias !== 'object') {
         alias = [];
         resolve.alias = alias;
+      }
+
+      // #1 处理 alias 为 object 的情况
+      if (!isArray(alias)) {
+        alias = Object.entries(alias).map(([key, value]) => {
+          return { find: key, replacement: value };
+        });
       }
 
       for (const libName of externalLibs) {

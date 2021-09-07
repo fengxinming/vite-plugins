@@ -11,21 +11,25 @@ export default function ({ mode }) {
   return defineConfig({
     esbuild: isProd ? false : undefined,
     resolve: {
-      alias: [
-        { find: '@', replacement: join(__dirname, 'src') }
-      ]
+      alias: {
+        '@': join(__dirname, 'src')
+      }
     },
     plugins: [
       createExternal({
         externals: {
-          '@linkdesign/components': 'LinkDesignComponents',
-          '@alicloud/console-components': 'AlicloudConsoleComponents',
-          react: '$linkdesign.React',
-          'react-dom': '$linkdesign.ReactDOM',
-          'react-router': '$linkdesign.ReactRouter',
-          'prop-types': '$linkdesign.PropTypes',
           history: '$linkdesign.History',
           moment: '$linkdesign.Moment'
+        },
+        production: {
+          externals: {
+            '@linkdesign/components': 'LinkDesignComponents',
+            '@alicloud/console-components': 'AlicloudConsoleComponents',
+            react: '$linkdesign.React',
+            'react-dom': '$linkdesign.ReactDOM',
+            'react-router': '$linkdesign.ReactRouter',
+            'prop-types': '$linkdesign.PropTypes'
+          }
         }
       }),
       reactRefresh({
@@ -39,17 +43,6 @@ export default function ({ mode }) {
     ],
     server: {
       open: true
-    },
-    build: {
-      cssCodeSplit: false,
-      rollupOptions: {
-        output: {
-          manualChunks: undefined,
-          assetFileNames: 'assets/[name][extname]',
-          entryFileNames: 'assets/[name].js',
-          format: 'iife'
-        }
-      }
     }
   });
 }
