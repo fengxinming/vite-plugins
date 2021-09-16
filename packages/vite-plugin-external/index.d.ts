@@ -10,6 +10,4 @@ export interface Options {
   production?: { externals: Externals }
 }
 
-type createPlugin = (options?: Options) => Plugin
-
-export default createPlugin
+export default function createPlugin(options?: Options): Plugin

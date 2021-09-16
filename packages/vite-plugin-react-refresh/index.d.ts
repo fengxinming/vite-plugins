@@ -6,6 +6,4 @@ export interface EnhancementOptions extends Options {
   transformPlugins?: PluginItem[]
 }
 
-type PluginFactory = (options?: EnhancementOptions) => Plugin
-
-export default PluginFactory
+export default function createPlugin(options?: EnhancementOptions): Plugin
