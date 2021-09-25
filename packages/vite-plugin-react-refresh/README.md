@@ -21,12 +21,31 @@ import reactRefresh from 'vite-plugin-react-refresh';
 export default defineConfig({
   plugins: [
     reactRefresh({
+      parserPlugins: [
+        // your plugins
+      ],
       transformPlugins: [
         'babel-plugin-jsx-advanced'
+        // your plugins
       ]
     })
   ]
 });
+```
+
+A part of code in @vitejs/plugin-react-refresh
+
+```js
+const result = transformSync(code, {
+  parserOpts: {
+    plugins: [
+      // ...opts.parserPlugins
+    ]
+  },
+  plugins: [
+    // ...opts.transformPlugins
+  ]
+})
 ```
 
 ## Examples
