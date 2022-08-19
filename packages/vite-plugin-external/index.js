@@ -58,6 +58,7 @@ module.exports = function (opts = {}) {
         alias = Object.entries(alias).map(([key, value]) => {
           return { find: key, replacement: value };
         });
+        resolve.alias = alias;
       }
 
       for (const libName of externalLibs) {
