@@ -14,7 +14,7 @@ module.exports = function (opts = {}) {
   let externalLibs;
   let shouldSkip = false;
 
-  const externalCacheDir = join(process.cwd(), 'node_modules', '.vite_external');
+  const externalCacheDir = opts.cacheDir || join(process.cwd(), 'node_modules', '.vite_external');
 
   return {
     name: 'external',
