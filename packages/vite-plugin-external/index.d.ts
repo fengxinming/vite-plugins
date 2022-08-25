@@ -8,6 +8,7 @@ export interface Options {
   externals: Externals
   development?: { externals: Externals }
   production?: { externals: Externals }
+  cacheDir?: string
 }
 
 export default function createPlugin(options?: Options): Plugin
