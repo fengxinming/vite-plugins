@@ -9,7 +9,7 @@
 
 ![image](https://user-images.githubusercontent.com/6262382/126889725-a5d276ad-913a-4498-8da1-2aa3fd1404ab.png)
 
-### Installation
+## Installation
 
 ```bash
 npm install vite-plugin-external --save-dev
