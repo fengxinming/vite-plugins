@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-external",
   "version": "1.2.4",
-  "description": "Better to define externals in vite2. It not only work on our source code, but also work on pre-bundling dependencies well.",
+  "description": "The 'vite-plugin-external' provides a way of excluding dependencies from the runtime code and output bundles.",
   "main": "index.js",
   "scripts": {
     "release": "npm publish"
