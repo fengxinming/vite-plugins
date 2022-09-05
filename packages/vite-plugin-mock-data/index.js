@@ -1,3 +1,5 @@
+'use strict';
+
 const globby = require('globby');
 const { isAbsolute, join, parse } = require('path');
 const Router = require('find-my-way');
@@ -92,41 +94,41 @@ function configureServer(server, routerOpts, routes, serve) {
 module.exports = function (opts = {}) {
   const {
     isAfter,
-    router,
-    assetsDir
+    mockRouterOptions,
+    mockAssetsDir
   } = opts;
   let {
-    routesDir,
-    routes = []
+    mockRoutesDir,
+    mockRoutes = []
   } = opts;
 
-  if (isObject(routes) && !Array.isArray(routes)) {
-    routes = [routes];
+  if (isObject(mockRoutes) && !Array.isArray(mockRoutes)) {
+    mockRoutes = [mockRoutes];
   }
 
   return {
     name: 'vite:mock-data',
 
     configureServer(server) {
-      if (routesDir) {
-        routesDir = isAbsolute(routesDir) ? routesDir : join(process.cwd(), routesDir);
-        globby.sync(`${routesDir}/**/*.js`).forEach((file) => {
+      if (mockRoutesDir) {
+        mockRoutesDir = isAbsolute(mockRoutesDir) ? mockRoutesDir : join(process.cwd(), mockRoutesDir);
+        globby.sync(`${mockRoutesDir}/**/*.js`).forEach((file) => {
           delete require.cache[file];
-          routes.push(require(file));
+          mockRoutes.push(require(file));
         });
       }
 
       let serve;
-      if (assetsDir) {
+      if (mockAssetsDir) {
         serve = sirv(
-          isAbsolute(assetsDir) ? assetsDir : join(process.cwd(), assetsDir),
+          isAbsolute(mockAssetsDir) ? mockAssetsDir : join(process.cwd(), mockAssetsDir),
           sirvOptions(server.config.server.headers)
         );
       }
 
       return isAfter
-        ? () => configureServer(server, router, routes, serve)
-        : configureServer(server, router, routes, serve);
+        ? () => configureServer(server, mockRouterOptions, mockRoutes, serve)
+        : configureServer(server, mockRouterOptions, mockRoutes, serve);
     }
   };
 };
