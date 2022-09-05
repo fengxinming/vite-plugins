@@ -1,0 +1,24 @@
+{
+  "name": "vite-plugin-reverse-proxy",
+  "version": "1.0.0",
+  "description": "Makes the script to be served with the text/javascript MIME type instead of module MIME type.",
+  "main": "index.js",
+  "scripts": {
+    "release": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengxinming/vite-plugins.git",
+    "directory": "packages/vite-plugin-reverse-proxy"
+  },
+  "keywords": [
+    "vite-plugin",
+    "vite-plugin-reverse-proxy"
+  ],
+  "author": "Jesse Feng <fxm0016@126.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fengxinming/vite-plugins/issues"
+  },
+  "homepage": "https://github.com/fengxinming/vite-plugins#readme"
+}
