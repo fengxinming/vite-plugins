@@ -1,9 +1,8 @@
 # vite-plugins
 
-> 自定义拓展的 vitejs 插件。
+> 用简单的方式去实现 vitejs 插件。
 
 ## [English](./README.md) | 中文
-
 
 插件包 | 描述
 -------- | -----------
