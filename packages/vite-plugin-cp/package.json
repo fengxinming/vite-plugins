@@ -1,0 +1,28 @@
+{
+  "name": "vite-plugin-cp",
+  "version": "1.0.0",
+  "description": "Copy files after building bundles.",
+  "main": "index.js",
+  "scripts": {
+    "release": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengxinming/vite-plugins.git",
+    "directory": "packages/vite-plugin-cp"
+  },
+  "keywords": [
+    "vite-plugin",
+    "vite-plugin-cp"
+  ],
+  "author": "Jesse Feng <fxm0016@126.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fengxinming/vite-plugins/issues"
+  },
+  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "dependencies": {
+    "fs-extra": "^10.1.0",
+    "globby": "^11.1.0"
+  }
+}
