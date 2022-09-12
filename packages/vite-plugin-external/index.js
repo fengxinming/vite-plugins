@@ -9,10 +9,32 @@ function createCJSExportDeclaration(external) {
   return `module.exports = ${external};`;
 }
 
+function rollupExternal(rollupOptions, externals, externalKeys) {
+  let { output, external } = rollupOptions;
+  if (!output) {
+    output = {};
+    rollupOptions.output = output;
+  }
+
+  let { globals } = output;
+  if (!globals) {
+    globals = {};
+    output.globals = globals;
+  }
+  Object.assign(globals, externals);
+
+  if (!external) {
+    external = [];
+    rollupOptions.external = external;
+  }
+  external.push(...externalKeys);
+}
+
 module.exports = function (opts = {}) {
   let externals;
   let externalLibs;
   let shouldSkip = false;
+  let libMode = false;
 
   const externalCacheDir = opts.cacheDir || join(process.cwd(), 'node_modules', '.vite_external');
 
@@ -24,13 +46,24 @@ module.exports = function (opts = {}) {
       externals = Object.assign({}, opts.externals, (tmp = opts[mode]) && tmp.externals);
       externalLibs = Object.keys(externals);
       shouldSkip = !externalLibs.length;
+      libMode = config.build && config.build.lib;
 
       if (shouldSkip) {
         return;
       }
 
-      // 非开发环境略过
+      // 非开发环境
       if (mode !== 'development') {
+        // 非开发环境库模式下，options钩子修改无效
+        if (libMode) {
+          let { rollupOptions } = config.build;
+          if (!rollupOptions) {
+            rollupOptions = {};
+            config.build.rollupOptions = rollupOptions;
+          }
+
+          rollupExternal(rollupOptions, externals, externalLibs);
+        }
         return;
       }
 
@@ -70,28 +103,11 @@ module.exports = function (opts = {}) {
     },
 
     options(opts) {
-      if (shouldSkip) {
+      if (shouldSkip || libMode) {
         return;
       }
 
-      let { output, external } = opts;
-      if (!output) {
-        output = {};
-        opts.output = output;
-      }
-
-      let { globals } = output;
-      if (!globals) {
-        globals = {};
-        output.globals = globals;
-      }
-      Object.assign(globals, externals);
-
-      if (!external) {
-        external = [];
-        opts.external = external;
-      }
-      external.push(...externalLibs);
+      rollupExternal(opts, externals, externalLibs);
     }
   };
 };
