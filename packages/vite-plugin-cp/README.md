@@ -21,7 +21,7 @@ npm install vite-plugin-cp --save-dev
   * src (string Array): Path or glob of what to copy
   * dest (string Array): One or more destinations where to copy
   * rename (string Function): Change destination file or folder name
-* `globbyOptions` - globby options[https://github.com/mrmlnc/fast-glob#options-3]
+* `globbyOptions` - [globby options](https://github.com/mrmlnc/fast-glob#options-3)
 
 ## Usage
 
