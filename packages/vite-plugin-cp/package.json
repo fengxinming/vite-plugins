@@ -1,7 +1,7 @@
 {
-  "name": "vite-plugin-external",
-  "version": "1.2.5",
-  "description": "The 'vite-plugin-external' provides a way of excluding dependencies from the runtime code and output bundles.",
+  "name": "vite-plugin-cp",
+  "version": "1.0.0",
+  "description": "Copy files after building bundles.",
   "main": "index.js",
   "scripts": {
     "release": "npm publish"
@@ -9,11 +9,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fengxinming/vite-plugins.git",
-    "directory": "packages/vite-plugin-external"
+    "directory": "packages/vite-plugin-cp"
   },
   "keywords": [
     "vite-plugin",
-    "vite-plugin-external"
+    "vite-plugin-cp"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
-    "fs-extra": "^10.0.0"
+    "fs-extra": "^10.1.0",
+    "globby": "^11.1.0"
   }
 }

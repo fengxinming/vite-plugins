@@ -2,8 +2,11 @@
 
 > Some custom plugins for vitejs.
 
-Packages | Description 
--------- | ----------- 
-[vite-plugin-external](packages/vite-plugin-external) | Better to define externals in vite2. It not only work on our source code, but also work on pre-bundling dependencies well.
-[vite-plugin-module-script](packages/vite-plugin-module-script) | A vite plugin for dynamic creating a module script tag.
-[vite-plugin-react-refresh](packages/vite-plugin-react-refresh) | Provide enhancements for [@vitejs/plugin-react-refresh](https://www.npmjs.com/package/@vitejs/plugin-react-refresh).
+## English | [中文](./README_zh_CN.md)
+
+Packages | Description
+-------- | -----------
+[vite-plugin-cp](packages/vite-plugin-cp) | Copy files after building bundles.
+[vite-plugin-external](packages/vite-plugin-external) | Provides a way of excluding dependencies from the runtime code and output bundles.
+[vite-plugin-mock-data](packages/vite-plugin-mock-data) | Provides a simple way to mock data.
+[vite-plugin-reverse-proxy](packages/vite-plugin-reverse-proxy) | Makes the script to be served with the text/javascript MIME type instead of module MIME type.

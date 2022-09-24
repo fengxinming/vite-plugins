@@ -1,48 +1,31 @@
-import { join } from 'path';
+import { fileURLToPath, URL } from 'url';
+
 import { defineConfig } from 'vite';
-import { getBabelInputPlugin } from '@rollup/plugin-babel';
-import reactRefresh from '../../packages/vite-plugin-react-refresh';
+import react from '@vitejs/plugin-react';
 import createExternal from '../../packages/vite-plugin-external';
 
 // https://vitejs.dev/config/
-export default function ({ mode }) {
-  const isProd = mode === 'production';
-
+export default () => {
   return defineConfig({
-    esbuild: isProd ? false : undefined,
-    resolve: {
-      alias: {
-        '@': join(__dirname, 'src')
-      }
-    },
     plugins: [
+      react(),
       createExternal({
         externals: {
-          history: '$linkdesign.History',
-          moment: '$linkdesign.Moment'
-        },
-        production: {
-          externals: {
-            '@linkdesign/components': 'LinkDesignComponents',
-            '@alicloud/console-components': 'AlicloudConsoleComponents',
-            react: '$linkdesign.React',
-            'react-dom': '$linkdesign.ReactDOM',
-            'react-router': '$linkdesign.ReactRouter',
-            'prop-types': '$linkdesign.PropTypes'
-          }
+          '@linkdesign/components': 'LinkDesignComponents',
+          '@alicloud/console-components': 'AlicloudConsoleComponents',
+          react: '$linkdesign.React',
+          'react-dom': '$linkdesign.ReactDOM',
+          'prop-types': '$linkdesign.PropTypes'
         }
-      }),
-      reactRefresh({
-        transformPlugins: [
-          'babel-plugin-jsx-advanced'
-        ]
-      }),
-      isProd && getBabelInputPlugin({
-        babelHelpers: 'runtime'
       })
     ],
+    resolve: {
+      alias: {
+        '@': fileURLToPath(new URL('./src', import.meta.url))
+      }
+    },
     server: {
       open: true
     }
   });
-}
+};
