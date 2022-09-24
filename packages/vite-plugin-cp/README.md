@@ -13,6 +13,16 @@
 npm install vite-plugin-cp --save-dev
 ```
 
+## Options
+
+* `hook` - Default `'writeBundle'`, vite hook the plugin should use.
+* `targets` - Array of targets to copy.A target is an object with properties:
+
+  * src (string Array): Path or glob of what to copy
+  * dest (string Array): One or more destinations where to copy
+  * rename (string Function): Change destination file or folder name
+* `globbyOptions` - globby options[https://github.com/mrmlnc/fast-glob#options-3]
+
 ## Usage
 
 ```js
@@ -22,7 +32,9 @@ export default defineConfig({
   plugins: [
     cp({
       targets: [
-        { src: '../../node_modules/three/build/three.min.js', dest: './dist' }
+        { 
+          src: '../../node_modules/three/build/three.min.js', dest: './dist'
+        }
       ]
     })
   ]

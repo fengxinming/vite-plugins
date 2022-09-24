@@ -44,6 +44,10 @@ export default defineConfig({
 });
 ```
 
+```html
+<script src="/app.js"></script>
+```
+
 ## Examples
 
 **[See demo](examples/demo-reverse-proxy)**
