@@ -17,7 +17,7 @@ npm install vite-plugin-mock-data --save-dev
 
 * `isAfter` - If `true`, these mock routes is matched before internal middlewares are installed.
 * `mockAssetsDir` - Specify the directory to define mock assets.
-* `mockRouterOptions` - [Initial options of `find-my-way`'](https://github.com/delvedor/find-my-way#findmywayoptions)
+* `mockRouterOptions` - [Initial options of `find-my-way`](https://github.com/delvedor/find-my-way#findmywayoptions)
 * `mockRoutes` - Initial list of mock routes that should be added to the dev server.
 * `mockRoutesDir` - Specify the directory to define mock routes that should be added to the dev server.
 
