@@ -34,7 +34,6 @@ module.exports = function (opts = {}) {
   let externals;
   let externalLibs;
   let shouldSkip = false;
-  let libMode = false;
 
   const externalCacheDir = opts.cacheDir || join(process.cwd(), 'node_modules', '.vite_external');
 
@@ -46,7 +45,6 @@ module.exports = function (opts = {}) {
       externals = Object.assign({}, opts.externals, (tmp = opts[mode]) && tmp.externals);
       externalLibs = Object.keys(externals);
       shouldSkip = !externalLibs.length;
-      libMode = config.build && config.build.lib;
 
       if (shouldSkip) {
         return;
@@ -54,16 +52,13 @@ module.exports = function (opts = {}) {
 
       // 非开发环境
       if (mode !== 'development') {
-        // 非开发环境库模式下，options钩子修改无效
-        if (libMode) {
-          let { rollupOptions } = config.build;
-          if (!rollupOptions) {
-            rollupOptions = {};
-            config.build.rollupOptions = rollupOptions;
-          }
-
-          rollupExternal(rollupOptions, externals, externalLibs);
+        let { rollupOptions } = config.build;
+        if (!rollupOptions) {
+          rollupOptions = {};
+          config.build.rollupOptions = rollupOptions;
         }
+
+        rollupExternal(rollupOptions, externals, externalLibs);
         return;
       }
 
@@ -100,14 +95,6 @@ module.exports = function (opts = {}) {
 
         alias.push({ find: new RegExp(`^${libName}$`), replacement: libPath });
       }
-    },
-
-    options(opts) {
-      if (shouldSkip || libMode) {
-        return;
-      }
-
-      rollupExternal(opts, externals, externalLibs);
     }
   };
 };
