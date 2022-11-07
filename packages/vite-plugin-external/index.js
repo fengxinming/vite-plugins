@@ -52,6 +52,10 @@ module.exports = function (opts = {}) {
 
       // 非开发环境
       if (mode !== 'development') {
+        if (!config.build) {
+          config.build = {};
+        }
+        
         let { rollupOptions } = config.build;
         if (!rollupOptions) {
           rollupOptions = {};
