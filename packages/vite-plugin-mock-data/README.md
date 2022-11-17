@@ -135,7 +135,7 @@ module.exports = {
   },
   '/json': {
     handler: { hello: 1 }
-  }
+  },
   '/package.json': {
     file: './package.json'
   },
