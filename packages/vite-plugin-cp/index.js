@@ -12,6 +12,23 @@ function copyFile(src, dest, cwd, rename) {
   return copy(src, join(dest, rename || parsed.base));
 }
 
+async function mapTargets(targets) {
+  return targets.map(({ src, dest, rename }) => {
+    if (!isAbsolute(dest)) {
+      dest = join(cwd, dest);
+    }
+
+    const paths = await globby(src, globbyOptions);
+
+    if (paths.length) {
+      return paths.map(path => copyFile(path, dest, cwd, rename));
+    } else {
+      console.warn(`No found targets for ${src}`);
+      return [];
+    }
+  });
+}
+
 module.exports = function (opts = {}) {
   const { hook = 'writeBundle', targets, globbyOptions } = opts;
   const cwd = process.cwd();
@@ -20,34 +37,20 @@ module.exports = function (opts = {}) {
   return {
     name: 'vite:cp',
 
-    [hook]() {
+    async [hook]() {
       if (copied) {
         return;
       }
-      if (Array.isArray(targets)) {
-        Promise.all(targets.map(({ src, dest, rename }) => {
-          if (!isAbsolute(dest)) {
-            dest = join(cwd, dest);
-          }
-          return globby(src, globbyOptions).then((paths) => {
-            if (paths.length) {
-              return paths.map((pth) => {
-                return copyFile(pth, dest, cwd, rename);
-              });
-            }
 
-            console.warn('Not found targets!');
-            return false;
-          });
-        })).then((ret) => {
-          if (ret !== false) {
-            console.info('Done!');
-          }
-        }).catch((err) => {
+      if (Array.isArray(targets)) {
+        try {
+          await Promise.all(mapTargets(targets));
+          console.info('Done!');
+          copied = true;
+        } catch (err) {
           console.error(err);
-        });
+        }
       }
-      copied = true;
     }
   };
 };
