@@ -9,6 +9,15 @@ function createCJSExportDeclaration(external) {
   return `module.exports = ${external};`;
 }
 
+function rollupOutputGlobals(output, externals) {
+  let { globals } = output;
+  if (!globals) {
+    globals = {};
+    output.globals = globals;
+  }
+  Object.assign(globals, externals);
+}
+
 function rollupExternal(rollupOptions, externals, externalKeys) {
   let { output, external } = rollupOptions;
   if (!output) {
@@ -16,12 +25,15 @@ function rollupExternal(rollupOptions, externals, externalKeys) {
     rollupOptions.output = output;
   }
 
-  let { globals } = output;
-  if (!globals) {
-    globals = {};
-    output.globals = globals;
+  // 支持 output 是数组的情况
+  if (Array.isArray(output)) {
+    output.forEach((n) => {
+      rollupOutputGlobals(n, externals);
+    });
   }
-  Object.assign(globals, externals);
+  else {
+    rollupOutputGlobals(output, externals);
+  }
 
   if (!external) {
     external = [];
@@ -52,10 +64,11 @@ module.exports = function (opts = {}) {
 
       // 非开发环境
       if (mode !== 'development') {
+        // 有可能没有配置 build
         if (!config.build) {
           config.build = {};
         }
-        
+
         let { rollupOptions } = config.build;
         if (!rollupOptions) {
           rollupOptions = {};
