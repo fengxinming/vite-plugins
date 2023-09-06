@@ -15,6 +15,14 @@
 npm install vite-plugin-external --save-dev
 ```
 
+## Options
+
+`externals: [packageName: string]: any`
+`development?: Options`
+`production?: Options`
+`cwd?: string` - default: `process.cwd()`
+`cacheDir?: string` - default: `join(cwd, 'node_modules', '.vite_external')`
+
 ## Usage
 
 ```js
@@ -27,7 +35,18 @@ export default defineConfig({
         react: 'React'
       }
     })
-  ]
+  ],
+  build: {
+    cssCodeSplit: false,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: '[name].js',
+        format: 'iife'
+      }
+    }
+  }
 });
 ```
 
@@ -54,4 +73,4 @@ export default defineConfig({
 
 ## Examples
 
-**[Demo](examples/demo-external)**
+**[Demo](examples/react)**

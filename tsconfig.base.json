@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "sourceMap": false,
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "node",
+      "newLine": "LF",
+      "strict": true,
+  
+      "allowJs": true,
+      "noImplicitAny": false,
+      "noImplicitThis": false,
+  
+      "downlevelIteration": true,
+      "noUnusedLocals": true,
+      "experimentalDecorators": true,
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+      "removeComments": false,
+      "jsx": "preserve",
+      "lib": ["esnext", "dom"],
+      "types": ["node"],
+  
+      "declaration": true
+    },
+    "exclude": ["node_modules"]
+}
+  
