@@ -1,13 +1,14 @@
-/* eslint-disable guard-for-in */
-function closure(code) {
+import { Plugin } from 'vite';
+
+function closure(code: string): string {
   return `(function(){${code}})();`;
 }
 
-function tryCatch(code) {
+function tryCatch(code: string): string {
   return `try{${code}}catch(e){console.error('vite-plugin-inject-css', e);}`;
 }
 
-function createStyle(jsCode, cssCode, styleId) {
+function createStyle(jsCode: string, cssCode: string, styleId?: string): string {
   let newCode = 'var elementStyle = document.createElement(\'style\');'
   + `elementStyle.appendChild(document.createTextNode(${JSON.stringify(cssCode)}));`
   + 'document.head.appendChild(elementStyle);';
@@ -18,34 +19,36 @@ function createStyle(jsCode, cssCode, styleId) {
   return closure(tryCatch(newCode)) + jsCode;
 }
 
-function VitePluginInjectCss() {
+export default function createPlugin(): Plugin {
   return {
-    name: 'vite-plugin-inject-css',
+    name: 'vite-plugin-include-css',
     apply: 'build',
     enforce: 'post',
-    generateBundle(_, bundle) {
+    generateBundle(outputOpts, bundle) {
       let cssCode = '';
 
       // find out all css codes
-      for (const key in bundle) {
-        const chunk = bundle[key];
+      Object.entries(bundle).forEach(([key, chunk]) => {
         if (chunk && chunk.type === 'asset'
           && chunk.fileName.includes('.css')) {
+          // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
           cssCode += chunk.source;
           delete bundle[key];
         }
-      }
+      });
+
       cssCode = cssCode.trim();
       if (!cssCode) {
         return;
       }
 
+      // eslint-disable-next-line guard-for-in
       for (const key in bundle) {
         const chunk = bundle[key];
 
         // inject css code to js code
         if (chunk && chunk.type === 'chunk'
-          && chunk.fileName.match(/.[cm]?js$/) !== null
+          && /.[cm]?js$/.exec(chunk.fileName) !== null
           && !chunk.fileName.includes('polyfill')) {
           chunk.code = createStyle(chunk.code, cssCode);
           break;
@@ -54,5 +57,3 @@ function VitePluginInjectCss() {
     }
   };
 }
-
-export default VitePluginInjectCss;
