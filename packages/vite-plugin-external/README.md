@@ -15,7 +15,20 @@
 npm install vite-plugin-external --save-dev
 ```
 
+## Options
+
+* `externals: [packageName: string]: any`
+* `development?: Options`
+* `production?: Options`
+* `cwd?: string` - default: `process.cwd()`
+* `cacheDir?: string` - default: `join(cwd, 'node_modules', '.vite_external')`
+
 ## Usage
+
+```html
+<script src="
+//cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js"></script>
+```
 
 ```js
 import createExternal from 'vite-plugin-external';
@@ -27,11 +40,27 @@ export default defineConfig({
         react: 'React'
       }
     })
-  ]
+  ],
+  build: {
+    cssCodeSplit: false,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: '[name].js',
+        format: 'iife'
+      }
+    }
+  }
 });
 ```
 
 ### Override externals by mode
+
+```html
+<script src="
+//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
+```
 
 ```js
 import createExternal from 'vite-plugin-external';
@@ -54,4 +83,4 @@ export default defineConfig({
 
 ## Examples
 
-**[Demo](examples/demo-external)**
+**[Demo](examples/react)**
