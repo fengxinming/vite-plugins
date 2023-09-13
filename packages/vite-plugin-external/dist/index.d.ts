@@ -1,6 +1,6 @@
 import { Plugin } from 'vite';
 export interface BasicOptions {
-    externals: Externals;
+    externals?: Externals;
 }
 export interface Externals {
     [packageName: string]: any;
@@ -8,9 +8,10 @@ export interface Externals {
 export interface Options extends BasicOptions {
     [mode: string]: Options | any;
     cwd?: string;
+    cacheDir?: string;
+    enforce?: 'pre' | 'post';
+    externals?: Externals;
     development?: Options;
     production?: Options;
-    cacheDir?: string;
-    externals: Externals;
 }
 export default function createPlugin(opts: Options): Plugin;

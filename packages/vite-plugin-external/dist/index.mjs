@@ -43,7 +43,8 @@ function createPlugin(opts) {
     let externalKeys = [];
     let shouldSkip = false;
     return {
-        name: 'vite:external',
+        name: 'vite-plugin-external',
+        enforce: opts.enforce,
         config(config, { mode }) {
             const modeOptions = opts[mode];
             externals = Object.assign({}, opts.externals, modeOptions && modeOptions.externals);

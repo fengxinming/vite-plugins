@@ -92,7 +92,11 @@ export default function createPlugin(opts: Options): Plugin {
       const cp = makeCopy(transform);
 
       const glob = (pattern: string) => {
-        const notFlatten = statSync(pattern).isDirectory() && flatten === false;
+        let notFlatten = false;
+        try {
+          notFlatten = statSync(pattern).isDirectory() && flatten === false;
+        }
+        catch (e) {}
 
         return globby(pattern, globbyOptions).then((matchedPaths) => {
           if (!matchedPaths.length) {

@@ -5,7 +5,7 @@ import { RollupOptions, OutputOptions } from 'rollup';
 import { UserConfig, ConfigEnv, Alias, Plugin } from 'vite';
 
 export interface BasicOptions {
-  externals: Externals;
+  externals?: Externals;
 }
 
 export interface Externals {
@@ -16,10 +16,11 @@ export interface Options extends BasicOptions {
   [mode: string]: Options | any;
 
   cwd?: string;
+  cacheDir?: string;
+  enforce?: 'pre' | 'post';
+  externals?: Externals;
   development?: Options;
   production?: Options;
-  cacheDir?: string;
-  externals: Externals;
 }
 
 // compat cjs and esm
@@ -70,8 +71,8 @@ export default function createPlugin(opts: Options): Plugin {
   let shouldSkip = false;
 
   return {
-    name: 'vite:external',
-
+    name: 'vite-plugin-external',
+    enforce: opts.enforce,
     config(config: UserConfig, { mode }: ConfigEnv) {
       const modeOptions: Options | undefined = opts[mode];
 

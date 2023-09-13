@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import vitePluginExternal from '../../packages/vite-plugin-external';
-import vitePluginCp from '../../packages/vite-plugin-cp';
-import vitePluginIncludeCSS from '../../packages/vite-plugin-include-css';
+import vitePluginExternal from '../../packages/vite-plugin-external/src';
+import vitePluginCp from '../../packages/vite-plugin-cp/src';
+import vitePluginIncludeCSS from '../../packages/vite-plugin-include-css/src';
+import vitePluginMockData from '../../packages/vite-plugin-mock-data/src';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -19,10 +20,15 @@ export default defineConfig({
       targets: [
         { src: './node_modules/vite/dist', dest: 'dist/test' },
         { src: './node_modules/vite/dist', dest: 'dist/test2', flatten: false },
-        { src: './node_modules/vite/README.md', dest: 'dist' }
+        { src: './node_modules/vite/README.md', dest: 'dist' },
+        { src: './node_modules/vite/**/*.ts', dest: 'dist/types' }
       ]
     }),
-    vitePluginIncludeCSS()
+    vitePluginIncludeCSS(),
+    vitePluginMockData({
+      mockAssetsDir: './node_modules/vite',
+      mockRoutesDir: './mock'
+    })
   ],
   server: {
     open: true

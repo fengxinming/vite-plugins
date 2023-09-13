@@ -20,13 +20,20 @@ function createPlugin() {
         enforce: 'post',
         generateBundle(outputOpts, bundle) {
             let cssCode = '';
+            const cssFileNames = [];
+            const htmlKeys = [];
             // find out all css codes
             Object.entries(bundle).forEach(([key, chunk]) => {
-                if (chunk && chunk.type === 'asset'
-                    && chunk.fileName.includes('.css')) {
-                    // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-                    cssCode += chunk.source;
-                    delete bundle[key];
+                if (chunk && chunk.type === 'asset') {
+                    if (chunk.fileName.endsWith('.css')) {
+                        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+                        cssCode += chunk.source;
+                        delete bundle[key];
+                        cssFileNames.push(chunk.fileName);
+                    }
+                    else if (chunk.fileName.endsWith('.html')) {
+                        htmlKeys.push(key);
+                    }
                 }
             });
             cssCode = cssCode.trim();
@@ -36,14 +43,19 @@ function createPlugin() {
             // eslint-disable-next-line guard-for-in
             for (const key in bundle) {
                 const chunk = bundle[key];
-                // inject css code to js code
-                if (chunk && chunk.type === 'chunk'
-                    && /.[cm]?js$/.exec(chunk.fileName) !== null
-                    && !chunk.fileName.includes('polyfill')) {
+                // inject css code to js entry
+                if (chunk && chunk.type === 'chunk' && chunk.isEntry) {
                     chunk.code = createStyle(chunk.code, cssCode);
                     break;
                 }
             }
+            htmlKeys.forEach((key) => {
+                let html = bundle[key].source;
+                cssFileNames.forEach((fileName) => {
+                    html = html.replace(new RegExp(`<link(.+)${fileName.replace('.', '\\.')}(.+)>`), '');
+                });
+                bundle[key].source = html;
+            });
         }
     };
 }

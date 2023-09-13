@@ -59,7 +59,11 @@ function createPlugin(opts) {
             dest = toAbsolutePath(dest);
             const cp = makeCopy(transform);
             const glob = (pattern) => {
-                const notFlatten = fs.statSync(pattern).isDirectory() && flatten === false;
+                let notFlatten = false;
+                try {
+                    notFlatten = fs.statSync(pattern).isDirectory() && flatten === false;
+                }
+                catch (e) { }
                 return globby.globby(pattern, globbyOptions).then((matchedPaths) => {
                     if (!matchedPaths.length) {
                         throw new Error(`Could not find files with "${pattern}"`);

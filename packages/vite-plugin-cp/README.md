@@ -36,8 +36,7 @@ export interface Options {
 * `enforce` - it may be needed to enforce the order of the plugin or only apply at build time. 
 * `globbyOptions` - [globby options](https://github.com/mrmlnc/fast-glob#options-3)
 * `cwd` - Default `process.cwd()`, The current working directory in which to search.
-* `targets` - Array of targets to copy.A target is an object with properties:
-
+* `targets` - Array of targets to copy. A target is an object with properties:
   * src - Path or glob of what to copy.
   * dest - One or more destinations where to copy.
   * rename - Change destination file.
@@ -62,7 +61,10 @@ export default defineConfig({
         { src: './node_modules/vite/dist', dest: 'dist/test2', flatten: false },
 
         // copy './node_modules/vite/README.md' to 'dist'
-        { src: './node_modules/vite/README.md', dest: 'dist' }
+        { src: './node_modules/vite/README.md', dest: 'dist' },
+
+        // copy './node_modules/vite/**/*.ts' to 'dist/types'
+        { src: './node_modules/vite/**/*.ts', dest: 'dist/types' }
       ]
     })
   ]
