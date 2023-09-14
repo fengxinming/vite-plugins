@@ -25,7 +25,6 @@
     "vite-plugin-mock-data"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },

@@ -24,7 +24,6 @@
     "vite-plugin-external"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },

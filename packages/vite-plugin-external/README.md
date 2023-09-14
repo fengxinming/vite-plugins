@@ -26,8 +26,7 @@ npm install vite-plugin-external --save-dev
 ## Usage
 
 ```html
-<script src="
-//cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js"></script>
 ```
 
 ```js
@@ -58,8 +57,7 @@ export default defineConfig({
 ### Override externals by mode
 
 ```html
-<script src="
-//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
+<script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
 
 ```js
