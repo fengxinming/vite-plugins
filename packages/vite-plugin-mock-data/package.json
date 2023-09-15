@@ -1,12 +1,13 @@
 {
   "name": "vite-plugin-mock-data",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Provides a simple way to mock data.",
-  "main": "./dist/index.mjs",
-  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }

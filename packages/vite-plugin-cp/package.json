@@ -1,12 +1,13 @@
 {
   "name": "vite-plugin-cp",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "Copy files after building bundles.",
-  "main": "./dist/index.mjs",
-  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     }
