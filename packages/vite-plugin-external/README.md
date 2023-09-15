@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-external.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-external)
 
-> The `vite-plugin-external` provides a way of excluding dependencies from the runtime code and output bundles.
+> The `vite-plugin-external` provides a way of excluding dependencies from the runtime code and output bundles. Vite >= 3.1
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
@@ -15,7 +15,20 @@
 npm install vite-plugin-external --save-dev
 ```
 
+## Options
+
+* `enforce?: string` - optional: `'pre' | 'post'`
+* `cwd?: string` - default: `process.cwd()`
+* `cacheDir?: string` - default: `join(cwd, 'node_modules', '.vite_external')`
+* `development?: Options`
+* `production?: Options`
+* `externals: [packageName: string]: any`
+
 ## Usage
+
+```html
+<script src="//cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js"></script>
+```
 
 ```js
 import createExternal from 'vite-plugin-external';
@@ -27,11 +40,26 @@ export default defineConfig({
         react: 'React'
       }
     })
-  ]
+  ],
+  build: {
+    cssCodeSplit: false,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: '[name].js',
+        format: 'iife'
+      }
+    }
+  }
 });
 ```
 
 ### Override externals by mode
+
+```html
+<script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
+```
 
 ```js
 import createExternal from 'vite-plugin-external';
@@ -54,4 +82,4 @@ export default defineConfig({
 
 ## Examples
 
-**[Demo](examples/demo-external)**
+**[Demo](examples/react)**

@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-mock-data.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-mock-data)
 
-> Provides a simple way to mock data.
+> Provides a simple way to mock data. Vite >= 3.1
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-mock-data.svg?style=flat)](https://npmjs.org/package/vite-plugin-mock-data)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-mock-data.svg?style=flat)](https://npmjs.org/package/vite-plugin-mock-data)
@@ -15,6 +15,7 @@ npm install vite-plugin-mock-data --save-dev
 
 ## Options
 
+* `cwd` - Default: `process.cwd()`.
 * `isAfter` - If `true`, these mock routes is matched before internal middlewares are installed.
 * `mockAssetsDir` - Specify the directory to define mock assets.
 * `mockRouterOptions` - [Initial options of `find-my-way`](https://github.com/delvedor/find-my-way#findmywayoptions)
@@ -152,4 +153,4 @@ fetch('/package.json')
 
 ## Examples
 
-**[See demo](examples/demo-mock-data)**
+**[See demo](examples/react)**
