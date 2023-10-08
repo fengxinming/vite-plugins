@@ -1,12 +1,13 @@
 {
     "name": "vite-plugin-include-css",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "build css into individual js files instead of using css links.",
-    "type": "module",
-    "main": "./dist/index.mjs",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
     "exports": {
       ".": {
+        "types": "./dist/index.d.ts",
         "import": "./dist/index.mjs",
         "require": "./dist/index.cjs"
       }
@@ -25,7 +26,6 @@
       "vite-plugin-include-css"
     ],
     "author": "Jesse Feng <fxm0016@126.com>",
-    "license": "MIT",
     "bugs": {
       "url": "https://github.com/fengxinming/vite-plugins/issues"
     },
@@ -41,5 +41,5 @@
     "files": [
       "dist"
     ]
-  }
+}
   
