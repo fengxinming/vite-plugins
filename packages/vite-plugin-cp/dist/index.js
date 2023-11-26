@@ -1,21 +1,22 @@
-import { isAbsolute, join, parse, relative } from "node:path";
-import { statSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
-import { pathExists, mkdirs, copy } from "fs-extra";
-import { globby } from "globby";
+"use strict";
+const node_path = require("node:path");
+const node_fs = require("node:fs");
+const promises = require("node:fs/promises");
+const fsExtra = require("fs-extra");
+const globby = require("globby");
 function makeCopy(transform) {
   return transform ? function(from, to) {
-    return readFile(from).then((buf) => transform(buf, from)).then((data) => {
-      const { dir } = parse(to);
-      return pathExists(dir).then((itDoes) => {
+    return promises.readFile(from).then((buf) => transform(buf, from)).then((data) => {
+      const { dir } = node_path.parse(to);
+      return fsExtra.pathExists(dir).then((itDoes) => {
         if (!itDoes) {
-          return mkdirs(dir);
+          return fsExtra.mkdirs(dir);
         }
       }).then(() => {
-        return writeFile(to, data);
+        return promises.writeFile(to, data);
       });
     });
-  } : copy;
+  } : fsExtra.copy;
 }
 function transformName(name, rename) {
   if (typeof rename === "function") {
@@ -35,8 +36,8 @@ function createPlugin(opts) {
     return plugin;
   }
   const toAbsolutePath = (pth) => {
-    if (!isAbsolute(pth)) {
-      pth = join(cwd, pth);
+    if (!node_path.isAbsolute(pth)) {
+      pth = node_path.join(cwd, pth);
     }
     return pth;
   };
@@ -53,20 +54,20 @@ function createPlugin(opts) {
       const glob = (pattern) => {
         let notFlatten = false;
         try {
-          notFlatten = statSync(pattern).isDirectory() && flatten === false;
+          notFlatten = node_fs.statSync(pattern).isDirectory() && flatten === false;
         } catch (e) {
         }
-        return globby(pattern, globbyOptions).then((matchedPaths) => {
+        return globby.globby(pattern, globbyOptions).then((matchedPaths) => {
           if (!matchedPaths.length) {
             throw new Error(`Could not find files with "${pattern}"`);
           }
           return matchedPaths.map((matchedPath) => {
             matchedPath = toAbsolutePath(matchedPath);
             const outputToDest = notFlatten ? function(matchedPath2) {
-              const tmp = parse(relative(pattern, matchedPath2));
-              return cp(matchedPath2, join(dest, tmp.dir, transformName(tmp.base, rename)));
+              const tmp = node_path.parse(node_path.relative(pattern, matchedPath2));
+              return cp(matchedPath2, node_path.join(dest, tmp.dir, transformName(tmp.base, rename)));
             } : function(matchedPath2) {
-              return cp(matchedPath2, join(dest, transformName(parse(matchedPath2).base, rename)));
+              return cp(matchedPath2, node_path.join(dest, transformName(node_path.parse(matchedPath2).base, rename)));
             };
             return outputToDest(matchedPath);
           });
@@ -83,6 +84,4 @@ function createPlugin(opts) {
   };
   return plugin;
 }
-export {
-  createPlugin as default
-};
+module.exports = createPlugin;

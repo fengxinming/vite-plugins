@@ -1,6 +1,6 @@
 import { join, isAbsolute, parse, relative } from 'node:path';
-import { statSync } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { statSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { Plugin } from 'vite';
 import { copy, pathExists, mkdirs } from 'fs-extra';
 import { globby, Options as GlobbyOptions } from 'globby';
