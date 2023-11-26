@@ -1,6 +1,7 @@
-import { types } from "node:util";
-import { emptyDirSync, outputFile } from "fs-extra";
-import { join } from "node:path";
+"use strict";
+const node_util = require("node:util");
+const fsExtra = require("fs-extra");
+const node_path = require("node:path");
 function get(obj, key) {
   if (obj == null) {
     return {};
@@ -39,7 +40,7 @@ function rollupExternal(rollupOptions, externals, libNames) {
   const { external } = rollupOptions;
   if (!external) {
     rollupOptions.external = libNames;
-  } else if (typeof external === "string" || types.isRegExp(external) || Array.isArray(external)) {
+  } else if (typeof external === "string" || node_util.types.isRegExp(external) || Array.isArray(external)) {
     rollupOptions.external = libNames.concat(external);
   } else if (typeof external === "function") {
     rollupOptions.external = function(source, importer, isResolved) {
@@ -52,7 +53,7 @@ function rollupExternal(rollupOptions, externals, libNames) {
 }
 function createFakeLib(globalName, libPath) {
   const cjs = `module.exports = ${globalName};`;
-  return outputFile(libPath, cjs, "utf-8");
+  return fsExtra.outputFile(libPath, cjs, "utf-8");
 }
 function createPlugin(opts) {
   return {
@@ -82,7 +83,7 @@ function createPlugin(opts) {
         cwd = process.cwd();
       }
       if (!cacheDir) {
-        cacheDir = join(cwd, "node_modules", ".vite", "vite:external");
+        cacheDir = node_path.join(cwd, "node_modules", ".vite", "vite:external");
       }
       const libNames = !externals ? [] : Object.keys(externals);
       const shouldSkip = !libNames.length;
@@ -93,7 +94,7 @@ function createPlugin(opts) {
         rollupExternal(get(config, "build.rollupOptions"), externals, libNames);
         return;
       }
-      emptyDirSync(cacheDir);
+      fsExtra.emptyDirSync(cacheDir);
       let alias = get(config, "resolve.alias");
       if (!Array.isArray(alias)) {
         alias = Object.entries(alias).map(([key, value]) => {
@@ -102,7 +103,7 @@ function createPlugin(opts) {
         config.resolve.alias = alias;
       }
       await Promise.all(libNames.map((libName) => {
-        const libPath = join(cacheDir, `${libName.replace(/\//g, "_")}.js`);
+        const libPath = node_path.join(cacheDir, `${libName.replace(/\//g, "_")}.js`);
         alias.push({
           find: new RegExp(`^${libName}$`),
           replacement: libPath
@@ -112,6 +113,4 @@ function createPlugin(opts) {
     }
   };
 }
-export {
-  createPlugin as default
-};
+module.exports = createPlugin;

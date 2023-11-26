@@ -19,7 +19,7 @@ npm install vite-plugin-external --save-dev
 
 * `enforce?: string` - optional: `'pre' | 'post'`
 * `cwd?: string` - default: `process.cwd()`
-* `cacheDir?: string` - default: `join(cwd, 'node_modules', '.vite_external')`
+* `cacheDir?: string` - default: `${cwd}/node_modules/.vite/vite:external`
 * `development?: Options`
 * `production?: Options`
 * `externals: [packageName: string]: any`
