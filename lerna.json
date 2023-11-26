@@ -1,0 +1,16 @@
+{
+    "npmClient": "cnpm",
+    "npmClientArgs": [
+      "--package-lock=false"
+    ],
+    "version": "independent",
+    "packages": [
+      "packages/*",
+      "examples/*"
+    ],
+    "command": {
+      "bootstrap": {
+        "hoist": true
+      }
+    }
+  }
