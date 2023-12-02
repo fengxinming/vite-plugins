@@ -73,7 +73,7 @@ export default function createPlugin(opts: Options): Plugin {
   return {
     name: 'vite-plugin-external',
     enforce: opts.enforce,
-    config(config: UserConfig, { mode }: ConfigEnv) {
+    config(config: UserConfig, { mode, command }: ConfigEnv) {
       const modeOptions: Options | undefined = opts[mode];
 
       externals = Object.assign({}, opts.externals, modeOptions && modeOptions.externals);
@@ -85,7 +85,7 @@ export default function createPlugin(opts: Options): Plugin {
       }
 
       // non development
-      if (mode !== 'development') {
+      if (command !== 'serve') {
         let { build } = config;
 
         // if no build indicates
