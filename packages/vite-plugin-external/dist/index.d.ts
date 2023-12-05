@@ -11,6 +11,7 @@ export interface Options extends BasicOptions {
     [mode: string]: BasicOptions | any;
     development?: BasicOptions;
     production?: BasicOptions;
+    devMode?: string;
     enforce?: 'pre' | 'post';
 }
 export default function createPlugin(opts: Options): Plugin;

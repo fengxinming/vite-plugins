@@ -18,6 +18,7 @@ npm install vite-plugin-external --save-dev
 ## Options
 
 * `enforce?: string` - optional: `'pre' | 'post'`
+* `devMode?: string` - optional: `'development'`
 * `cwd?: string` - default: `process.cwd()`
 * `cacheDir?: string` - default: `${cwd}/node_modules/.vite/vite:external`
 * `development?: Options`

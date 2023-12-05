@@ -20,6 +20,7 @@ export interface Options extends BasicOptions {
   development?: BasicOptions;
   production?: BasicOptions;
 
+  devMode?: string;
   enforce?: 'pre' | 'post';
 }
 
@@ -133,8 +134,10 @@ export default function createPlugin(opts: Options): Plugin {
         return;
       }
 
+      const devMode = opts.devMode || 'development';
+
       // non development
-      if (mode !== 'development') {
+      if (mode !== devMode) {
         rollupExternal(
           get(config, 'build.rollupOptions'),
           externals,

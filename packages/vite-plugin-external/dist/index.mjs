@@ -89,7 +89,8 @@ function createPlugin(opts) {
       if (shouldSkip) {
         return;
       }
-      if (mode !== "development") {
+      const devMode = opts.devMode || "development";
+      if (mode !== devMode) {
         rollupExternal(get(config, "build.rollupOptions"), externals, libNames);
         return;
       }
