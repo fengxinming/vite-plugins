@@ -25,7 +25,6 @@ function createPlugin() {
     "handleHotUpdate"
   ].reduce((prev, hook) => {
     prev[hook] = function() {
-      console.log(color.green(`=== Enter hook "${hook}" ===`));
       order.set(hook, (order.get(hook) || 0) + 1);
     };
     return prev;
@@ -41,13 +40,13 @@ env: ${JSON.stringify(env, null, 2)}
   hooks.closeBundle = function() {
     lastCloseBundle();
     console.log();
-    intro(color.inverse(" === Start printing === "));
+    intro(color.inverse(" === Start === "));
     order.forEach((count, hookName) => {
+      s.start();
       const text = count === 1 ? hookName : `${hookName}(${count})`;
-      s.start(text);
       s.stop(text);
     });
-    outro(color.inverse(" === End printing === "));
+    outro(color.inverse(" === End === "));
   };
   return hooks;
 }

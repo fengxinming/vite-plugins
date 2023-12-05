@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-external",
-  "version": "4.0.2",
+  "version": "4.1.0",
   "description": "Provides a way of excluding dependencies from the runtime code and output bundles.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
