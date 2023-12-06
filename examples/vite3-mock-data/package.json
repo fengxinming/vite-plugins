@@ -1,0 +1,15 @@
+{
+    "name": "vite3-mock-data",
+    "private": true,
+    "version": "0.1.0",
+    "type": "module",
+    "scripts": {
+      "dev": "vite",
+      "build": "vite build"
+    },
+    "dependencies": {
+      "vite": "^3.2.7",
+      "vite-plugin-mock-data": "^4.0.0"
+    },
+    "repository": "https://github.com/fengxinming/vite-plugins.git"
+  }

@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite';
 import vitePluginMockData from 'vite-plugin-mock-data';
 
