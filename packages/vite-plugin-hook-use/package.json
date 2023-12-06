@@ -1,43 +1,42 @@
 {
-    "name": "vite-plugin-hook-use",
-    "version": "4.0.0",
-    "description": "Provides a way of excluding dependencies from the runtime code and output bundles.",
-    "types": "./dist/index.d.ts",
-    "module": "./dist/index.mjs",
-    "main": "./dist/index.js",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.mjs",
-        "require": "./dist/index.js"
-      }
-    },
-    "scripts": {
-      "build": "vite build",
-      "watch": "vite build --watch",
-      "release": "npm publish"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/fengxinming/vite-plugins.git",
-      "directory": "packages/vite-plugin-external"
-    },
-    "keywords": [
-      "vite-plugin",
-      "vite-plugin-external"
-    ],
-    "author": "Jesse Feng <fxm0016@126.com>",
-    "bugs": {
-      "url": "https://github.com/fengxinming/vite-plugins/issues"
-    },
-    "homepage": "https://github.com/fengxinming/vite-plugins#readme",
-    "dependencies": {
-      "@clack/prompts": "^0.7.0",
-      "fs-extra": "^11.1.1",
-      "picocolors": "^1.0.0"
-    },
-    "files": [
-      "dist"
-    ]
-  }
-  
+  "name": "vite-plugin-hook-use",
+  "version": "4.0.0",
+  "description": "Display which hooks are used in your project.",
+  "types": "./dist/index.d.ts",
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "watch": "vite build --watch",
+    "release": "npm publish"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengxinming/vite-plugins.git",
+    "directory": "packages/vite-plugin-external"
+  },
+  "keywords": [
+    "vite-plugin",
+    "vite-plugin-external"
+  ],
+  "author": "Jesse Feng <fxm0016@126.com>",
+  "bugs": {
+    "url": "https://github.com/fengxinming/vite-plugins/issues"
+  },
+  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "dependencies": {
+    "@clack/prompts": "^0.7.0",
+    "fs-extra": "^11.1.1",
+    "picocolors": "^1.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

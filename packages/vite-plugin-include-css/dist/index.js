@@ -1,3 +1,4 @@
+"use strict";
 function closure(code) {
   return `(function(){${code}})();`;
 }
@@ -52,6 +53,4 @@ function createPlugin() {
     }
   };
 }
-export {
-  createPlugin as default
-};
+module.exports = createPlugin;

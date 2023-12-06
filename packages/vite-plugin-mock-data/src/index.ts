@@ -1,11 +1,11 @@
 import { isAbsolute, posix, parse, extname } from 'node:path';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
+import { OutgoingHttpHeaders } from 'node:http';
 import globby from 'globby';
 import getRouter, { Config as SirvConfig, HTTPVersion, HTTPMethod, RouteOptions, Handler } from 'find-my-way';
-import { Plugin, ViteDevServer, send } from 'vite';
 import sirv, { RequestHandler, Options as SirvOptions } from 'sirv';
-import { OutgoingHttpHeaders } from 'http';
+import { Plugin, ViteDevServer, send } from 'vite';
 
 export interface HandleRoute {
   file?: string;
@@ -83,7 +83,6 @@ function configureServer(
 
         let handler: Handler<HTTPVersion.V1> | undefined;
         let opts: RouteOptions | undefined;
-        let store: any;
 
         if (typeof routeConfig.file === 'string') {
           handler = (req, res) => {
@@ -118,7 +117,7 @@ function configureServer(
             pathname,
             opts || {},
             handler,
-            store
+            routeConfig.store
           );
         }
       });
@@ -164,7 +163,6 @@ export default function createPlugin(opts: Options): Plugin {
         mockRoutesDir = toAbsolute(mockRoutesDir, cwd);
 
         const paths = await globby(`${mockRoutesDir}/**/*.{js,mjs,json}`);
-        console.log(paths);
         await Promise.all(paths.map((file) => {
           return (async () => {
             let config: RouteConfig | undefined;

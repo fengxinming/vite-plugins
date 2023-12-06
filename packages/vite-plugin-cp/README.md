@@ -73,6 +73,6 @@ export default defineConfig({
 
 ## Examples
 
-**[See vite3 demo](examples/vite3-cp)**
-**[See vite4 demo](examples/vite4-cp)**
-**[See vite5 demo](examples/vite5-cp)**
+**[See vite3 demo](../../examples/vite3-cp)**
+**[See vite4 demo](../../examples/vite4-cp)**
+**[See vite5 demo](../../examples/vite5-cp)**

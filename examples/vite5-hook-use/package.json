@@ -1,14 +1,14 @@
 {
-    "name": "vite5-hook-use",
-    "private": true,
-    "version": "0.1.0",
-    "type": "module",
-    "scripts": {
-      "build": "vite build"
-    },
-    "dependencies": {
-      "vite": "^5.0.2",
-      "vite-plugin-hook-use": "^4.0.0"
-    },
-    "repository": "https://github.com/fengxinming/vite-plugins.git"
-  }
+  "name": "vite5-hook-use",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vite": "^5.0.2",
+    "vite-plugin-hook-use": "^4.0.0"
+  },
+  "repository": "https://github.com/fengxinming/vite-plugins.git"
+}
