@@ -1,15 +1,17 @@
-import { extname, isAbsolute, posix, parse } from "node:path";
-import { createRequire } from "node:module";
-import { readFileSync } from "node:fs";
-import globby from "globby";
-import getRouter from "find-my-way";
-import sirv from "sirv";
-import { send } from "vite";
+"use strict";
+const node_path = require("node:path");
+const node_module = require("node:module");
+const node_fs = require("node:fs");
+const globby = require("globby");
+const getRouter = require("find-my-way");
+const sirv = require("sirv");
+const vite = require("vite");
+var _documentCurrentScript = typeof document !== "undefined" ? document.currentScript : null;
 function isObject(val) {
   return val && typeof val === "object";
 }
 function toAbsolute(pth, cwd) {
-  return isAbsolute(pth) ? pth : posix.join(cwd || process.cwd(), pth);
+  return node_path.isAbsolute(pth) ? pth : node_path.posix.join(cwd || process.cwd(), pth);
 }
 function sirvOptions(headers) {
   return {
@@ -48,7 +50,7 @@ function configureServer(server, routerOpts, routes, serve, cwd) {
         let handler;
         if (typeof routeConfig.file === "string") {
           handler = (req, res) => {
-            const parsedPath = parse(toAbsolute(routeConfig.file, cwd));
+            const parsedPath = node_path.parse(toAbsolute(routeConfig.file, cwd));
             const serve2 = sirv(parsedPath.dir, sirvOptions(server.config.server.headers));
             req.url = `/${parsedPath.base}`;
             serve2(req, res);
@@ -57,7 +59,7 @@ function configureServer(server, routerOpts, routes, serve, cwd) {
           const ret = routeConfig.handler;
           const retType = typeof ret;
           handler = (req, res) => {
-            send(req, res, retType !== "string" ? JSON.stringify(ret) : ret, isObject(ret) ? "json" : "html", {
+            vite.send(req, res, retType !== "string" ? JSON.stringify(ret) : ret, isObject(ret) ? "json" : "html", {
               headers: server.config.server.headers
             });
           };
@@ -97,15 +99,15 @@ function createPlugin(opts) {
         await Promise.all(paths.map((file) => {
           return (async () => {
             let config;
-            switch (extname(file)) {
+            switch (node_path.extname(file)) {
               case ".js":
-                config = createRequire(import.meta.url)(file);
+                config = node_module.createRequire(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.src || new URL("index.js", document.baseURI).href)(file);
                 break;
               case ".mjs":
                 config = (await import(file)).default;
                 break;
               case ".json":
-                config = JSON.parse(readFileSync(file, "utf-8"));
+                config = JSON.parse(node_fs.readFileSync(file, "utf-8"));
                 break;
             }
             if (config) {
@@ -122,6 +124,4 @@ function createPlugin(opts) {
     }
   };
 }
-export {
-  createPlugin as default
-};
+module.exports = createPlugin;
