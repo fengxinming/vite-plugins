@@ -1,5 +1,5 @@
 {
-  "name": "vite4-external",
+  "name": "vite5-include-css",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -9,8 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vite": "^4.5.0",
-    "vite-plugin-external": "^4.0.2"
+    "vite": "^5.0.2",
+    "vite-plugin-external": "^4.0.2",
+    "vite-plugin-include-css": "^4.0.0"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }
