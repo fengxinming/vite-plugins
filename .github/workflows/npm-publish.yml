@@ -10,17 +10,17 @@ on:
     branches: [main]
 
 jobs:
-  publish-cp:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish ./packages/vite-plugin-cp
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+  # publish-cp:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish ./packages/vite-plugin-cp
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
   publish-external:
     runs-on: ubuntu-latest
@@ -34,50 +34,50 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
-  publish-hook-use:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish ./packages/vite-plugin-hook-use
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+  # publish-hook-use:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish ./packages/vite-plugin-hook-use
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
-  publish-include-css:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish ./packages/vite-plugin-include-css
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+  # publish-include-css:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish ./packages/vite-plugin-include-css
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
-  publish-mock-data:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish ./packages/vite-plugin-mock-data
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+  # publish-mock-data:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish ./packages/vite-plugin-mock-data
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
-  publish-reverse-proxy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish ./packages/vite-plugin-reverse-proxy
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+  # publish-reverse-proxy:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish ./packages/vite-plugin-reverse-proxy
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
