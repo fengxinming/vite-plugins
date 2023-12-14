@@ -45,3 +45,55 @@ jobs:
       - run: npm publish ./packages/vite-plugin-external
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  publish-hook-use:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish ./packages/vite-plugin-hook-use
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  publish-include-css:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish ./packages/vite-plugin-include-css
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  publish-mock-data:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish ./packages/vite-plugin-mock-data
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  publish-reverse-proxy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 14
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish ./packages/vite-plugin-reverse-proxy
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
