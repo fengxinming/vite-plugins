@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-reverse-proxy.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-reverse-proxy)
 
-> Makes the script to be served with the text/javascript MIME type instead of module MIME type.
+> Makes the script to be served with the text/javascript MIME type instead of module MIME type. Vite >= 3.1
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-reverse-proxy.svg?style=flat)](https://npmjs.org/package/vite-plugin-reverse-proxy)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-reverse-proxy.svg?style=flat)](https://npmjs.org/package/vite-plugin-reverse-proxy)
@@ -38,7 +38,9 @@ import reverseProxy from 'vite-plugin-reverse-proxy';
 export default defineConfig({
   plugins: [
     reverseProxy({
-      '/app.js': 'src/main.jsx'
+      targets: {
+        '/app.js':'src/main.jsx'
+      }
     }),
   ]
 });
@@ -50,4 +52,6 @@ export default defineConfig({
 
 ## Examples
 
-**[See demo](examples/demo-reverse-proxy)**
+* [See vite3 demo](../../examples/vite3-reverse-proxy) 
+* [See vite4 demo](../../examples/vite4-reverse-proxy)
+* [See vite5 demo](../../examples/vite5-reverse-proxy)

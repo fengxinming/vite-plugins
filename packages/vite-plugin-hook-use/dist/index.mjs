@@ -3,7 +3,7 @@ import color from "picocolors";
 const s = spinner();
 function createPlugin() {
   const order = /* @__PURE__ */ new Map();
-  const hooks = [
+  const plugin = [
     // 以下钩子在服务器启动时被调用
     "options",
     "buildStart",
@@ -28,16 +28,16 @@ function createPlugin() {
       order.set(hook, (order.get(hook) || 0) + 1);
     };
     return prev;
-  }, {});
-  const lastConfig = hooks.config;
-  hooks.config = function(userConfig, env) {
+  }, { name: "vite:hook-use" });
+  const lastConfig = plugin.config;
+  plugin.config = function(userConfig, env) {
     console.log(color.green(`
 env: ${JSON.stringify(env, null, 2)}
 `));
     lastConfig();
   };
-  const lastCloseBundle = hooks.closeBundle;
-  hooks.closeBundle = function() {
+  const lastCloseBundle = plugin.closeBundle;
+  plugin.closeBundle = function() {
     lastCloseBundle();
     console.log();
     intro(color.inverse(" === Start === "));
@@ -48,7 +48,7 @@ env: ${JSON.stringify(env, null, 2)}
     });
     outro(color.inverse(" === End === "));
   };
-  return hooks;
+  return plugin;
 }
 export {
   createPlugin as default

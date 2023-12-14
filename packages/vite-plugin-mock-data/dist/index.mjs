@@ -1,7 +1,7 @@
 import { extname, isAbsolute, posix, parse } from "node:path";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
-import globby from "globby";
+import { globby } from "globby";
 import getRouter from "find-my-way";
 import sirv from "sirv";
 import { send } from "vite";
@@ -89,7 +89,7 @@ function createPlugin(opts) {
     mockRoutes = [mockRoutes];
   }
   return {
-    name: "vite-plugin-mock-data",
+    name: "vite:mock-data",
     async configureServer(server) {
       if (mockRoutesDir) {
         mockRoutesDir = toAbsolute(mockRoutesDir, cwd);
@@ -118,7 +118,9 @@ function createPlugin(opts) {
       if (mockAssetsDir) {
         serve = sirv(toAbsolute(mockAssetsDir, cwd), sirvOptions(server.config.server.headers));
       }
-      return isAfter ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd) : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
+      if (mockRoutes && mockRoutes.length > 0) {
+        return isAfter ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd) : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
+      }
     }
   };
 }

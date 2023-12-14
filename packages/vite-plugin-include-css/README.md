@@ -24,11 +24,17 @@ export default defineConfig({
   ],
   build: {
     cssCodeSplit: false,
-    lib: {
-      entry: './index.js',
-      name: 'Foo',
-      fileName: 'index'
+    rollupOptions: {
+      output: {
+        format: 'iife'
+      }
     }
   }
 });
 ```
+
+## Examples
+
+* [See vite3 demo](../../examples/vite3-include-css)
+* [See vite4 demo](../../examples/vite4-include-css)
+* [See vite5 demo](../../examples/vite5-include-css)

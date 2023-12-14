@@ -2,14 +2,14 @@
   "name": "vite-plugin-mock-data",
   "version": "4.0.1",
   "description": "Provides a simple way to mock data.",
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.cjs"
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
@@ -33,7 +33,7 @@
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
     "find-my-way": "^7.6.2",
-    "globby": "^11.1.0",
+    "globby": "^13.2.2",
     "sirv": "^2.0.2"
   },
   "files": [

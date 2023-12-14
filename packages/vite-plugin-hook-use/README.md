@@ -29,6 +29,6 @@ export default defineConfig({
 
 ## Examples
 
-**[See vite3 demo](../../examples/vite3-hook-use)**
-**[See vite4 demo](../../examples/vite4-hook-use)**
-**[See vite5 demo](../../examples/vite5-hook-use)**
+* [See vite3 demo](../../examples/vite3-hook-use)
+* [See vite4 demo](../../examples/vite4-hook-use)
+* [See vite5 demo](../../examples/vite5-hook-use)

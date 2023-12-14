@@ -32,16 +32,16 @@ export interface Options {
 }
 ```
 
-* `hook` - Default `'writeBundle'`, vite hook the plugin should use.
-* `enforce` - it may be needed to enforce the order of the plugin or only apply at build time. 
-* `globbyOptions` - [globby options](https://github.com/mrmlnc/fast-glob#options-3)
+* `hook` - Default `'closeBundle'`, vite hook the plugin should use.
+* `enforce` - It may be needed to enforce the order of the plugin or only apply at build time. 
+* `globbyOptions` - [globby options](https://github.com/sindresorhus/globby#options)
 * `cwd` - Default `process.cwd()`, The current working directory in which to search.
 * `targets` - Array of targets to copy. A target is an object with properties:
   * src - Path or glob of what to copy.
   * dest - One or more destinations where to copy.
-  * rename - Change destination file.
+  * rename - Rename the file after copying..
   * flatten - Remove the directory structure of copied files.
-  * transform - Modify file contents.
+  * transform - Transform the file before copying.
 
 
 ## Usage
@@ -73,6 +73,6 @@ export default defineConfig({
 
 ## Examples
 
-**[See vite3 demo](../../examples/vite3-cp)**
-**[See vite4 demo](../../examples/vite4-cp)**
-**[See vite5 demo](../../examples/vite5-cp)**
+* [See vite3 demo](../../examples/vite3-cp)
+* [See vite4 demo](../../examples/vite4-cp)
+* [See vite5 demo](../../examples/vite5-cp)

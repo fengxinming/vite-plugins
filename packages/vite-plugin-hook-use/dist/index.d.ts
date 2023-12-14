@@ -1,4 +1,6 @@
 import { Plugin } from 'vite';
-type allHooks = Omit<Plugin, 'name' | 'enforce' | 'apply'>;
-export default function createPlugin(): allHooks;
-export {};
+/**
+ * Display which hooks are used in your project.
+ * @returns a vite plugin
+ */
+export default function createPlugin(): Plugin;

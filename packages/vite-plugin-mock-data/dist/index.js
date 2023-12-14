@@ -91,11 +91,11 @@ function createPlugin(opts) {
     mockRoutes = [mockRoutes];
   }
   return {
-    name: "vite-plugin-mock-data",
+    name: "vite:mock-data",
     async configureServer(server) {
       if (mockRoutesDir) {
         mockRoutesDir = toAbsolute(mockRoutesDir, cwd);
-        const paths = await globby(`${mockRoutesDir}/**/*.{js,mjs,json}`);
+        const paths = await globby.globby(`${mockRoutesDir}/**/*.{js,mjs,json}`);
         await Promise.all(paths.map((file) => {
           return (async () => {
             let config;
@@ -120,7 +120,9 @@ function createPlugin(opts) {
       if (mockAssetsDir) {
         serve = sirv(toAbsolute(mockAssetsDir, cwd), sirvOptions(server.config.server.headers));
       }
-      return isAfter ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd) : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
+      if (mockRoutes && mockRoutes.length > 0) {
+        return isAfter ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd) : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
+      }
     }
   };
 }

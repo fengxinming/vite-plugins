@@ -5,19 +5,26 @@ import { RollupOptions, OutputOptions } from 'rollup';
 import { UserConfig, ConfigEnv, Alias, Plugin } from 'vite';
 
 export interface BasicOptions {
+  /**
+   * @default `process.cwd()`
+   */
   cwd?: string;
-  cacheDir?: string;
-  externals: Externals;
-}
 
-export interface Externals {
-  [packageName: string]: any;
+  /**
+   * @default `${cwd}/node_modules/.vite_external`
+   */
+  cacheDir?: string;
+
+  externals: Record<string, any>;
 }
 
 export interface Options extends BasicOptions {
   [mode: string]: BasicOptions | any;
 
+  /** development mode options */
   development?: BasicOptions;
+
+  /** production mode options */
   production?: BasicOptions;
 
   devMode?: string;
@@ -40,7 +47,7 @@ function get(obj: {[key: string]: any}, key: string): any {
   return obj;
 }
 
-function rollupOutputGlobals(output: OutputOptions, externals: Externals): void {
+function rollupOutputGlobals(output: OutputOptions, externals: Record<string, any>): void {
   let { globals } = output;
   if (!globals) {
     globals = {};
@@ -49,7 +56,7 @@ function rollupOutputGlobals(output: OutputOptions, externals: Externals): void 
   Object.assign(globals, externals);
 }
 
-function rollupExternal(rollupOptions: RollupOptions, externals: Externals, libNames: any[]): void {
+function rollupExternal(rollupOptions: RollupOptions, externals: Record<string, any>, libNames: any[]): void {
   let { output } = rollupOptions;
   if (!output) {
     output = {};
@@ -94,6 +101,11 @@ function createFakeLib(globalName: string, libPath: string): Promise<void> {
   return outputFile(libPath, cjs, 'utf-8');
 }
 
+/**
+ * provides a way of excluding dependencies from the runtime code and output bundles.
+ * @param opts options
+ * @returns a vite plugin
+ */
 export default function createPlugin(opts: Options): Plugin {
   return {
     name: 'vite:external',
@@ -124,7 +136,7 @@ export default function createPlugin(opts: Options): Plugin {
         cwd = process.cwd();
       }
       if (!cacheDir) {
-        cacheDir = join(cwd, 'node_modules', '.vite', 'vite:external');
+        cacheDir = join(cwd, 'node_modules', '.vite_external');
       }
 
       const libNames: string[] = !externals ? [] : Object.keys(externals);

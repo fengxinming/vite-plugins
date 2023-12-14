@@ -8,14 +8,16 @@ import {
 } from '@clack/prompts';
 import color from 'picocolors';
 
-type allHooks = Omit<Plugin, 'name' | 'enforce' | 'apply'>;
-
 const s = spinner();
 
-export default function createPlugin() {
+/**
+ * Display which hooks are used in your project.
+ * @returns a vite plugin
+ */
+export default function createPlugin(): Plugin {
   const order = new Map<string, number>();
 
-  const hooks: allHooks = [
+  const plugin: Plugin = [
     // 以下钩子在服务器启动时被调用
     'options',
     'buildStart',
@@ -41,16 +43,16 @@ export default function createPlugin() {
       order.set(hook, (order.get(hook) || 0) + 1);
     };
     return prev;
-  }, {});
+  }, { name: 'vite:hook-use' });
 
-  const lastConfig = hooks.config as () => void;
-  hooks.config = function (userConfig, env) {
+  const lastConfig = plugin.config as () => void;
+  plugin.config = function (userConfig, env) {
     console.log(color.green(`\nenv: ${JSON.stringify(env, null, 2)}\n`));
     lastConfig();
   };
 
-  const lastCloseBundle = hooks.closeBundle as () => void;
-  hooks.closeBundle = function () {
+  const lastCloseBundle = plugin.closeBundle as () => void;
+  plugin.closeBundle = function () {
     lastCloseBundle();
 
     console.log();
@@ -63,5 +65,5 @@ export default function createPlugin() {
     outro(color.inverse(' === End === '));
   };
 
-  return hooks;
+  return plugin;
 }

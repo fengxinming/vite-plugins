@@ -24,7 +24,7 @@ function transformName(name, rename) {
   return rename || name;
 }
 function createPlugin(opts) {
-  const { hook = "writeBundle", enforce, targets, cwd = process.cwd(), globbyOptions } = opts || {};
+  const { hook = "closeBundle", enforce, targets, cwd = process.cwd(), globbyOptions } = opts || {};
   const plugin = {
     name: "vite:cp"
   };
@@ -47,7 +47,7 @@ function createPlugin(opts) {
     }
     called = true;
     const startTime = Date.now();
-    await Promise.all(targets.map(({ src, dest, rename, flatten, transform }) => {
+    await Promise.all(targets.map(({ src, dest, rename, flatten, globbyOptions: gOptions, transform }) => {
       dest = toAbsolutePath(dest);
       const cp = makeCopy(transform);
       const glob = (pattern) => {
@@ -56,7 +56,7 @@ function createPlugin(opts) {
           notFlatten = statSync(pattern).isDirectory() && flatten === false;
         } catch (e) {
         }
-        return globby(pattern, globbyOptions).then((matchedPaths) => {
+        return globby(pattern, Object.assign({}, globbyOptions, gOptions)).then((matchedPaths) => {
           if (!matchedPaths.length) {
             throw new Error(`Could not find files with "${pattern}"`);
           }

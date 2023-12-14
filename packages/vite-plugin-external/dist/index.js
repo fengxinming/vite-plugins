@@ -83,7 +83,7 @@ function createPlugin(opts) {
         cwd = process.cwd();
       }
       if (!cacheDir) {
-        cacheDir = node_path.join(cwd, "node_modules", ".vite", "vite:external");
+        cacheDir = node_path.join(cwd, "node_modules", ".vite_external");
       }
       const libNames = !externals ? [] : Object.keys(externals);
       const shouldSkip = !libNames.length;

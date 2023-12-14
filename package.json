@@ -12,7 +12,8 @@
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx,.mjs --fix --ignore-path .eslintignore ./",
     "build": "lerna run build",
     "prepare": "husky install",
-    "link": "lerna link"
+    "link": "lerna link",
+    "docs": "typedoc"
   },
   "repository": {
     "type": "git",
@@ -43,6 +44,7 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "husky": "^8.0.3",
     "lint-staged": "^12.5.0",
-    "react": "^16.14.0"
+    "react": "^16.14.0",
+    "typedoc": "^0.25.4"
   }
 }

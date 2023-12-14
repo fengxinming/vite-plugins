@@ -1,0 +1,10 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "packages/*/src/index.ts"
+  ],
+  "out": "docs",
+  "tsconfig": "./tsconfig.typedoc.json",
+  "htmlLang": "en-US",
+  "readme": "api.md"
+}

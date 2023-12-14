@@ -3,7 +3,7 @@ function closure(code) {
   return `(function(){${code}})();`;
 }
 function tryCatch(code) {
-  return `try{${code}}catch(e){console.error('vite-plugin-inject-css', e);}`;
+  return `try{${code}}catch(e){console.error('vite-plugin-include-css', e);}`;
 }
 function createStyle(jsCode, cssCode, styleId) {
   let newCode = `var elementStyle = document.createElement('style');elementStyle.appendChild(document.createTextNode(${JSON.stringify(cssCode)}));document.head.appendChild(elementStyle);`;
@@ -39,7 +39,7 @@ function createPlugin() {
       for (const key in bundle) {
         const chunk = bundle[key];
         if (chunk && chunk.type === "chunk" && chunk.isEntry) {
-          chunk.code = createStyle(chunk.code, cssCode);
+          chunk.code = createStyle(chunk.code, cssCode, key.replace(/[./]/g, "_"));
           break;
         }
       }

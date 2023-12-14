@@ -153,6 +153,6 @@ fetch('/package.json')
 
 ## Examples
 
-**[See vite3 demo](../../examples/vite3-mock-data)**
-**[See vite4 demo](../../examples/vite4-mock-data)**
-**[See vite5 demo](../../examples/vite5-mock-data)**
+* [See vite3 demo](../../examples/vite3-mock-data) 
+* [See vite4 demo](../../examples/vite4-mock-data)
+* [See vite5 demo](../../examples/vite5-mock-data)

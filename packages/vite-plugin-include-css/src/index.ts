@@ -1,11 +1,10 @@
 import { Plugin } from 'vite';
-
 function closure(code: string): string {
   return `(function(){${code}})();`;
 }
 
 function tryCatch(code: string): string {
-  return `try{${code}}catch(e){console.error('vite-plugin-inject-css', e);}`;
+  return `try{${code}}catch(e){console.error('vite-plugin-include-css', e);}`;
 }
 
 function createStyle(jsCode: string, cssCode: string, styleId?: string): string {
@@ -19,6 +18,10 @@ function createStyle(jsCode: string, cssCode: string, styleId?: string): string 
   return closure(tryCatch(newCode)) + jsCode;
 }
 
+/**
+ * build css into individual js files instead of using css links.
+ * @returns a vite plugin
+ */
 export default function createPlugin(): Plugin {
   return {
     name: 'vite-plugin-include-css',
@@ -55,7 +58,7 @@ export default function createPlugin(): Plugin {
 
         // inject css code to js entry
         if (chunk && chunk.type === 'chunk' && chunk.isEntry) {
-          chunk.code = createStyle(chunk.code, cssCode);
+          chunk.code = createStyle(chunk.code, cssCode, key.replace(/[./]/g, '_'));
           break;
         }
       }
