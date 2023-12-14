@@ -1,0 +1,14 @@
+{
+  "name": "vite5-cp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vite": "^5.0.2",
+    "vite-plugin-cp": "^4.0.2"
+  },
+  "repository": "https://github.com/fengxinming/vite-plugins.git"
+}

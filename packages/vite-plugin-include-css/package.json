@@ -1,45 +1,37 @@
 {
-    "name": "vite-plugin-include-css",
-    "version": "1.0.2",
-    "description": "build css into individual js files instead of using css links.",
-    "main": "./dist/index.cjs",
-    "module": "./dist/index.mjs",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.mjs",
-        "require": "./dist/index.cjs"
-      }
-    },
-    "scripts": {
-      "release": "npm publish",
-      "build": "rollup --config ./rollup.config.mjs"
-    },
-    "repository": {
-      "type": "git",
-      "url": "git+https://github.com/fengxinming/vite-plugins.git",
-      "directory": "packages/vite-plugin-include-css"
-    },
-    "keywords": [
-      "vite-plugin",
-      "vite-plugin-include-css"
-    ],
-    "author": "Jesse Feng <fxm0016@126.com>",
-    "bugs": {
-      "url": "https://github.com/fengxinming/vite-plugins/issues"
-    },
-    "homepage": "https://github.com/fengxinming/vite-plugins#readme",
-    "devDependencies": {
-      "@rollup/plugin-typescript": "^11.1.3",
-      "@types/node": "^20.5.9",
-      "rollup": "^3.28.1",
-      "rollup-plugin-empty": "^1.0.0",
-      "rollup-plugin-filesize": "^10.0.0",
-      "vite": "^4.4.9"
-    },
-    "files": [
-      "dist"
-    ]
+  "name": "vite-plugin-include-css",
+  "version": "4.0.0",
+  "description": "build css into individual js files instead of using css links.",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "release": "npm publish",
+    "build": "vite build",
+    "watch": "vite build --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengxinming/vite-plugins.git",
+    "directory": "packages/vite-plugin-include-css"
+  },
+  "keywords": [
+    "vite-plugin",
+    "vite-plugin-include-css"
+  ],
+  "author": "Jesse Feng <fxm0016@126.com>",
+  "bugs": {
+    "url": "https://github.com/fengxinming/vite-plugins/issues"
+  },
+  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "files": [
+    "dist"
+  ]
 }
-  

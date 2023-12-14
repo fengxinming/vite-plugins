@@ -1,23 +1,44 @@
 import { join, isAbsolute, parse, relative } from 'node:path';
-import { statSync } from 'fs';
-import { readFile, writeFile } from 'fs/promises';
+import { statSync } from 'node:fs';
+import { readFile, writeFile } from 'node:fs/promises';
 import { Plugin } from 'vite';
 import { copy, pathExists, mkdirs } from 'fs-extra';
 import { globby, Options as GlobbyOptions } from 'globby';
 
 export interface Target {
+  /** Path or glob of what to copy. */
   src: string | string[];
+
+  /** One or more destinations where to copy. */
   dest: string;
+
+  /** Rename the file after copying. */
   rename?: string | ((name: string) => string);
+
+  /** Remove the directory structure of copied files. */
   flatten?: boolean;
+
+  /** Options for globby. See more at https://github.com/sindresorhus/globby#options */
+  globbyOptions?: GlobbyOptions;
+
+  /** Transform the file before copying. */
   transform?: (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
 }
 
 export interface Options {
+  /** Default `'closeBundle'`, vite hook the plugin should use. */
   hook?: string;
+
+  /** It may be needed to enforce the order of the plugin or only apply at build time.  */
   enforce?: 'pre' | 'post';
+
+  /** Options for globby. See more at https://github.com/sindresorhus/globby#options */
   globbyOptions?: GlobbyOptions;
+
+  /** Default `process.cwd()`, The current working directory in which to search. */
   cwd?: string;
+
+  /** Array of targets to copy. A target is an object with properties */
   targets: Target[];
 }
 
@@ -48,9 +69,15 @@ function transformName(name: string, rename?: string | ((name: string) => string
   return rename || name;
 }
 
+/**
+ * Copy files and directories.
+ *
+ * @param opts Options
+ * @returns a vite plugin
+ */
 export default function createPlugin(opts: Options): Plugin {
   const {
-    hook = 'writeBundle',
+    hook = 'closeBundle',
     enforce,
     targets,
     cwd = process.cwd(),
@@ -87,7 +114,7 @@ export default function createPlugin(opts: Options): Plugin {
     called = true;
 
     const startTime = Date.now();
-    await Promise.all(targets.map(({ src, dest, rename, flatten, transform }) => {
+    await Promise.all(targets.map(({ src, dest, rename, flatten, globbyOptions: gOptions, transform }) => {
       dest = toAbsolutePath(dest);
       const cp = makeCopy(transform);
 
@@ -98,7 +125,7 @@ export default function createPlugin(opts: Options): Plugin {
         }
         catch (e) {}
 
-        return globby(pattern, globbyOptions).then((matchedPaths) => {
+        return globby(pattern, Object.assign({}, globbyOptions, gOptions)).then((matchedPaths) => {
           if (!matchedPaths.length) {
             throw new Error(`Could not find files with "${pattern}"`);
           }

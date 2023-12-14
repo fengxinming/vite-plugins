@@ -1,0 +1,17 @@
+{
+  "name": "vite5-include-css",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vite": "^5.0.2",
+    "vite-plugin-external": "^4.0.2",
+    "vite-plugin-include-css": "^4.0.0"
+  },
+  "repository": "https://github.com/fengxinming/vite-plugins.git"
+}

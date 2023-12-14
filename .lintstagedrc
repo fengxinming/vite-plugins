@@ -1,0 +1,4 @@
+{
+  "*.ts?(x)": "eslint --fix",
+  "*.js?(x)": "eslint --fix"
+}

@@ -2,9 +2,6 @@
   "extends": [
     "fe",
     "fe/ts",
-    "plugin:jsx-advanced/recommended"
-  ],
-  "rules": {
-    "@typescript-eslint/no-duplicate-imports": "off"
-  }
+    "fe/react"
+  ]
 }

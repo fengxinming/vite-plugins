@@ -16,7 +16,7 @@ npm install vite-plugin-mock-data --save-dev
 ## Options
 
 * `cwd` - Default: `process.cwd()`.
-* `isAfter` - If `true`, these mock routes is matched before internal middlewares are installed.
+* `isAfter` - If `true`, these mock routes is matched after internal middlewares are installed.
 * `mockAssetsDir` - Specify the directory to define mock assets.
 * `mockRouterOptions` - [Initial options of `find-my-way`](https://github.com/delvedor/find-my-way#findmywayoptions)
 * `mockRoutes` - Initial list of mock routes that should be added to the dev server.
@@ -81,10 +81,10 @@ export default defineConfig({
         },
         '/json': {
           handler: { hello: 1 }
-        }
+        },
         '/package.json': {
           file: './package.json'
-        },
+        }
       }
     })
   ]
@@ -139,7 +139,7 @@ module.exports = {
   },
   '/package.json': {
     file: './package.json'
-  },
+  }
 };
 ```
 
@@ -153,4 +153,6 @@ fetch('/package.json')
 
 ## Examples
 
-**[See demo](examples/react)**
+* [See vite3 demo](../../examples/vite3-mock-data) 
+* [See vite4 demo](../../examples/vite4-mock-data)
+* [See vite5 demo](../../examples/vite5-mock-data)

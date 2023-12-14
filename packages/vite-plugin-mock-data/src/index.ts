@@ -1,11 +1,11 @@
 import { isAbsolute, posix, parse, extname } from 'node:path';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
-import globby from 'globby';
+import { OutgoingHttpHeaders } from 'node:http';
+import { globby } from 'globby';
 import getRouter, { Config as SirvConfig, HTTPVersion, HTTPMethod, RouteOptions, Handler } from 'find-my-way';
-import { Plugin, ViteDevServer, send } from 'vite';
 import sirv, { RequestHandler, Options as SirvOptions } from 'sirv';
-import { OutgoingHttpHeaders } from 'http';
+import { Plugin, ViteDevServer, send } from 'vite';
 
 export interface HandleRoute {
   file?: string;
@@ -19,11 +19,28 @@ export interface RouteConfig {
 }
 
 export interface Options {
+  /**
+   * The directory to serve files from.
+   * @default `process.cwd()`
+   */
   cwd?: string;
+
+  /**
+   * If `true`, these mock routes is matched after internal middlewares are installed.
+   * @default `false`
+   */
   isAfter?: boolean;
+
+  /** Specify the directory to define mock assets. */
   mockAssetsDir?: string;
+
+  /** Initial options of `find-my-way`. see more at https://github.com/delvedor/find-my-way#findmywayoptions */
   mockRouterOptions?: SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2>;
+
+  /** Initial list of mock routes that should be added to the dev server. */
   mockRoutes?: RouteConfig | RouteConfig[];
+
+  /** Specify the directory to define mock routes that should be added to the dev server. */
   mockRoutesDir?: string;
 }
 
@@ -83,7 +100,6 @@ function configureServer(
 
         let handler: Handler<HTTPVersion.V1> | undefined;
         let opts: RouteOptions | undefined;
-        let store: any;
 
         if (typeof routeConfig.file === 'string') {
           handler = (req, res) => {
@@ -118,7 +134,7 @@ function configureServer(
             pathname,
             opts || {},
             handler,
-            store
+            routeConfig.store
           );
         }
       });
@@ -135,6 +151,11 @@ function configureServer(
   });
 }
 
+/**
+ * Provides a simple way to mock data.
+ * @param opts Options
+ * @returns a vite plugin
+ */
 export default function createPlugin(opts: Options): Plugin {
   const {
     isAfter,
@@ -157,14 +178,13 @@ export default function createPlugin(opts: Options): Plugin {
   }
 
   return {
-    name: 'vite-plugin-mock-data',
+    name: 'vite:mock-data',
 
     async configureServer(server: ViteDevServer) {
       if (mockRoutesDir) {
         mockRoutesDir = toAbsolute(mockRoutesDir, cwd);
 
         const paths = await globby(`${mockRoutesDir}/**/*.{js,mjs,json}`);
-        console.log(paths);
         await Promise.all(paths.map((file) => {
           return (async () => {
             let config: RouteConfig | undefined;
@@ -194,9 +214,11 @@ export default function createPlugin(opts: Options): Plugin {
         );
       }
 
-      return isAfter
-        ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd as string)
-        : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd as string);
+      if (mockRoutes && mockRoutes.length > 0) {
+        return isAfter
+          ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd as string)
+          : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd as string);
+      }
     }
   };
 }

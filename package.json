@@ -7,8 +7,13 @@
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build:cp": "pnpm --filter vite-plugin-cp build"
+    "deps": "npm run clean && tnpm install && lerna bootstrap",
+    "clean": "tnpm install lerna@6 && lerna clean --yes && rm -rf ./node_modules",
+    "eslint": "eslint --ext .js,.jsx,.ts,.tsx,.mjs --fix --ignore-path .eslintignore ./",
+    "build": "lerna run build",
+    "prepare": "husky install",
+    "link": "lerna link",
+    "docs": "typedoc"
   },
   "repository": {
     "type": "git",
@@ -21,34 +26,25 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
-    "@babel/core": "^7.14.0",
-    "@babel/eslint-parser": "^7.13.14",
-    "@babel/eslint-plugin": "^7.13.16",
-    "@babel/preset-env": "^7.14.7",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "lerna": "^6.6.2",
+    "vite": "^4.5.0"
+  },
+  "engines": {
+    "node": ">=14.18.0"
+  },
+  "devDependencies": {
     "@babel/preset-react": "^7.13.13",
     "@commitlint/cli": "^17.6.1",
     "@commitlint/config-conventional": "^17.6.1",
-    "@typescript-eslint/eslint-plugin": "^6.4.1",
-    "@typescript-eslint/parser": "^6.4.1",
     "eslint": "^8.48.0",
-    "eslint-config-fe": "^1.0.0",
+    "eslint-config-fe": "^2.1.0",
     "eslint-plugin-jsx-advanced": "^1.0.0",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
-    "husky": "^4.3.8",
-    "lint-staged": "^13.2.1",
-    "react": "^16.14.0"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
-    }
-  },
-  "lint-staged": {
-    "*.{js,jsx}": [
-      "eslint --fix",
-      "git add"
-    ]
+    "husky": "^8.0.3",
+    "lint-staged": "^12.5.0",
+    "react": "^16.14.0",
+    "typedoc": "^0.25.4"
   }
 }

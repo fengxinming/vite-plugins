@@ -17,12 +17,13 @@ npm install vite-plugin-external --save-dev
 
 ## Options
 
-* `enforce?: string` - optional: `'pre' | 'post'`
-* `cwd?: string` - default: `process.cwd()`
-* `cacheDir?: string` - default: `join(cwd, 'node_modules', '.vite_external')`
+* `enforce?: string` - Optional: `'pre' | 'post'`
+* `devMode?: string` - Optional: `'development'`
+* `cwd?: string` - Default: `process.cwd()`
+* `cacheDir?: string` - Default: `${cwd}/node_modules/.vite_external`
 * `development?: Options`
 * `production?: Options`
-* `externals: [packageName: string]: any`
+* `externals: Record<string, any>`
 
 ## Usage
 
@@ -82,4 +83,6 @@ export default defineConfig({
 
 ## Examples
 
-**[Demo](examples/react)**
+* [See vite3 demo](../../examples/vite3-external)
+* [See vite4 demo](../../examples/vite4-external)
+* [See vite5 demo](../../examples/vite5-external)
