@@ -33,10 +33,10 @@ mainScript.src = '${path.posix.join(base, url)}';
 document.body.appendChild(mainScript);
     `;
 }
-function createPlugin(options = {}) {
+function createPlugin(options) {
   let devBase = "/";
   let isProduction = true;
-  const { targets, preambleCode } = options;
+  const { targets, preambleCode } = options || {};
   return {
     name: "vite:reverse-proxy",
     config(config) {

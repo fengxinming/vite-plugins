@@ -16,6 +16,7 @@ npm install vite-plugin-include-css --save-dev
 ## Usage
 
 ```js
+import { defineConfig } from 'vite';
 import includeCSS from 'vite-plugin-include-css';
 
 export default defineConfig({
@@ -26,6 +27,9 @@ export default defineConfig({
     cssCodeSplit: false,
     rollupOptions: {
       output: {
+        manualChunks: undefined,
+        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: '[name].js',
         format: 'iife'
       }
     }

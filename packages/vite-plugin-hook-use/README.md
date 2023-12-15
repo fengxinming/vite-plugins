@@ -18,11 +18,12 @@ npm install vite-plugin-hook-use --save-dev
 ## Usage
 
 ```js
-import createPlugin from 'vite-plugin-hook-use';
+import { defineConfig } from 'vite';
+import vitePluginHookUse from 'vite-plugin-hook-use';
 
 export default defineConfig({
   plugins: [
-    createPlugin()
+    vitePluginHookUse()
   ]
 });
 ```

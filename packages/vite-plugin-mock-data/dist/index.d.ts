@@ -31,6 +31,21 @@ export interface Options {
 }
 /**
  * Provides a simple way to mock data.
+ *
+ * @example
+ * ```js
+ * import { defineConfig } from 'vite';
+ * import mockData from 'vite-plugin-mock-data';
+ *
+ * export default defineConfig({
+ *   plugins: [
+ *     mockData({
+ *       mockRoutesDir: './mock'
+ *     })
+ *   ]
+ * });
+ * ```
+ *
  * @param opts Options
  * @returns a vite plugin
  */

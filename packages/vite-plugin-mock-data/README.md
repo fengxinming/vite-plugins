@@ -27,6 +27,7 @@ npm install vite-plugin-mock-data --save-dev
 ### Specify the directory to define mock assets
 
 ```js
+import { defineConfig } from 'vite';
 import mockData from 'vite-plugin-mock-data';
 
 export default defineConfig({
@@ -60,6 +61,7 @@ fetch('/test.json')
 ### add mock routes to the dev server
 
 ```js
+import { defineConfig } from 'vite';
 import mockData from 'vite-plugin-mock-data';
 
 export default defineConfig({
@@ -102,6 +104,7 @@ fetch('/package.json')
 ### Specify the directory to add mock routes to the dev server
 
 ```js
+import { defineConfig } from 'vite';
 import mockData from 'vite-plugin-mock-data';
 
 export default defineConfig({

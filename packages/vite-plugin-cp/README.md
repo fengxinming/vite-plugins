@@ -47,6 +47,7 @@ export interface Options {
 ## Usage
 
 ```js
+import { defineConfig } from 'vite';
 import cp from 'vite-plugin-cp';
 
 export default defineConfig({
