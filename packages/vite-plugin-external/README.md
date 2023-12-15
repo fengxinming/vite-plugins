@@ -32,6 +32,7 @@ npm install vite-plugin-external --save-dev
 ```
 
 ```js
+import { defineConfig } from 'vite';
 import createExternal from 'vite-plugin-external';
 
 export default defineConfig({
@@ -63,6 +64,7 @@ export default defineConfig({
 ```
 
 ```js
+import { defineConfig } from 'vite';
 import createExternal from 'vite-plugin-external';
 
 export default defineConfig({

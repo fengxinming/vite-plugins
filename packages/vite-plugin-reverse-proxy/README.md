@@ -15,6 +15,11 @@ Sometimes we have to redirect scripts on production environment to debug and sol
 npm install vite-plugin-reverse-proxy --save-dev
 ```
 
+## Options
+
+* `targets` - The target script to be proxied.
+* `preambleCode` - The preamble code to be injected before the main script.
+
 ## Usage
 
 Define a proxy configuration on [XSwitch](https://chrome.google.com/webstore/detail/xswitch/idkjhjggpffolpidfkikidcokdkdaogg)
@@ -33,6 +38,7 @@ Define a proxy configuration on [XSwitch](https://chrome.google.com/webstore/det
 Use 'vite-plugin-reverse-proxy' to define proxy rules for web development
 
 ```js
+import { defineConfig } from 'vite';
 import reverseProxy from 'vite-plugin-reverse-proxy';
 
 export default defineConfig({

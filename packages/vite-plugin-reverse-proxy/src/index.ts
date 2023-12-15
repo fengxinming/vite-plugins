@@ -41,20 +41,44 @@ document.body.appendChild(mainScript);
 }
 
 export interface Options {
-  targets?: Record<string, string>;
+  /**
+   * The target script to be proxied.
+   */
+  targets: Record<string, string>;
+
+  /**
+   * The preamble code to be injected before the main script.
+   */
   preambleCode?: string;
 }
 
 /**
  * Makes the script to be served with the text/javascript MIME type instead of module MIME type.
+ *
+ * @example
+ * ```js
+ * import { defineConfig } from 'vite';
+ * import reverseProxy from 'vite-plugin-reverse-proxy';
+ *
+ * export default defineConfig({
+ *   plugins: [
+ *     reverseProxy({
+ *       targets: {
+ *         '/app.js':'src/main.jsx'
+ *       }
+ *     }),
+ *   ]
+ * });
+ * ```
+ *
  * @param options Options
  * @returns a vite plugin
  */
-export default function createPlugin(options: Options = {}) {
+export default function createPlugin(options: Options) {
   let devBase = '/';
   let isProduction = true;
 
-  const { targets, preambleCode } = options;
+  const { targets, preambleCode } = options || {};
 
   return {
     name: 'vite:reverse-proxy',

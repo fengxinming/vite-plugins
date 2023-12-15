@@ -6,5 +6,5 @@
   "out": "docs",
   "tsconfig": "./tsconfig.typedoc.json",
   "htmlLang": "en-US",
-  "readme": "api.md"
+  "readme": "none"
 }
