@@ -149,7 +149,7 @@ export default function createPlugin(opts: Options): Plugin {
         }
         catch (e) {}
 
-        return globby(pattern, Object.assign({}, globbyOptions, gOptions)).then((matchedPaths) => {
+        return globby(pattern, gOptions || globbyOptions).then((matchedPaths) => {
           if (!matchedPaths.length) {
             throw new Error(`Could not find files with "${pattern}"`);
           }

@@ -17,18 +17,30 @@ npm install vite-plugin-cp --save-dev
 
 ```ts
 export interface Target {
-  src: string | string[];
-  dest: string;
-  rename?: string | ((name: string) => string);
-  flatten?: boolean;
-  transform?: (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
+    /** Path or glob of what to copy. */
+    src: string | string[];
+    /** One or more destinations where to copy. */
+    dest: string;
+    /** Rename the file after copying. */
+    rename?: string | ((name: string) => string);
+    /** Remove the directory structure of copied files. */
+    flatten?: boolean;
+    /** Options for globby. See more at https://github.com/sindresorhus/globby#options */
+    globbyOptions?: GlobbyOptions;
+    /** Transform the file before copying. */
+    transform?: (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
 }
 export interface Options {
-  hook?: string;
-  enforce?: 'pre' | 'post';
-  globbyOptions?: GlobbyOptions;
-  cwd?: string;
-  targets: Target[];
+    /** Default `'closeBundle'`, vite hook the plugin should use. */
+    hook?: string;
+    /** It may be needed to enforce the order of the plugin or only apply at build time.  */
+    enforce?: 'pre' | 'post';
+    /** Options for globby. See more at https://github.com/sindresorhus/globby#options */
+    globbyOptions?: GlobbyOptions;
+    /** Default `process.cwd()`, The current working directory in which to search. */
+    cwd?: string;
+    /** Array of targets to copy. A target is an object with properties */
+    targets: Target[];
 }
 ```
 
@@ -37,11 +49,12 @@ export interface Options {
 * `globbyOptions` - [globby options](https://github.com/sindresorhus/globby#options)
 * `cwd` - Default `process.cwd()`, The current working directory in which to search.
 * `targets` - Array of targets to copy. A target is an object with properties:
-  * src - Path or glob of what to copy.
-  * dest - One or more destinations where to copy.
-  * rename - Rename the file after copying..
-  * flatten - Remove the directory structure of copied files.
-  * transform - Transform the file before copying.
+  * `src` - Path or glob of what to copy.
+  * `dest` - One or more destinations where to copy.
+  * `rename` - Rename the file after copying..
+  * `flatten` - Remove the directory structure of copied files.
+  * `transform` - Transform the file before copying.
+  * `globbyOptions` - [globby options](https://github.com/sindresorhus/globby#options)
 
 
 ## Usage
