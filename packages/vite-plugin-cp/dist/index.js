@@ -57,7 +57,7 @@ function createPlugin(opts) {
           notFlatten = node_fs.statSync(pattern).isDirectory() && flatten === false;
         } catch (e) {
         }
-        return globby.globby(pattern, Object.assign({}, globbyOptions, gOptions)).then((matchedPaths) => {
+        return globby.globby(pattern, gOptions || globbyOptions).then((matchedPaths) => {
           if (!matchedPaths.length) {
             throw new Error(`Could not find files with "${pattern}"`);
           }
