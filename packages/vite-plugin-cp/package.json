@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-cp",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "Copy files after building bundles.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -31,6 +31,7 @@
     "vite-plugin-cp"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
