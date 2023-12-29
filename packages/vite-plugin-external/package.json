@@ -28,7 +28,8 @@
   },
   "keywords": [
     "vite-plugin",
-    "vite-plugin-external"
+    "external",
+    "externals"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
