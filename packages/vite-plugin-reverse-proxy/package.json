@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-reverse-proxy",
-  "version": "4.0.2",
+  "version": "4.0.4",
   "description": "Makes the script to be served with the text/javascript MIME type instead of module MIME type.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -11,6 +11,10 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
     }
+  },
+  "engines": {
+    "node": ">=14.18.0",
+    "vite": ">=3.1.0"
   },
   "scripts": {
     "release": "npm publish",
