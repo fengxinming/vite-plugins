@@ -60,6 +60,7 @@ export interface Options extends BasicOptions {
    * The mode to use when resolving `externals`.
    *
    * 当配置的 `mode` 和执行 `vite` 命令时传入的 `--mode` 参数匹配时，将采用了别名加缓存的方式处理 `externals`。
+   * 设置为 `false` 时，可以有效解决外部依赖对象在 `default` 属性。
    *
    * @default 'development'
    */
@@ -167,10 +168,11 @@ import createExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     createExternal({
+      mode: false,
       externals: {
-        externals: {
-          react: '$linkdesign.React'
-        }
+        react: '$linkdesign.React',
+        'react-dom': '$linkdesign.ReactDOM',
+        'prop-types': '$linkdesign.PropTypes'
       }
     })
   ]
