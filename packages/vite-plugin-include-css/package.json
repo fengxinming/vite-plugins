@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-include-css",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "build css into individual js files instead of using css links.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

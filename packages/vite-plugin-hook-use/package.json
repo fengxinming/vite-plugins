@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-hook-use",
-  "version": "4.0.4",
+  "version": "4.0.5",
   "description": "Display which hooks are used in your project.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
