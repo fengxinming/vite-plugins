@@ -6,29 +6,63 @@ import { UserConfig, ConfigEnv, Alias, Plugin } from 'vite';
 
 export interface BasicOptions {
   /**
+   * The current working directory in which to join `cacheDir`.
+   *
+   * 用于拼接 `cacheDir` 的路径。
+   *
    * @default `process.cwd()`
    */
   cwd?: string;
 
   /**
+   * Cache folder
+   *
+   * 缓存文件夹
+   *
    * @default `${cwd}/node_modules/.vite_external`
    */
   cacheDir?: string;
 
+  /**
+   * External dependencies
+   *
+   * 外部依赖
+   */
   externals: Record<string, any>;
 }
 
 export interface Options extends BasicOptions {
+  /**
+   * External dependencies for specific modes
+   *
+   * 针对指定的模式配置外部依赖
+   */
   [mode: string]: BasicOptions | any;
 
-  /** development mode options */
-  development?: BasicOptions;
+  /**
+   * The mode to use when resolving `externals`.
+   *
+   * 当配置的 `mode` 和执行 `vite` 命令时传入的 `--mode` 参数匹配时，将采用了别名加缓存的方式处理 `externals`。
+   *
+   * @default 'development'
+   */
+  mode?: string | false;
 
-  /** production mode options */
-  production?: BasicOptions;
-
-  devMode?: string;
+  /**
+   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+   *
+   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering
+   */
   enforce?: 'pre' | 'post';
+
+  /**
+   * External dependencies format
+   *
+   * 外部依赖以什么格式封装
+   *
+   * @default 'cjs'
+   */
+  format?: 'cjs' | 'es';
 }
 
 function get(obj: {[key: string]: any}, key: string): any {
@@ -95,9 +129,9 @@ function rollupExternal(rollupOptions: RollupOptions, externals: Record<string, 
   }
 }
 
-// compat cjs and esm
-function createFakeLib(globalName: string, libPath: string): Promise<void> {
-  const cjs = `module.exports = ${globalName};`;
+/** compat cjs and esm */
+function createFakeLib(globalName: string, libPath: string, format?: 'cjs' | 'es'): Promise<void> {
+  const cjs = format === 'es' ? `export default ${globalName};` : `module.exports = ${globalName};`;
   return outputFile(libPath, cjs, 'utf-8');
 }
 
@@ -173,10 +207,11 @@ export default function createPlugin(opts: Options): Plugin {
         return;
       }
 
-      const devMode = opts.devMode || 'development';
+      const devMode = opts.mode ?? opts.devMode ?? 'development';
 
       // non development
-      if (mode !== devMode) {
+      if (devMode !== false && devMode !== mode) {
+        // configure rollup
         rollupExternal(
           get(config, 'build.rollupOptions'),
           externals,
@@ -198,13 +233,14 @@ export default function createPlugin(opts: Options): Plugin {
         config.resolve!.alias = alias;
       }
 
+      const { format } = opts;
       await Promise.all(libNames.map((libName) => {
         const libPath = join(cacheDir as string, `${libName.replace(/\//g, '_')}.js`);
         (alias as Alias[]).push({
           find: new RegExp(`^${libName}$`),
           replacement: libPath
         });
-        return createFakeLib(externals[libName], libPath);
+        return createFakeLib(externals[libName], libPath, format);
       }));
     }
   };

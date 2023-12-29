@@ -54,6 +54,8 @@ export interface Options {
    * Default `'closeBundle'`, vite hook the plugin should use.
    *
    * 默认 `'closeBundle'`，调用指定钩子函数时开始复制。
+   *
+   * @default 'closeBundle'
    */
   hook?: string;
 
@@ -75,6 +77,8 @@ export interface Options {
    * Default `process.cwd()`, The current working directory in which to search.
    *
    * 默认 `process.cwd()`，用于拼接 `src` 的路径。
+   *
+   * @default `process.cwd()`
    */
   cwd?: string;
 

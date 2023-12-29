@@ -50,8 +50,8 @@ function rollupExternal(rollupOptions, externals, libNames) {
     };
   }
 }
-function createFakeLib(globalName, libPath) {
-  const cjs = `module.exports = ${globalName};`;
+function createFakeLib(globalName, libPath, format) {
+  const cjs = format === "es" ? `export default ${globalName};` : `module.exports = ${globalName};`;
   return outputFile(libPath, cjs, "utf-8");
 }
 function createPlugin(opts) {
@@ -89,8 +89,8 @@ function createPlugin(opts) {
       if (shouldSkip) {
         return;
       }
-      const devMode = opts.devMode || "development";
-      if (mode !== devMode) {
+      const devMode = opts.mode ?? opts.devMode ?? "development";
+      if (devMode !== false && devMode !== mode) {
         rollupExternal(get(config, "build.rollupOptions"), externals, libNames);
         return;
       }
@@ -102,13 +102,14 @@ function createPlugin(opts) {
         });
         config.resolve.alias = alias;
       }
+      const { format } = opts;
       await Promise.all(libNames.map((libName) => {
         const libPath = join(cacheDir, `${libName.replace(/\//g, "_")}.js`);
         alias.push({
           find: new RegExp(`^${libName}$`),
           replacement: libPath
         });
-        return createFakeLib(externals[libName], libPath);
+        return createFakeLib(externals[libName], libPath, format);
       }));
     }
   };
