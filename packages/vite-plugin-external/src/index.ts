@@ -1,6 +1,6 @@
+import { join, isAbsolute } from 'node:path';
 import { types } from 'node:util';
 import { emptyDirSync, outputFile } from 'fs-extra';
-import { join } from 'node:path';
 import { RollupOptions, OutputOptions } from 'rollup';
 import { UserConfig, ConfigEnv, Alias, Plugin } from 'vite';
 
@@ -199,6 +199,9 @@ export default function createPlugin(opts: Options): Plugin {
       }
       if (!cacheDir) {
         cacheDir = join(cwd, 'node_modules', '.vite_external');
+      }
+      else if (!isAbsolute(cacheDir)) {
+        cacheDir = join(cwd, cacheDir);
       }
 
       const libNames: string[] = !externals ? [] : Object.keys(externals);

@@ -1,6 +1,6 @@
+import { join, isAbsolute } from "node:path";
 import { types } from "node:util";
 import { emptyDirSync, outputFile } from "fs-extra";
-import { join } from "node:path";
 function get(obj, key) {
   if (obj == null) {
     return {};
@@ -83,6 +83,8 @@ function createPlugin(opts) {
       }
       if (!cacheDir) {
         cacheDir = join(cwd, "node_modules", ".vite_external");
+      } else if (!isAbsolute(cacheDir)) {
+        cacheDir = join(cwd, cacheDir);
       }
       const libNames = !externals ? [] : Object.keys(externals);
       const shouldSkip = !libNames.length;

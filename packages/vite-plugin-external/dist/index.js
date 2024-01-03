@@ -1,7 +1,7 @@
 "use strict";
+const node_path = require("node:path");
 const node_util = require("node:util");
 const fsExtra = require("fs-extra");
-const node_path = require("node:path");
 function get(obj, key) {
   if (obj == null) {
     return {};
@@ -84,6 +84,8 @@ function createPlugin(opts) {
       }
       if (!cacheDir) {
         cacheDir = node_path.join(cwd, "node_modules", ".vite_external");
+      } else if (!node_path.isAbsolute(cacheDir)) {
+        cacheDir = node_path.join(cwd, cacheDir);
       }
       const libNames = !externals ? [] : Object.keys(externals);
       const shouldSkip = !libNames.length;
