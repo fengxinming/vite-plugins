@@ -19,6 +19,7 @@
 * [参数介绍](#参数介绍)
 * [使用](#使用)
 * [示例](#示例)
+* [变更记录](#变更记录)
 
 ## 安装
 
@@ -271,3 +272,8 @@ export default defineConfig({
 * [See vite3 demo](../../examples/vite3-external)
 * [See vite4 demo](../../examples/vite4-external)
 * [See vite5 demo](../../examples/vite5-external)
+
+## 变更记录
+
+* 上一个版本的 `mode: false` 的逻辑改用 `interop: 'auto'` 代替
+* 新增字段 `nodeBuiltins` 和 `externalizeDeps` 配置项用于开发node模块后的打包处理

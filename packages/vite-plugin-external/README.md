@@ -19,6 +19,7 @@
 * [Options](#options)
 * [Usage](#usage)
 * [Examples](#examples)
+* [Changelog](#changelog)
 
 ## Installation
 
@@ -262,3 +263,8 @@ export default defineConfig({
 * [See vite3 demo](../../examples/vite3-external)
 * [See vite4 demo](../../examples/vite4-external)
 * [See vite5 demo](../../examples/vite5-external)
+
+## Changelog
+
+* Use `interop: 'auto'` instead of `mode: false`.
+* New configuration options `nodeBuiltins` and `externalizeDeps` have been introduced for handling the bundling process after developing Node.js modules.
