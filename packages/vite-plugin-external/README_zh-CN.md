@@ -7,7 +7,7 @@
 
 > 使用范围 Vite >= 3.1
 
-> 当 `command` 的值为 `’serve’` 时，插件将 `externals` 转换成 `alias` 配置，这样可以直接使用 Vite 的文件加载能力；当 `command` 的值为 `’build’` 时，插件将 `externals` 转换成 `rollupOptions` 配置,包含 `external` 和 `output.globals`。但是可以通过配置 `interop` 为 `’auto’`，统一将 `externals` 转换成 `alias` 配置，打包后的代码中会使用兼容代码导入外部依赖。
+> 当 `command` 的值为 `'serve'` 时，插件将 `externals` 转换成 `alias` 配置，这样可以直接使用 Vite 的文件加载能力；当 `command` 的值为 `'build'` 时，插件将 `externals` 转换成 `rollupOptions` 配置,包含 `external` 和 `output.globals`。但是可以通过配置 `interop` 为 `'auto'`，统一将 `externals` 转换成 `alias` 配置，打包后的代码中会使用兼容代码导入外部依赖。
 
 ![image](https://user-images.githubusercontent.com/6262382/126889725-a5d276ad-913a-4498-8da1-2aa3fd1404ab.png)
 
@@ -27,6 +27,16 @@ npm install vite-plugin-external --save-dev
 ```
 
 ## 参数介绍
+
+* `mode` - `string` 可选，在不同的模式下，可以指定不同的外部依赖。[示例](#在不同的模式下覆盖externals)
+* `interop` - `'auto'` 可选，用于控制读取外部依赖的默认值。[示例](#使用兼容的方式读取外部依赖)
+* `enforce` - `'pre' | 'post'` 可选，强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
+* `nodeBuiltins?` - `boolean` 可选，是否排除 nodejs 内置模块。
+* `externalizeDeps?` - `string[]` 可选，排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
+* `cwd` - `string` 可选，默认值：`process.cwd()`，用于拼接 `cacheDir` 的路径。
+* `cacheDir` - `string` 可选，默认值：`${cwd}/node_modules/.vite_external`，缓存文件夹。
+* `externals` - `Record<string, any>` 可选，配置外部依赖。[示例](#常规使用)
+* `[mode: string]` - `BasicOptions` 可选，针对指定的模式配置外部依赖。
 
 ```ts
 export interface BasicOptions {
@@ -101,19 +111,9 @@ export interface Options extends BasicOptions {
 }
 ```
 
-* `mode` - `string` 可选，在不同的模式下，可以指定不同的外部依赖。[示例](#在不同的模式下覆盖externals)
-* `interop` - `'auto'` 可选，用于控制读取外部依赖的默认值。[示例](#使用兼容的方式读取外部依赖)
-* `enforce` - `'pre' | 'post'` 可选，强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
-* `nodeBuiltins?` - `boolean` 可选，是否排除 nodejs 内置模块。
-* `externalizeDeps?` - `string[]` 可选，排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
-* `cwd` - `string` 可选，默认值：`process.cwd()`，用于拼接 `cacheDir` 的路径。
-* `cacheDir` - `string` 可选，默认值：`${cwd}/node_modules/.vite_external`，缓存文件夹。
-* `externals` - `Record<string, any>` 可选，配置外部依赖。[示例](#常规使用)
-* `[mode: string]` - `BasicOptions` 可选，针对指定的模式配置外部依赖。
-
 ## 使用
 
-### 一般使用
+### 常规使用
 
 index.html
 ```html
@@ -157,7 +157,9 @@ export default defineConfig({
         react: '$linkdesign.React'
       },
       development: {
-        react: 'React'
+        externals: {
+          react: 'React'
+        }
       }
     })
   ]

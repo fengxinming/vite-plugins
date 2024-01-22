@@ -7,7 +7,7 @@
 
 > The `vite-plugin-external` provides a way of excluding dependencies from the runtime code and output bundles. Vite >= 3.1
 
-> When the value of command is 'serve', the plugin will add an `alias` configuration with externals that can directly use Vite's file loading capabilities. When the value of command is 'build', the plugin will add `rollupOptions` configuration that contains `external` and the `output.globals`. However, setting `interop` to `'auto'` unifies the conversion by turning externals into `alias` configurations, and the resulting built code will utilize compatibility code for getting external dependencies.
+> When the value of command is `'serve'`, the plugin will add an `alias` configuration with externals that can directly use Vite's file loading capabilities. When the value of command is `'build'`, the plugin will add `rollupOptions` configuration that contains `external` and the `output.globals`. However, setting `interop` to `'auto'` unifies the conversion by turning externals into `alias` configurations, and the resulting built code will utilize compatibility code for getting external dependencies.
 
 ![image](https://user-images.githubusercontent.com/6262382/126889725-a5d276ad-913a-4498-8da1-2aa3fd1404ab.png)
 
@@ -27,6 +27,16 @@ npm install vite-plugin-external --save-dev
 ```
 
 ## Options
+
+* `mode` - `string` Optional, External dependencies for specific modes. [Example](#override-externals-by-mode)
+* `interop` - `'auto'` Optional, Controls how Rollup handles default. [Example](#interop-option)
+* `enforce` - `'pre' | 'post'` Optional, The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+* `nodeBuiltins?` - `boolean` Optional, Whether to exclude nodejs built-in modules in the bundle. [Example](#exclude-dependencies)
+* `externalizeDeps?` - `string[]` Optional, Specify dependencies to not be included in the bundle. [Example](#exclude-dependencies)
+* `cwd` - `string` Optional, Default: `process.cwd()`, The current working directory in which to join `cacheDir`.
+* `cacheDir` - `string` Optional, Default: `${cwd}/node_modules/.vite_external`, Cache folder.
+* `externals` - `Record<string, any>` Optional, External dependencies. [Example](#normal)
+* `[mode: string]` - `BasicOptions` Optional, External dependencies for specific mode.
 
 ```ts
 export interface BasicOptions {
@@ -92,16 +102,6 @@ export interface Options extends BasicOptions {
 }
 ```
 
-* `mode` - `string` Optional, External dependencies for specific modes. [Example](#override-externals-by-mode)
-* `interop` - `'auto'` Optional, Controls how Rollup handles default. [Example](#interop-option)
-* `enforce` - `'pre' | 'post'` Optional, The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-* `nodeBuiltins?` - `boolean` Optional, Whether to exclude nodejs built-in modules in the bundle
-* `externalizeDeps?` - `string[]` Optional, Specify dependencies to not be included in the bundle. [Example](#exclude-dependencies)
-* `cwd` - `string` Optional, Default: `process.cwd()`, The current working directory in which to join `cacheDir`.
-* `cacheDir` - `string` Optional, Default: `${cwd}/node_modules/.vite_external`, Cache folder.
-* `externals` - `Record<string, any>` Optional, External dependencies. [Example](#normal)
-* `[mode: string]` - `BasicOptions` Optional, External dependencies for specific mode.
-
 ## Usage
 
 ### Normal
@@ -145,12 +145,12 @@ export default defineConfig({
   plugins: [
     createExternal({
       externals: {
-        externals: {
-          react: '$linkdesign.React'
-        }
+        react: '$linkdesign.React'
       },
       development: {
-        react: 'React'
+        externals: {
+          react: 'React'
+        }
       }
     })
   ]
@@ -159,7 +159,7 @@ export default defineConfig({
 
 ### Interop option
 
-> Set `interop` to `auto` to use aliases and caching mechanisms consistently.
+> Set `interop` to `'auto'` to use aliases and caching mechanisms consistently.
 
 index.html
 ```html
@@ -174,7 +174,7 @@ import createExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     createExternal({
-      mode: false,
+      interop: 'auto',
       externals: {
         react: '$linkdesign.React',
         'react-dom': '$linkdesign.ReactDOM',
@@ -187,7 +187,7 @@ export default defineConfig({
 
 #### Output bundle
 
-Set `interop` to `auto`
+Set `interop` to `'auto'`
 
 ```js
 (function() {
