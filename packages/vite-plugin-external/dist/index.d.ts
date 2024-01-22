@@ -21,7 +21,7 @@ export interface BasicOptions {
      *
      * 外部依赖
      */
-    externals: Record<string, any>;
+    externals?: Record<string, any>;
 }
 export interface Options extends BasicOptions {
     /**
@@ -31,14 +31,17 @@ export interface Options extends BasicOptions {
      */
     [mode: string]: BasicOptions | any;
     /**
-     * The mode to use when resolving `externals`.
+     * Different `externals` can be specified in different modes.
      *
-     * 当配置的 `mode` 和执行 `vite` 命令时传入的 `--mode` 参数匹配时，将采用了别名加缓存的方式处理 `externals`。
-     * 设置为 `false` 时，可以有效解决外部依赖对象在 `default` 属性。
-     *
-     * @default 'development'
+     * 在不同的模式下，可以指定不同的外部依赖。
      */
-    mode?: string | false;
+    mode?: string;
+    /**
+     * Controls how Rollup handles default.
+     *
+     * 用于控制读取外部依赖的默认值
+     */
+    interop?: 'auto';
     /**
      * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
      *
@@ -46,13 +49,17 @@ export interface Options extends BasicOptions {
      */
     enforce?: 'pre' | 'post';
     /**
-     * External dependencies format
+     * Whether to exclude nodejs built-in modules in the bundle
      *
-     * 外部依赖以什么格式封装
-     *
-     * @default 'cjs'
+     * 是否排除 nodejs 内置模块
      */
-    format?: 'cjs' | 'es';
+    nodeBuiltins?: boolean;
+    /**
+     * Specify dependencies to not be included in the bundle
+     *
+     * 排除不需要打包的依赖
+     */
+    externalizeDeps?: string[];
 }
 /**
  * provides a way of excluding dependencies from the runtime code and output bundles.

@@ -5,6 +5,7 @@ import vitePluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     vitePluginExternal({
+      interop: 'auto',
       externals: {
         react: '$linkdesign.React',
         'react-dom': '$linkdesign.ReactDOM',

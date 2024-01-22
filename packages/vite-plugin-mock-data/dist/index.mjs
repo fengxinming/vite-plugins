@@ -89,7 +89,7 @@ function createPlugin(opts) {
     mockRoutes = [mockRoutes];
   }
   return {
-    name: "vite:mock-data",
+    name: "vite-plugin-mock-data",
     async configureServer(server) {
       if (mockRoutesDir) {
         mockRoutesDir = toAbsolute(mockRoutesDir, cwd);

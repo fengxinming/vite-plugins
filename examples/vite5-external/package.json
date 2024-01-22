@@ -2,14 +2,26 @@
   "name": "vite5-external",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "module": "./dist/index.mjs",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "dev": "vite",
     "build": "vite build"
   },
   "dependencies": {
     "vite": "^5.0.2",
     "vite-plugin-external": "^4.0.2"
   },
-  "repository": "https://github.com/fengxinming/vite-plugins.git"
+  "repository": "https://github.com/fengxinming/vite-plugins.git",
+  "engines": {
+    "node": ">=14.18.0"
+  },
+  "devDependencies": {
+    "globby": "^13.2.2"
+  }
 }
