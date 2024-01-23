@@ -32,8 +32,8 @@ npm install vite-plugin-external --save-dev
 * `mode` - `string` Optional, External dependencies for specific modes. [Example](#override-externals-by-mode)
 * `interop` - `'auto'` Optional, Controls how Rollup handles default. [Example](#interop-option)
 * `enforce` - `'pre' | 'post'` Optional, The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-* `nodeBuiltins?` - `boolean` Optional, Whether to exclude nodejs built-in modules in the bundle. [Example](#exclude-dependencies)
-* `externalizeDeps?` - `string[]` Optional, Specify dependencies to not be included in the bundle. [Example](#exclude-dependencies)
+* `nodeBuiltins` - `boolean` Optional, Whether to exclude nodejs built-in modules in the bundle. [Example](#exclude-dependencies)
+* `externalizeDeps` - `string[]` Optional, Specify dependencies to not be included in the bundle. [Example](#exclude-dependencies)
 * `cwd` - `string` Optional, Default: `process.cwd()`, The current working directory in which to join `cacheDir`.
 * `cacheDir` - `string` Optional, Default: `${cwd}/node_modules/.vite_external`, Cache folder.
 * `externals` - `Record<string, any>` Optional, External dependencies. [Example](#normal)

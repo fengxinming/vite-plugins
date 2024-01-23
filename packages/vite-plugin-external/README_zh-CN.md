@@ -32,8 +32,8 @@ npm install vite-plugin-external --save-dev
 * `mode` - `string` 可选，在不同的模式下，可以指定不同的外部依赖。[示例](#在不同的模式下覆盖externals)
 * `interop` - `'auto'` 可选，用于控制读取外部依赖的默认值。[示例](#使用兼容的方式读取外部依赖)
 * `enforce` - `'pre' | 'post'` 可选，强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
-* `nodeBuiltins?` - `boolean` 可选，是否排除 nodejs 内置模块。
-* `externalizeDeps?` - `string[]` 可选，排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
+* `nodeBuiltins` - `boolean` 可选，是否排除 nodejs 内置模块。
+* `externalizeDeps` - `string[]` 可选，排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
 * `cwd` - `string` 可选，默认值：`process.cwd()`，用于拼接 `cacheDir` 的路径。
 * `cacheDir` - `string` 可选，默认值：`${cwd}/node_modules/.vite_external`，缓存文件夹。
 * `externals` - `Record<string, any>` 可选，配置外部依赖。[示例](#常规使用)
