@@ -16,6 +16,7 @@ export default defineConfig({
     open: true
   },
   build: {
+    minify: false,
     rollupOptions: {
       output: {
         format: 'iife'

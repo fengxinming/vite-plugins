@@ -28,7 +28,7 @@ function createPlugin() {
       order.set(hook, (order.get(hook) || 0) + 1);
     };
     return prev;
-  }, { name: "vite:hook-use" });
+  }, { name: "vite-plugin-hook-use" });
   const lastConfig = plugin.config;
   plugin.config = function(userConfig, env) {
     console.log(color.green(`

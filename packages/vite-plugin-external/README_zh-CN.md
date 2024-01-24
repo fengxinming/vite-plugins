@@ -5,90 +5,90 @@
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 
-> The `vite-plugin-external` provides a way of excluding dependencies from the runtime code and output bundles. Vite >= 3.1
+> 使用范围 Vite >= 3.1
 
-> When the value of command is `'serve'`, the plugin will add an `alias` configuration with externals that can directly use Vite's file loading capabilities. When the value of command is `'build'`, the plugin will add `rollupOptions` configuration that contains `external` and the `output.globals`. However, setting `interop` to `'auto'` unifies the conversion by turning externals into `alias` configurations, and the resulting built code will utilize compatibility code for getting external dependencies.
+> 当 `command` 的值为 `'serve'` 时，插件将 `externals` 转换成 `alias` 配置，这样可以直接使用 Vite 的文件加载能力；当 `command` 的值为 `'build'` 时，插件将 `externals` 转换成 `rollupOptions` 配置,包含 `external` 和 `output.globals`。但是可以通过配置 `interop` 为 `'auto'`，统一将 `externals` 转换成 `alias` 配置，打包后的代码中会使用兼容代码导入外部依赖。
 
 ![image](https://user-images.githubusercontent.com/6262382/126889725-a5d276ad-913a-4498-8da1-2aa3fd1404ab.png)
 
-## English | [中文](README_zh-CN.md)
+## [English](README.md) | 中文
 
-## Table of contents
+## 目录
 
-* [Installation](#installation)
-* [Options](#options)
-* [Usage](#usage)
-* [Examples](#examples)
-* [Changelog](#changelog)
+* [安装](#安装)
+* [参数介绍](#参数介绍)
+* [使用](#使用)
+* [示例](#示例)
+* [变更记录](#变更记录)
 
-## Installation
+## 安装
 
 ```bash
 npm install vite-plugin-external --save-dev
 ```
 
-## Options
+## 参数介绍
 
 **`mode`**
 * Type: `string`
 * Required: false
 
-External dependencies for specific modes. [See more](#override-externals-by-mode)
+在不同的模式下，可以指定不同的外部依赖。[示例](#在不同的模式下覆盖externals)
 
 **`interop`**
 * Type: `'auto'`
 * Required: false
 
-Controls how Rollup handles default. [See more](#interop-option)
+用于控制读取外部依赖的默认值。[示例](#使用兼容的方式读取外部依赖)
 
 **`enforce`**
 * Type: `'pre' | 'post'`
 * Required: false
 
-The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
 
 **`nodeBuiltins`**
 * Type: `boolean`
 * Required: false
 
-Whether to exclude nodejs built-in modules in the bundle. [See more](#exclude-dependencies)
+是否排除 nodejs 内置模块。
 
 **`externalizeDeps`**
 * Type: `string[]`
 * Required: false
 
-Specify dependencies to not be included in the bundle. [See more](#exclude-dependencies)
+排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
 
 **`cwd`**
 * Type: `string`
 * Required: false
 * Default: `process.cwd()`
 
-The current working directory in which to join `cacheDir`.
+设置当前目录，用于拼接 `cacheDir` 的相对路径。
 
 **`cacheDir`**
 * Type: `string`
 * Required: false
 * Default: `node_modules/.vite_external`
 
-Cache folder.
+缓存文件夹。
 
 **`externals`**
 * Type: `Record<string, any>`
-* Required: false
+* Require: false
 
-External dependencies. [See more](#normal)
+配置外部依赖。[示例](#常规使用)
 
 **`[mode: string]`**
 * Type: `BasicOptions`
-* Required: false
+* Require: false
 
-External dependencies for specific mode.
+针对指定的模式配置外部依赖。
 
 ```ts
 export interface BasicOptions {
   /**
-   * The current working directory in which to search.
+   * The current working directory in which to join `cacheDir`.
    *
    * 用于拼接 `cacheDir` 的路径。
    *
@@ -110,26 +110,30 @@ export interface BasicOptions {
    *
    * 外部依赖
    */
-  externals: Record<string, any>;
+  externals?: Record<string, any>;
 }
 
 export interface Options extends BasicOptions {
   /**
    * External dependencies for specific mode
    *
-   * 针对指定的模式配置外部依赖
+   * 针对指定的模式配置外部依赖。
    */
   [mode: string]: BasicOptions | any;
 
   /**
-   * The mode to use when resolving `externals`.
+   * Different `externals` can be specified in different modes.
    *
-   * 当配置的 `mode` 和执行 `vite` 命令时传入的 `--mode` 参数匹配时，将采用了别名加缓存的方式处理 `externals`。
-   * 设置为 `false` 时，可以有效解决外部依赖对象在 `default` 属性。
-   *
-   * @default 'development'
+   * 在不同的模式下，可以指定不同的外部依赖。
    */
-  mode?: string | false;
+  mode?: string;
+
+  /**
+   * Controls how Rollup handles default.
+   *
+   * 用于控制读取外部依赖的默认值
+   */
+  interop?: 'auto';
 
   /**
    * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
@@ -139,26 +143,31 @@ export interface Options extends BasicOptions {
   enforce?: 'pre' | 'post';
 
   /**
-   * External dependencies format
+   * Whether to exclude nodejs built-in modules in the bundle
    *
-   * 外部依赖以什么格式封装
-   *
-   * @default 'cjs'
+   * 是否排除 nodejs 内置模块
    */
-  format?: 'cjs' | 'es';
+  nodeBuiltins?: boolean;
+
+  /**
+   * Specify dependencies to not be included in the bundle
+   *
+   * 排除不需要打包的依赖
+   */
+  externalizeDeps?: string[];
 }
 ```
 
-## Usage
+## 使用
 
-### Normal
+### 常规使用
 
 index.html
 ```html
 <script src="//cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js"></script>
 ```
 
-vite.config.js
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import createExternal from 'vite-plugin-external';
@@ -174,16 +183,16 @@ export default defineConfig({
 });
 ```
 
-### Override externals by mode
+### 在不同的模式下覆盖externals
 
-> Sometimes the CDN used in the development environment may not be the same as the one used in the production environment. 
+> 有时候可能开发环境和生产环境用到的 cdn 不一致。针对这种情况，可以配置 `development` 和 `production` 两个模式，分别对应开发环境和生产环境的外部依赖。
 
 index.html
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
 
-vite.config.js
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import createExternal from 'vite-plugin-external';
@@ -204,16 +213,16 @@ export default defineConfig({
 });
 ```
 
-### Interop option
+### 使用兼容的方式读取外部依赖
 
-> Set `interop` to `'auto'` to use aliases and caching mechanisms consistently.
+> 设置 `interop` 为 `'auto'` 即统一使用别名和缓存机制。
 
 index.html
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
 
-vite.config.js
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import createExternal from 'vite-plugin-external';
@@ -232,9 +241,9 @@ export default defineConfig({
 });
 ```
 
-#### Output bundle
+#### 对比输出内容
 
-Set `interop` to `'auto'`
+> `interop` 为 `'auto'` 时
 
 ```js
 (function() {
@@ -257,7 +266,7 @@ Set `interop` to `'auto'`
 })();
 ```
 
-Without `interop` option
+> 未配置 `interop`
 
 ```js
 (function(React, ReactDOM) {
@@ -273,9 +282,9 @@ Without `interop` option
 })($linkdesign.React, $linkdesign.ReactDOM);
 ```
 
-### Exclude dependencies
+### 排除不需要打包的依赖
 
-> For example, to exclude dependencies within the node_modules directory, you can use the externalizeDeps option to exclude them. Alternatively, utilize nodeBuiltins to exclude Node.js built-in modules.
+> 比如要排除 `node_modules` 内的依赖，可以使用 `externalizeDeps` 排除它们。或者使用 `nodeBuiltins` 排除 Nodejs 内置模块。
 
 vite.config.mjs
 ```js
@@ -304,14 +313,14 @@ export default defineConfig({
 });
 ```
 
-## Examples
+## 示例
 
 * [See vite3 demo](../../examples/vite3-external)
 * [See vite4 demo](../../examples/vite4-external)
 * [See vite5 demo](../../examples/vite5-external)
 
-## Changelog
+## 变更记录
 
 * 4.3.0
-  * Use `interop: 'auto'` instead of `mode: false`.
-  * New configuration options `nodeBuiltins` and `externalizeDeps` have been introduced for handling the bundling process after developing Node.js modules.
+  * 上一个版本的 `mode: false` 的逻辑改用 `interop: 'auto'` 代替
+  * 新增字段 `nodeBuiltins` 和 `externalizeDeps` 配置项用于开发node模块后的打包处理

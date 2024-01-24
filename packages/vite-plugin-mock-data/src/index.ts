@@ -193,7 +193,7 @@ export default function createPlugin(opts: Options): Plugin {
   }
 
   return {
-    name: 'vite:mock-data',
+    name: 'vite-plugin-mock-data',
 
     async configureServer(server: ViteDevServer) {
       if (mockRoutesDir) {

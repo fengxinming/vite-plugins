@@ -157,7 +157,7 @@ export default function createPlugin(opts: Options): Plugin {
   } = opts || {};
 
   const plugin: Plugin = {
-    name: 'vite:cp'
+    name: 'vite-plugin-cp'
   };
 
   if (enforce) {

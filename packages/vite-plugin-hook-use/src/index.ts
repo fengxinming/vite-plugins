@@ -56,7 +56,7 @@ export default function createPlugin(): Plugin {
       order.set(hook, (order.get(hook) || 0) + 1);
     };
     return prev;
-  }, { name: 'vite:hook-use' });
+  }, { name: 'vite-plugin-hook-use' });
 
   const lastConfig = plugin.config as () => void;
   plugin.config = function (userConfig, env) {

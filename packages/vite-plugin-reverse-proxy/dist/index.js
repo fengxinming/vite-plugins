@@ -38,7 +38,7 @@ function createPlugin(options) {
   let isProduction = true;
   const { targets, preambleCode } = options || {};
   return {
-    name: "vite:reverse-proxy",
+    name: "vite-plugin-reverse-proxy",
     config(config) {
       devBase = config.base;
     },

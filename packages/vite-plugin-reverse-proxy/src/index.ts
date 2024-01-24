@@ -81,7 +81,7 @@ export default function createPlugin(options: Options) {
   const { targets, preambleCode } = options || {};
 
   return {
-    name: 'vite:reverse-proxy',
+    name: 'vite-plugin-reverse-proxy',
 
     config(config) {
       devBase = config.base;

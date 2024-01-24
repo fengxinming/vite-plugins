@@ -27,7 +27,7 @@ function transformName(name, rename) {
 function createPlugin(opts) {
   const { hook = "closeBundle", enforce, targets, cwd = process.cwd(), globbyOptions } = opts || {};
   const plugin = {
-    name: "vite:cp"
+    name: "vite-plugin-cp"
   };
   if (enforce) {
     plugin.enforce = enforce;
