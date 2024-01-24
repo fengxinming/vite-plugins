@@ -29,15 +29,61 @@ npm install vite-plugin-external --save-dev
 
 ## Options
 
-* `mode` - `string` Optional, External dependencies for specific modes. [See more](#override-externals-by-mode)
-* `interop` - `'auto'` Optional, Controls how Rollup handles default. [See more](#interop-option)
-* `enforce` - `'pre' | 'post'` Optional, The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-* `nodeBuiltins` - `boolean` Optional, Whether to exclude nodejs built-in modules in the bundle. [See more](#exclude-dependencies)
-* `externalizeDeps` - `string[]` Optional, Specify dependencies to not be included in the bundle. [See more](#exclude-dependencies)
-* `cwd` - `string` Optional, Default: `process.cwd()`, The current working directory in which to join `cacheDir`.
-* `cacheDir` - `string` Optional, Default: `${cwd}/node_modules/.vite_external`, Cache folder.
-* `externals` - `Record<string, any>` Optional, External dependencies. [See more](#normal)
-* `[mode: string]` - `BasicOptions` Optional, External dependencies for specific mode.
+**`mode`**
+* Type: `string`
+* Required: false
+
+External dependencies for specific modes. [See more](#override-externals-by-mode)
+
+**`interop`**
+* Type: `'auto'`
+* Required: false
+
+Controls how Rollup handles default. [See more](#interop-option)
+
+**`enforce`**
+* Type: `'pre' | 'post'`
+* Required: false
+
+The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+
+**`nodeBuiltins`**
+* Type: `boolean`
+* Required: false
+
+Whether to exclude nodejs built-in modules in the bundle. [See more](#exclude-dependencies)
+
+**`externalizeDeps`**
+* Type: `string[]`
+* Required: false
+
+Specify dependencies to not be included in the bundle. [See more](#exclude-dependencies)
+
+**`cwd`**
+* Type: `string`
+* Required: false
+* Default: `process.cwd()`
+
+The current working directory in which to join `cacheDir`.
+
+**`cacheDir`**
+* Type: `string`
+* Required: false
+* Default: `node_modules/.vite_external`
+
+Cache folder.
+
+**`externals`**
+* Type: `Record<string, any>`
+* Required: false
+
+External dependencies. [See more](#normal)
+
+**`[mode: string]`**
+* Type: `BasicOptions`
+* Required: false
+
+External dependencies for specific mode.
 
 ```ts
 export interface BasicOptions {
@@ -266,5 +312,6 @@ export default defineConfig({
 
 ## Changelog
 
-* Use `interop: 'auto'` instead of `mode: false`.
-* New configuration options `nodeBuiltins` and `externalizeDeps` have been introduced for handling the bundling process after developing Node.js modules.
+* 4.3.0
+  * Use `interop: 'auto'` instead of `mode: false`.
+  * New configuration options `nodeBuiltins` and `externalizeDeps` have been introduced for handling the bundling process after developing Node.js modules.
