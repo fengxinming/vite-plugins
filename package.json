@@ -7,8 +7,8 @@
     "example": "examples"
   },
   "scripts": {
-    "deps": "npm run clean && tnpm install && lerna bootstrap",
-    "clean": "tnpm install lerna@6 && lerna clean --yes && rm -rf ./node_modules",
+    "deps": "npm run clean && pnpm install",
+    "clean": "rm -rf node_modules ./*/*/node_modules",
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx,.mjs --fix --ignore-path .eslintignore ./",
     "build": "lerna run build",
     "prepare": "husky install",

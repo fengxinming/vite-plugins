@@ -1,16 +1,14 @@
 {
-  "name": "vite4-external",
+  "name": "vite3-combine",
   "private": true,
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "vite build"
   },
   "dependencies": {
-    "vite": "^4.5.0",
-    "vite-plugin-external": "workspace:^"
+    "vite": "^3.2.7",
+    "vite-plugin-combine": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }
