@@ -2,8 +2,8 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-combine.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-combine)
 
-> Copy files after building bundles. Vite >= 3.1
-> 打包之后复制文件
+> Dynamically combining files to produce a single master file. Vite >= 3.1
+> 动态组合文件生成一个主文件。
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
@@ -19,7 +19,7 @@ npm install vite-plugin-combine --save-dev
 ```ts
 export interface Options {
   /**
-   * Files prepared for merging.
+   * Files prepared for combining.
    *
    * 准备合并的文件
    */
@@ -125,21 +125,13 @@ export default defineConfig({
     ts(),
     vitePluginCombine({
       src: 'src/*.ts',
-      target: 'src/index.ts', // virtual file index.ts
+      target: 'src/index.ts',
       dts: true
     })
   ],
   build: {
     minify: false,
     lib: {
-      entry: [
-        'src/index.ts', // virtual file index.ts
-        'src/isAsyncFunction.ts',
-        'src/isDate.ts',
-        'src/isError.ts',
-        'src/isNil.ts',
-        'src/isNumber.ts'
-      ],
       formats: ['es'],
       fileName: '[name]'
     }

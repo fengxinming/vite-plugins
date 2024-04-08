@@ -9,9 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@types/node": "^20.12.5",
     "vite": "^5.0.2",
-    "vite-plugin-external": "^4.0.2",
-    "vite-plugin-include-css": "^4.0.0"
+    "vite-plugin-external": "workspace:^",
+    "vite-plugin-include-css": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }

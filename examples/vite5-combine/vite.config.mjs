@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     ts(),
     vitePluginCombine({
-      src: 'src/*.ts',
+      src: ['src/*.ts', '!src/noop.ts'],
       target: 'src/index.ts',
       exports: 'default',
       dts: true
@@ -18,11 +18,7 @@ export default defineConfig({
     lib: {
       entry: [
         'src/index.ts',
-        'src/isAsyncFunction.ts',
-        'src/isDate.ts',
-        'src/isError.ts',
-        'src/isNil.ts',
-        'src/isNumber.ts'
+        'src/noop.ts'
       ],
       formats: ['es'],
       fileName: '[name]'

@@ -12,13 +12,7 @@ export default defineConfig({
   build: {
     minify: false,
     lib: {
-      entry: [
-        'src/index.js',
-        'src/isDate.js',
-        'src/isNil.js',
-        'src/isNumber.js',
-        'src/isObject.js'
-      ],
+      entry: 'src/index.js',
       formats: ['es'],
       fileName: '[name]'
     }

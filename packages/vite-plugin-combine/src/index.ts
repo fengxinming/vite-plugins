@@ -124,6 +124,19 @@ export default function createPlugin(opts: Options): Plugin {
   return {
     name: 'vite-plugin-combine',
 
+    config(config) {
+      const { build } = config;
+      if (!build || (!(build.lib && build.lib.entry) && !build.rollupOptions?.input)) {
+        return {
+          build: {
+            lib: {
+              entry: files.concat(target)
+            }
+          }
+        };
+      }
+    },
+
     resolveId(id) {
       if (id === target) {
         return target;

@@ -17,7 +17,7 @@
     "vite": ">=3.1.0"
   },
   "scripts": {
-    "build": "vite build",
+    "build:lib": "vite build",
     "watch": "vite build --watch",
     "release": "npm publish"
   },

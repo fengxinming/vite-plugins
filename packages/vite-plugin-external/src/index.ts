@@ -74,11 +74,11 @@ export interface Options extends BasicOptions {
    *
    * 排除不需要打包的依赖。
    */
-  externalizeDeps?: string[];
+  externalizeDeps?: Array<string | RegExp>;
 }
 
-function setExternals(rollupOptions: RollupOptions, libNames: any[]) {
-  if (libNames.length === 0) {
+function setExternals(rollupOptions: RollupOptions, externalLibs: any[]) {
+  if (externalLibs.length === 0) {
     return;
   }
 
@@ -86,17 +86,17 @@ function setExternals(rollupOptions: RollupOptions, libNames: any[]) {
 
   // if external indicates
   if (!external) {
-    rollupOptions.external = libNames;
+    rollupOptions.external = externalLibs;
   }
   // string or RegExp or array
   else if (typeof external === 'string' || types.isRegExp(external) || Array.isArray(external)) {
-    rollupOptions.external = libNames.concat(external);
+    rollupOptions.external = externalLibs.concat(external);
   }
   // function
   else if (typeof external === 'function') {
     rollupOptions.external = function (source: string, importer: string | undefined, isResolved: boolean):
     boolean | null | undefined | void {
-      if (libNames.includes(source)) {
+      if (externalLibs.some((libName) => (types.isRegExp(libName) ? libName.test(source) : libName === source))) {
         return true;
       }
       return external(source, importer, isResolved);
@@ -302,7 +302,7 @@ export default function createPlugin(opts: Options): Plugin {
         const { externalizeDeps } = opts;
         if (externalizeDeps) {
           externalLibs = externalLibs.concat(externalizeDeps.map((dep) => {
-            return new RegExp(`^${dep}(?:/.+)*$`);
+            return types.isRegExp(dep) ? dep : new RegExp(`^${dep}(?:/.+)*$`);
           }));
         }
       }

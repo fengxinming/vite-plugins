@@ -15,14 +15,6 @@ export default defineConfig({
   build: {
     minify: false,
     lib: {
-      entry: [
-        'src/index.ts',
-        'src/isAsyncFunction.ts',
-        'src/isDate.ts',
-        'src/isError.ts',
-        'src/isNil.ts',
-        'src/isNumber.ts'
-      ],
       formats: ['es'],
       fileName: '[name]'
     }

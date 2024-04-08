@@ -54,6 +54,19 @@ function createPlugin(opts) {
   let mainCode = "";
   return {
     name: "vite-plugin-combine",
+    config(config) {
+      var _a;
+      const { build } = config;
+      if (!build || !(build.lib && build.lib.entry) && !((_a = build.rollupOptions) == null ? void 0 : _a.input)) {
+        return {
+          build: {
+            lib: {
+              entry: files.concat(target)
+            }
+          }
+        };
+      }
+    },
     resolveId(id) {
       if (id === target) {
         return target;

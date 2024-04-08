@@ -54,7 +54,7 @@ npm install vite-plugin-external --save-dev
 是否排除 nodejs 内置模块。
 
 **`externalizeDeps`**
-* Type: `string[]`
+* Type: `Array<string | RegExp>`
 * Required: false
 
 排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
@@ -154,7 +154,7 @@ export interface Options extends BasicOptions {
    *
    * 排除不需要打包的依赖
    */
-  externalizeDeps?: string[];
+  externalizeDeps?: Array<string | RegExp>;
 }
 ```
 
@@ -324,3 +324,6 @@ export default defineConfig({
 * 4.3.0
   * 上一个版本的 `mode: false` 的逻辑改用 `interop: 'auto'` 代替
   * 新增字段 `nodeBuiltins` 和 `externalizeDeps` 配置项用于开发node模块后的打包处理
+
+* 4.3.1
+  * `externalizeDeps` 配置项支持传入正则表达式
