@@ -54,7 +54,7 @@ The value of enforce can be either `"pre"` or `"post"`, see more at https://vite
 Whether to exclude nodejs built-in modules in the bundle. [See more](#exclude-dependencies)
 
 **`externalizeDeps`**
-* Type: `string[]`
+* Type: `Array<string | RegExp>`
 * Required: false
 
 Specify dependencies to not be included in the bundle. [See more](#exclude-dependencies)
@@ -88,7 +88,7 @@ External dependencies for specific mode.
 ```ts
 export interface BasicOptions {
   /**
-   * The current working directory in which to search.
+   * The current working directory in which to join `cacheDir`.
    *
    * 用于拼接 `cacheDir` 的路径。
    *
@@ -110,26 +110,30 @@ export interface BasicOptions {
    *
    * 外部依赖
    */
-  externals: Record<string, any>;
+  externals?: Record<string, any>;
 }
 
 export interface Options extends BasicOptions {
   /**
    * External dependencies for specific mode
    *
-   * 针对指定的模式配置外部依赖
+   * 针对指定的模式配置外部依赖。
    */
   [mode: string]: BasicOptions | any;
 
   /**
-   * The mode to use when resolving `externals`.
+   * Different `externals` can be specified in different modes.
    *
-   * 当配置的 `mode` 和执行 `vite` 命令时传入的 `--mode` 参数匹配时，将采用了别名加缓存的方式处理 `externals`。
-   * 设置为 `false` 时，可以有效解决外部依赖对象在 `default` 属性。
-   *
-   * @default 'development'
+   * 在不同的模式下，可以指定不同的外部依赖。
    */
-  mode?: string | false;
+  mode?: string;
+
+  /**
+   * Controls how Rollup handles default.
+   *
+   * 用于控制读取外部依赖的默认值
+   */
+  interop?: 'auto';
 
   /**
    * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
@@ -139,13 +143,18 @@ export interface Options extends BasicOptions {
   enforce?: 'pre' | 'post';
 
   /**
-   * External dependencies format
+   * Whether to exclude nodejs built-in modules in the bundle
    *
-   * 外部依赖以什么格式封装
-   *
-   * @default 'cjs'
+   * 是否排除 nodejs 内置模块
    */
-  format?: 'cjs' | 'es';
+  nodeBuiltins?: boolean;
+
+  /**
+   * Specify dependencies to not be included in the bundle
+   *
+   * 排除不需要打包的依赖
+   */
+  externalizeDeps?: Array<string | RegExp>;
 }
 ```
 
@@ -213,7 +222,7 @@ index.html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
 
-vite.config.js
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import createExternal from 'vite-plugin-external';
@@ -228,8 +237,36 @@ export default defineConfig({
         'prop-types': '$linkdesign.PropTypes'
       }
     })
-  ]
+  ],
+  build: {
+    minify: false,
+    rollupOptions: {
+      output: {
+        format: 'iife'
+      }
+    }
+  }
 });
+```
+
+#### Source code
+
+```js
+import { createElement, Fragment, useState } from 'react';
+import ReactDOM from 'react-dom';
+function App() {
+  const [count, setCount] = useState(0);
+  return createElement(Fragment, null,
+    createElement('h1', null, `Count: ${count}`),
+    createElement('button', {
+      onClick: () => setCount((prev) => prev + 1)
+    }, 'Click me')
+  );
+}
+ReactDOM.render(
+  createElement(App),
+  document.getElementById('root')
+);
 ```
 
 #### Output bundle
@@ -243,15 +280,21 @@ Set `interop` to `'auto'`
     return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
   }
   var react = $linkdesign.React;
-  const React = /* @__PURE__ */ getDefaultExportFromCjs(react);
   var reactDom = $linkdesign.ReactDOM;
   const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDom);
   function App() {
     const [count, setCount] = react.useState(0);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+    return react.createElement(
+      react.Fragment,
+      null,
+      react.createElement("h1", null, `Count: ${count}`),
+      react.createElement("button", {
+        onClick: () => setCount((prev) => prev + 1)
+      }, "Click me")
+    );
   }
   ReactDOM.render(
-    /* @__PURE__ */ React.createElement(App, null),
+    react.createElement(App),
     document.getElementById("root")
   );
 })();
@@ -260,14 +303,21 @@ Set `interop` to `'auto'`
 Without `interop` option
 
 ```js
-(function(React, ReactDOM) {
+(function(react, ReactDOM) {
   "use strict";
   function App() {
-    const [count, setCount] = React.useState(0);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+    const [count, setCount] = react.useState(0);
+    return react.createElement(
+      react.Fragment,
+      null,
+      react.createElement("h1", null, `Count: ${count}`),
+      react.createElement("button", {
+        onClick: () => setCount((prev) => prev + 1)
+      }, "Click me")
+    );
   }
   ReactDOM.render(
-    /* @__PURE__ */ React.createElement(App, null),
+    react.createElement(App),
     document.getElementById("root")
   );
 })($linkdesign.React, $linkdesign.ReactDOM);
@@ -275,7 +325,7 @@ Without `interop` option
 
 ### Exclude dependencies
 
-> For example, to exclude dependencies within the node_modules directory, you can use the externalizeDeps option to exclude them. Alternatively, utilize nodeBuiltins to exclude Node.js built-in modules.
+> For example, to exclude dependencies within the `node_modules` directory, you can use the `externalizeDeps` option to exclude them, besides you can use `nodeBuiltins` to exclude Node.js built-in modules.
 
 vite.config.mjs
 ```js
@@ -315,3 +365,6 @@ export default defineConfig({
 * 4.3.0
   * Use `interop: 'auto'` instead of `mode: false`.
   * New configuration options `nodeBuiltins` and `externalizeDeps` have been introduced for handling the bundling process after developing Node.js modules.
+
+* 4.3.1
+  * The `externalizeDeps` configuration option now supports passing in regular expressions.

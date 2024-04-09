@@ -19,13 +19,13 @@ export interface BasicOptions {
     /**
      * External dependencies
      *
-     * 外部依赖
+     * 配置外部依赖
      */
     externals?: Record<string, any>;
 }
 export interface Options extends BasicOptions {
     /**
-     * External dependencies for specific modes
+     * External dependencies for specific mode
      *
      * 针对指定的模式配置外部依赖
      */
@@ -39,27 +39,27 @@ export interface Options extends BasicOptions {
     /**
      * Controls how Rollup handles default.
      *
-     * 用于控制读取外部依赖的默认值
+     * 用于控制读取外部依赖的默认值。
      */
     interop?: 'auto';
     /**
      * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
      *
-     * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering
+     * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
      */
     enforce?: 'pre' | 'post';
     /**
      * Whether to exclude nodejs built-in modules in the bundle
      *
-     * 是否排除 nodejs 内置模块
+     * 是否排除 nodejs 内置模块。
      */
     nodeBuiltins?: boolean;
     /**
      * Specify dependencies to not be included in the bundle
      *
-     * 排除不需要打包的依赖
+     * 排除不需要打包的依赖。
      */
-    externalizeDeps?: string[];
+    externalizeDeps?: Array<string | RegExp>;
 }
 /**
  * provides a way of excluding dependencies from the runtime code and output bundles.

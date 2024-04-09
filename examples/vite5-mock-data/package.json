@@ -8,8 +8,9 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@types/node": "^20.12.5",
     "vite": "^5.0.2",
-    "vite-plugin-mock-data": "^4.0.0"
+    "vite-plugin-mock-data": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }

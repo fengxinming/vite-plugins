@@ -175,18 +175,14 @@ export default function createPlugin(opts: Options): Plugin {
   const {
     isAfter,
     mockRouterOptions,
-    mockAssetsDir
+    mockAssetsDir,
+    cwd = process.cwd()
   } = opts;
   let {
-    cwd,
     mockRoutesDir
   } = opts;
 
   let mockRoutes: RouteConfig[] = (opts.mockRoutes || []) as RouteConfig[];
-
-  if (!cwd) {
-    cwd = process.cwd();
-  }
 
   if (isObject(mockRoutes) && !Array.isArray(mockRoutes)) {
     mockRoutes = [mockRoutes];
@@ -231,8 +227,8 @@ export default function createPlugin(opts: Options): Plugin {
 
       if (mockRoutes && mockRoutes.length > 0) {
         return isAfter
-          ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd as string)
-          : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd as string);
+          ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd)
+          : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
       }
     }
   };

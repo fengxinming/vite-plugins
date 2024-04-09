@@ -7,12 +7,12 @@
     "example": "examples"
   },
   "scripts": {
-    "deps": "npm run clean && tnpm install && lerna bootstrap",
-    "clean": "tnpm install lerna@6 && lerna clean --yes && rm -rf ./node_modules",
+    "deps": "npm run clean && pnpm install",
+    "clean": "rm -rf node_modules ./*/*/node_modules",
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx,.mjs --fix --ignore-path .eslintignore ./",
-    "build": "lerna run build",
+    "build:packages": "pnpm run -r --parallel build:lib",
+    "build:examples": "pnpm run -r --parallel build",
     "prepare": "husky install",
-    "link": "lerna link",
     "docs": "typedoc"
   },
   "repository": {
@@ -27,6 +27,7 @@
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
     "@rollup/plugin-typescript": "^11.1.5",
+    "@types/node": "^14.18.0",
     "lerna": "^6.6.2",
     "vite": "^4.5.0"
   },

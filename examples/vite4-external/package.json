@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "vite": "^4.5.0",
-    "vite-plugin-external": "^4.0.2"
+    "vite-plugin-external": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }

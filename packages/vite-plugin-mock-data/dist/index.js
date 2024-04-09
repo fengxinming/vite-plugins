@@ -81,12 +81,9 @@ function configureServer(server, routerOpts, routes, serve, cwd) {
   });
 }
 function createPlugin(opts) {
-  const { isAfter, mockRouterOptions, mockAssetsDir } = opts;
-  let { cwd, mockRoutesDir } = opts;
+  const { isAfter, mockRouterOptions, mockAssetsDir, cwd = process.cwd() } = opts;
+  let { mockRoutesDir } = opts;
   let mockRoutes = opts.mockRoutes || [];
-  if (!cwd) {
-    cwd = process.cwd();
-  }
   if (isObject(mockRoutes) && !Array.isArray(mockRoutes)) {
     mockRoutes = [mockRoutes];
   }

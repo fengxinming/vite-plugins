@@ -14,8 +14,9 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@types/node": "^20.12.5",
     "vite": "^5.0.2",
-    "vite-plugin-external": "^4.0.2"
+    "vite-plugin-external": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git",
   "engines": {

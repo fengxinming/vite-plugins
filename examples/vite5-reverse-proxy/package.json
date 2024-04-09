@@ -8,9 +8,10 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@types/node": "^20.12.5",
     "vite": "^5.0.2",
-    "vite-plugin-external": "^4.0.2",
-    "vite-plugin-reverse-proxy": "^4.0.0"
+    "vite-plugin-external": "workspace:^",
+    "vite-plugin-reverse-proxy": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }

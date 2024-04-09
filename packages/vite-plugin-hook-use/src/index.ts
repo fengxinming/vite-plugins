@@ -72,7 +72,7 @@ export default function createPlugin(): Plugin {
     intro(color.inverse(' === Start === '));
     order.forEach((count, hookName) => {
       s.start();
-      const text = count === 1 ? hookName : `${hookName}(${count})`;
+      const text = `${hookName}(${count})`;
       s.stop(text);
     });
     outro(color.inverse(' === End === '));

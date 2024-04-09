@@ -4,18 +4,18 @@ const node_fs = require("node:fs");
 const node_module = require("node:module");
 const node_util = require("node:util");
 const fsExtra = require("fs-extra");
-function setExternals(rollupOptions, libNames) {
-  if (libNames.length === 0) {
+function setExternals(rollupOptions, externalLibs) {
+  if (externalLibs.length === 0) {
     return;
   }
   const { external } = rollupOptions;
   if (!external) {
-    rollupOptions.external = libNames;
+    rollupOptions.external = externalLibs;
   } else if (typeof external === "string" || node_util.types.isRegExp(external) || Array.isArray(external)) {
-    rollupOptions.external = libNames.concat(external);
+    rollupOptions.external = externalLibs.concat(external);
   } else if (typeof external === "function") {
     rollupOptions.external = function(source, importer, isResolved) {
-      if (libNames.includes(source)) {
+      if (externalLibs.some((libName) => node_util.types.isRegExp(libName) ? libName.test(source) : libName === source)) {
         return true;
       }
       return external(source, importer, isResolved);
@@ -146,7 +146,7 @@ function createPlugin(opts) {
         const { externalizeDeps } = opts;
         if (externalizeDeps) {
           externalLibs = externalLibs.concat(externalizeDeps.map((dep) => {
-            return new RegExp(`^${dep}(?:/.+)*$`);
+            return node_util.types.isRegExp(dep) ? dep : new RegExp(`^${dep}(?:/.+)*$`);
           }));
         }
       }
@@ -165,10 +165,10 @@ function createPlugin(opts) {
     },
     configResolved(config) {
       if (config.command === "serve") {
-        const viteCacheDir = node_path.join(config.cacheDir, "deps", "_metadata.json");
+        const depCache = node_path.join(config.cacheDir, "deps", "_metadata.json");
         let metadata;
         try {
-          metadata = JSON.parse(node_fs.readFileSync(viteCacheDir, "utf-8"));
+          metadata = JSON.parse(node_fs.readFileSync(depCache, "utf-8"));
         } catch (e) {
         }
         if (metadata && libNames && libNames.length) {
@@ -180,7 +180,7 @@ function createPlugin(opts) {
               }
             });
           }
-          node_fs.writeFileSync(viteCacheDir, JSON.stringify(metadata));
+          node_fs.writeFileSync(depCache, JSON.stringify(metadata));
         }
       }
     }

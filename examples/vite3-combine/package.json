@@ -1,0 +1,14 @@
+{
+  "name": "vite3-combine",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "dependencies": {
+    "vite": "^3.2.7",
+    "vite-plugin-combine": "workspace:^"
+  },
+  "repository": "https://github.com/fengxinming/vite-plugins.git"
+}
