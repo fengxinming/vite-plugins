@@ -6,7 +6,7 @@
 
 ## Plugins
 
-* [vite-plugin-combine](packages/vite-plugin-combine) - Combine dynamic JavaScript files which can be compiled into a library or application.
+* [vite-plugin-combine](packages/vite-plugin-combine) - Combines specified files to produce a single master file.
 * [vite-plugin-cp](packages/vite-plugin-cp) - Copies files to a specified directory.
 * [vite-plugin-external](packages/vite-plugin-external) - Provides a way of excluding dependencies from the runtime code and output bundles.
 * [vite-plugin-hook-use](packages/vite-plugin-hook-use) - Displays the sequence and frequency of vite calling its hook functions.

@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-combine.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-combine)
 
-> Dynamically combining files to produce a single master file. Vite >= 3.1
+> Combines specified files to produce a single master file. Vite >= 3.1
 > 组合文件生成一个主文件。
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
