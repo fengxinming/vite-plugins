@@ -1,12 +1,12 @@
 import { EOL } from 'node:os';
 import { parse, isAbsolute, join, normalize, relative, dirname } from 'node:path';
 import { writeFile } from 'node:fs';
-import camelCase, { Options as CamelCaseOptions } from 'camelcase';
+import camelCase from 'camelcase';
 import { globbySync } from 'globby';
 
 import { Plugin } from 'vite';
 
-export type CamelCase = CamelCaseOptions;
+export type TransformName = (name: string, filePath: string) => string;
 
 export interface Options {
   /**
@@ -23,12 +23,11 @@ export interface Options {
   target: string;
 
   /**
-   * Configuration for the camelcase function.
-   * https://github.com/sindresorhus/camelcase?tab=readme-ov-file#camelcaseinput-options
+   * Transform file names
    *
-   * camelcase 函数的配置
+   * 转换文件名
    */
-  camelCase?: CamelCaseOptions;
+  transformName?: TransformName | boolean;
 
   /**
    * Exported module types.
@@ -40,13 +39,11 @@ export interface Options {
   exports?: 'named' | 'default' | 'none';
 
   /**
-   * Whether to generate `.d.ts` files.
+   * Generate the `index.d.ts` file to a specified path.
    *
-   * 是否生成 d.ts 文件
-   *
-   * @default false
+   * 生成 `index.d.ts` 文件到指定路径
    */
-  dts?: boolean;
+  dts?: string;
 
   /**
    * Current Working Directory.
@@ -56,35 +53,39 @@ export interface Options {
   cwd?: string;
 }
 
-function camelCaseName(file: string, camelCaseOptions?: CamelCaseOptions | false): string {
-  let { name } = parse(file);
-  if (camelCaseOptions !== false) {
-    name = camelCase(name, camelCaseOptions);
+function camelCaseName(name: string, filePath: string, transformName?: TransformName | boolean): string {
+  if (transformName) {
+    switch (typeof transformName) {
+      case 'boolean':
+        return camelCase(name);
+      case 'function':
+        return transformName(name, filePath);
+    }
   }
   return name;
 }
 
-function namedExport(files: string[], target: string, camelCaseOptions?: CamelCaseOptions | false): string {
+function namedExport(files: string[], target: string, transformName?: TransformName | boolean): string {
   return files
     .map((file) => {
       const { name, dir } = parse(file);
-      const exportName = camelCaseName(name, camelCaseOptions);
+      const exportName = camelCaseName(name, file, transformName);
       const relativeDir = relative(dirname(target), dir);
-      return `export { default as ${exportName} } from '${relativeDir ? join(relativeDir, name) : `./${name}`}';`;
+      return `export { default as ${exportName} } from '${`./${join(relativeDir, name)}`}';`;
     })
     .join(EOL);
 }
 
-function defaultExport(files: string[], target: string, camelCaseOptions?: CamelCaseOptions | false): string {
+function defaultExport(files: string[], target: string, transformName?: TransformName | boolean): string {
   const importDeclare: string[] = [];
   const exportDeclare: string[] = [];
   let exportName;
   for (const file of files) {
     const { name, dir } = parse(file);
-    exportName = camelCaseName(name, camelCaseOptions);
+    exportName = camelCaseName(name, file, transformName);
     const relativeDir = relative(dirname(target), dir);
     importDeclare[importDeclare.length]
-     = `import ${exportName} from '${relativeDir ? join(relativeDir, name) : `./${name}`}';`;
+     = `import ${exportName} from '${`./${join(relativeDir, name)}`}';`;
     exportDeclare[exportDeclare.length] = exportName;
   }
   return exportDeclare.length
@@ -107,7 +108,7 @@ export default function createPlugin(opts: Options): Plugin {
     opts = {} as Options;
   }
 
-  const { src, camelCase, dts } = opts;
+  const { src, transformName, dts } = opts;
 
   const exportsType = opts.exports || 'named';
   let target = opts.target || 'index.js';
@@ -151,10 +152,10 @@ export default function createPlugin(opts: Options): Plugin {
 
         switch (exportsType) {
           case 'named':
-            mainCode = namedExport(files, id, camelCase);
+            mainCode = namedExport(files, id, transformName);
             break;
           case 'default': {
-            mainCode = defaultExport(files, id, camelCase);
+            mainCode = defaultExport(files, id, transformName);
             break;
           }
           default:
@@ -164,30 +165,18 @@ export default function createPlugin(opts: Options): Plugin {
       }
     },
 
-    writeBundle(options) {
-      if (dts && ['es', 'esm'].includes(options.format)) {
-        const { dir, file } = options;
-        let p;
-        if (file) {
-          p = dirname(file);
+    closeBundle() {
+      if (dts) {
+        let dtsPath = dts;
+        if (!isAbsolute(dtsPath)) {
+          dtsPath = join(cwd, dtsPath);
         }
-        else if (dir) {
-          p = dir;
-        }
-
-        if (p && !isAbsolute(p)) {
-          p = join(cwd, p);
-        }
-        if (p && mainCode) {
-          const mainObj = parse(target);
-          writeFile(
-            join(p, `${mainObj.name}.d.ts`), mainCode.replace(new RegExp(join(cwd, mainObj.dir), 'g'), '.'),
-            (err) => {
-              if (err) {
-                console.error(err);
-              }
-              mainCode = '';
-            });
+        if (mainCode) {
+          writeFile(join(dtsPath, 'index.d.ts'), mainCode, (err) => {
+            if (err) {
+              console.error(err);
+            }
+          });
         }
       }
     }
