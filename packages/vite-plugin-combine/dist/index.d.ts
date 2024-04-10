@@ -1,6 +1,5 @@
-import { Options as CamelCaseOptions } from 'camelcase';
 import { Plugin } from 'vite';
-export type CamelCase = CamelCaseOptions;
+export type TransformName = (name: string, filePath: string) => string;
 export interface Options {
     /**
      * Files prepared for merging.
@@ -15,12 +14,11 @@ export interface Options {
      */
     target: string;
     /**
-     * Configuration for the camelcase function.
-     * https://github.com/sindresorhus/camelcase?tab=readme-ov-file#camelcaseinput-options
+     * Transform file names
      *
-     * camelcase 函数的配置
+     * 转换文件名
      */
-    camelCase?: CamelCaseOptions;
+    transformName?: TransformName | boolean;
     /**
      * Exported module types.
      *
@@ -30,13 +28,11 @@ export interface Options {
      */
     exports?: 'named' | 'default' | 'none';
     /**
-     * Whether to generate `.d.ts` files.
+     * Generate the `index.d.ts` file to a specified path.
      *
-     * 是否生成 d.ts 文件
-     *
-     * @default false
+     * 生成 `index.d.ts` 文件到指定路径
      */
-    dts?: boolean;
+    dts?: string;
     /**
      * Current Working Directory.
      *
