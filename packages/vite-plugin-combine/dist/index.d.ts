@@ -2,19 +2,29 @@ import { Plugin } from 'vite';
 export type TransformName = (name: string, filePath: string) => string;
 export interface Options {
     /**
-     * Files prepared for merging.
+     * Files prepared for combine.
      *
      * 准备合并的文件
      */
     src: string | string[];
     /**
-     * Merging into the target file.
+     * Combines into the target file.
+     *
+     * 组合到目标文件
      *
      * @default 'index.js'
      */
     target: string;
     /**
-     * Transform file names
+     * Whether to overwrite the target file.
+     *
+     * 是否覆盖目标文件
+     *
+     * @default false
+     */
+    overwrite?: boolean;
+    /**
+     * Transforms file names.
      *
      * 转换文件名
      */
@@ -28,11 +38,11 @@ export interface Options {
      */
     exports?: 'named' | 'default' | 'none';
     /**
-     * Generate the `index.d.ts` file to a specified path.
+     * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
      *
-     * 生成 `index.d.ts` 文件到指定路径
+     * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
      */
-    dts?: string;
+    enforce?: 'pre' | 'post';
     /**
      * Current Working Directory.
      *

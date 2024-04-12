@@ -1,6 +1,6 @@
 import { EOL } from 'node:os';
 import { parse, isAbsolute, join, normalize, relative, dirname } from 'node:path';
-import { writeFile } from 'node:fs';
+import { writeFileSync, existsSync, unlinkSync } from 'node:fs';
 import camelCase from 'camelcase';
 import { globbySync } from 'globby';
 
@@ -10,20 +10,31 @@ export type TransformName = (name: string, filePath: string) => string;
 
 export interface Options {
   /**
-   * Files prepared for merging.
+   * Files prepared for combine.
    *
    * 准备合并的文件
    */
   src: string | string[];
   /**
-   * Merging into the target file.
+   * Combines into the target file.
+   *
+   * 组合到目标文件
    *
    * @default 'index.js'
    */
   target: string;
 
   /**
-   * Transform file names
+   * Whether to overwrite the target file.
+   *
+   * 是否覆盖目标文件
+   *
+   * @default false
+   */
+  overwrite?: boolean;
+
+  /**
+   * Transforms file names.
    *
    * 转换文件名
    */
@@ -39,11 +50,11 @@ export interface Options {
   exports?: 'named' | 'default' | 'none';
 
   /**
-   * Generate the `index.d.ts` file to a specified path.
+   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
    *
-   * 生成 `index.d.ts` 文件到指定路径
+   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
    */
-  dts?: string;
+  enforce?: 'pre' | 'post';
 
   /**
    * Current Working Directory.
@@ -73,7 +84,8 @@ function namedExport(files: string[], target: string, transformName?: TransformN
       const relativeDir = relative(dirname(target), dir);
       return `export { default as ${exportName} } from '${`./${join(relativeDir, name)}`}';`;
     })
-    .join(EOL);
+    .join(EOL)
+    .concat(EOL);
 }
 
 function defaultExport(files: string[], target: string, transformName?: TransformName | boolean): string {
@@ -108,24 +120,51 @@ export default function createPlugin(opts: Options): Plugin {
     opts = {} as Options;
   }
 
-  const { src, transformName, dts } = opts;
+  const { src, transformName, overwrite } = opts;
 
+  const enforce = opts.enforce || 'pre';
+  // 导出类型
   const exportsType = opts.exports || 'named';
-  let target = opts.target || 'index.js';
+  // 组合到目标文件中
+  const target = opts.target || 'index.js';
+  // 当前工作目录
   const cwd = opts.cwd || process.cwd();
 
-  if (!isAbsolute(target)) {
-    target = join(cwd, target);
+  // target 绝对地址
+  let absTarget = target;
+
+  if (!isAbsolute(absTarget)) {
+    absTarget = join(cwd, absTarget);
   }
-  target = normalize(target);
+  absTarget = normalize(absTarget);
+  if (!overwrite && existsSync(absTarget)) {
+    throw new Error(`'${absTarget}' exists.`);
+  }
+
+  const plugin: Plugin = {
+    name: 'vite-plugin-combine',
+    enforce
+  };
 
   const files = globbySync(src, { cwd, absolute: true });
-  let mainCode = '';
 
-  return {
-    name: 'vite-plugin-combine',
+  if (files.length) {
+    let mainCode = '';
+    switch (exportsType) {
+      case 'named':
+        mainCode = namedExport(files, absTarget, transformName);
+        break;
+      case 'default': {
+        mainCode = defaultExport(files, absTarget, transformName);
+        break;
+      }
+      default:
+        mainCode = noneExport(files, absTarget);
+    }
 
-    config(config) {
+    writeFileSync(absTarget, mainCode, 'utf-8');
+
+    plugin.config = function (config) {
       const { build } = config;
       if (!build || (!(build.lib && build.lib.entry) && !build.rollupOptions?.input)) {
         return {
@@ -136,49 +175,23 @@ export default function createPlugin(opts: Options): Plugin {
           }
         };
       }
-    },
+    };
 
-    resolveId(id) {
-      if (id === target) {
-        return target;
+    plugin.resolveId = function (id) {
+      if (id === target || id === absTarget) {
+        return absTarget;
       }
-    },
+    };
 
-    load(id) {
-      if (id === target) {
-        if (!files.length) {
-          return '';
+    if (!overwrite) {
+      plugin.closeBundle = function () {
+        try {
+          unlinkSync(absTarget);
         }
-
-        switch (exportsType) {
-          case 'named':
-            mainCode = namedExport(files, id, transformName);
-            break;
-          case 'default': {
-            mainCode = defaultExport(files, id, transformName);
-            break;
-          }
-          default:
-            mainCode = noneExport(files, id);
-        }
-        return mainCode;
-      }
-    },
-
-    closeBundle() {
-      if (dts) {
-        let dtsPath = dts;
-        if (!isAbsolute(dtsPath)) {
-          dtsPath = join(cwd, dtsPath);
-        }
-        if (mainCode) {
-          writeFile(join(dtsPath, 'index.d.ts'), mainCode, (err) => {
-            if (err) {
-              console.error(err);
-            }
-          });
-        }
-      }
+        catch (e) {}
+      };
     }
-  };
+  }
+
+  return plugin;
 }

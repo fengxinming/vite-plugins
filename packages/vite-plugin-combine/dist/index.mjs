@@ -1,6 +1,6 @@
 import { EOL } from "node:os";
 import { isAbsolute, join, normalize, parse, relative, dirname } from "node:path";
-import { writeFile } from "node:fs";
+import { existsSync, writeFileSync, unlinkSync } from "node:fs";
 import camelCase from "camelcase";
 import { globbySync } from "globby";
 function camelCaseName(name, filePath, transformName) {
@@ -20,7 +20,7 @@ function namedExport(files, target, transformName) {
     const exportName = camelCaseName(name, file, transformName);
     const relativeDir = relative(dirname(target), dir);
     return `export { default as ${exportName} } from '${`./${join(relativeDir, name)}`}';`;
-  }).join(EOL);
+  }).join(EOL).concat(EOL);
 }
 function defaultExport(files, target, transformName) {
   const importDeclare = [];
@@ -46,19 +46,39 @@ function createPlugin(opts) {
   if (!opts) {
     opts = {};
   }
-  const { src, transformName, dts } = opts;
+  const { src, transformName, overwrite } = opts;
+  const enforce = opts.enforce || "pre";
   const exportsType = opts.exports || "named";
-  let target = opts.target || "index.js";
+  const target = opts.target || "index.js";
   const cwd = opts.cwd || process.cwd();
-  if (!isAbsolute(target)) {
-    target = join(cwd, target);
+  let absTarget = target;
+  if (!isAbsolute(absTarget)) {
+    absTarget = join(cwd, absTarget);
   }
-  target = normalize(target);
-  const files = globbySync(src, { cwd, absolute: true });
-  let mainCode = "";
-  return {
+  absTarget = normalize(absTarget);
+  if (!overwrite && existsSync(absTarget)) {
+    throw new Error(`'${absTarget}' exists.`);
+  }
+  const plugin = {
     name: "vite-plugin-combine",
-    config(config) {
+    enforce
+  };
+  const files = globbySync(src, { cwd, absolute: true });
+  if (files.length) {
+    let mainCode = "";
+    switch (exportsType) {
+      case "named":
+        mainCode = namedExport(files, absTarget, transformName);
+        break;
+      case "default": {
+        mainCode = defaultExport(files, absTarget, transformName);
+        break;
+      }
+      default:
+        mainCode = noneExport(files, absTarget);
+    }
+    writeFileSync(absTarget, mainCode, "utf-8");
+    plugin.config = function(config) {
       var _a;
       const { build } = config;
       if (!build || !(build.lib && build.lib.entry) && !((_a = build.rollupOptions) == null ? void 0 : _a.input)) {
@@ -70,47 +90,22 @@ function createPlugin(opts) {
           }
         };
       }
-    },
-    resolveId(id) {
-      if (id === target) {
-        return target;
+    };
+    plugin.resolveId = function(id) {
+      if (id === target || id === absTarget) {
+        return absTarget;
       }
-    },
-    load(id) {
-      if (id === target) {
-        if (!files.length) {
-          return "";
+    };
+    if (!overwrite) {
+      plugin.closeBundle = function() {
+        try {
+          unlinkSync(absTarget);
+        } catch (e) {
         }
-        switch (exportsType) {
-          case "named":
-            mainCode = namedExport(files, id, transformName);
-            break;
-          case "default": {
-            mainCode = defaultExport(files, id, transformName);
-            break;
-          }
-          default:
-            mainCode = noneExport(files, id);
-        }
-        return mainCode;
-      }
-    },
-    closeBundle() {
-      if (dts) {
-        let dtsPath = dts;
-        if (!isAbsolute(dtsPath)) {
-          dtsPath = join(cwd, dtsPath);
-        }
-        if (mainCode) {
-          writeFile(join(dtsPath, "index.d.ts"), mainCode, (err) => {
-            if (err) {
-              console.error(err);
-            }
-          });
-        }
-      }
+      };
     }
-  };
+  }
+  return plugin;
 }
 export {
   createPlugin as default
