@@ -2,13 +2,13 @@ import { Plugin } from 'vite';
 export type TransformName = (name: string, filePath: string) => string;
 export interface Options {
     /**
-     * Files prepared for merging.
+     * Files prepared for combine.
      *
      * 准备合并的文件
      */
     src: string | string[];
     /**
-     * combine into the target file.
+     * Combines into the target file.
      *
      * 组合到目标文件
      *
@@ -24,7 +24,7 @@ export interface Options {
      */
     overwrite?: boolean;
     /**
-     * Transform file names.
+     * Transforms file names.
      *
      * 转换文件名
      */
