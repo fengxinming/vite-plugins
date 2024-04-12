@@ -19,25 +19,35 @@ npm install vite-plugin-combine --save-dev
 ```ts
 export interface Options {
   /**
-   * Files prepared for combining.
+   * Files prepared for combine.
    *
    * 准备合并的文件
    */
   src: string | string[];
   /**
-   * Merging into the target file.
+   * Combines into the target file.
+   *
+   * 组合到目标文件
    *
    * @default 'index.js'
    */
   target: string;
 
   /**
-   * Configuration for the camelcase function.
-   * https://github.com/sindresorhus/camelcase?tab=readme-ov-file#camelcaseinput-options
+   * Whether to overwrite the target file.
    *
-   * camelcase 函数的配置
+   * 是否覆盖目标文件
+   *
+   * @default false
    */
-  camelCase?: CamelCaseOptions;
+  overwrite?: boolean;
+
+  /**
+   * Transforms file names.
+   *
+   * 转换文件名
+   */
+  transformName?: TransformName | boolean;
 
   /**
    * Exported module types.
@@ -49,13 +59,11 @@ export interface Options {
   exports?: 'named' | 'default' | 'none';
 
   /**
-   * Whether to generate `.d.ts` files.
+   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
    *
-   * 是否生成 d.ts 文件
-   *
-   * @default false
+   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
    */
-  dts?: boolean;
+  enforce?: 'pre' | 'post';
 
   /**
    * Current Working Directory.
@@ -73,16 +81,23 @@ export interface Options {
 Files prepared for merging.
 
 **`target`**
-* Type: `'index.js'`
-* Required: string
+* Type: `string`
+* Required: true
+* Default: `'index.js'`
 
 Merging into the target file.
 
-**`camelCase`**
-* Type: `CamelCase`
+**`overwrite`**
+* Type: `boolean`
 * Required: false
 
-Configuration for the camelcase function. https://github.com/sindresorhus/camelcase?tab=readme-ov-file#camelcaseinput-options
+Whether to overwrite the target file.
+
+**`transformName`**
+* Type: `TransformName | boolean`
+* Required: false
+
+Transform file names.
 
 **`exports`**
 * Type: `'named' | 'default' | 'none'`
@@ -96,12 +111,6 @@ Exported module types.
 * Default: `process.cwd()`
 
 Current Working Directory.
-
-**`dts`**
-* Type: `boolean`
-* Required: false
-
-Whether to generate `.d.ts` files.
 
 ## Usage
 
@@ -122,12 +131,11 @@ import vitePluginCombine from 'vite-plugin-combine';
 
 export default defineConfig({
   plugins: [
-    ts(),
     vitePluginCombine({
       src: 'src/*.ts',
-      target: 'src/index.ts',
-      dts: true
-    })
+      target: 'src/index.ts'
+    }),
+    ts()
   ],
   build: {
     minify: false,

@@ -5,12 +5,11 @@ import vitePluginCombine from 'vite-plugin-combine';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    ts(),
     vitePluginCombine({
       src: 'src/*.ts',
-      target: 'src/index.ts',
-      dts: true
-    })
+      target: 'src/index.ts'
+    }),
+    ts()
   ],
   build: {
     minify: false,

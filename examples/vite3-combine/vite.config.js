@@ -5,8 +5,9 @@ import vitePluginCombine from 'vite-plugin-combine';
 export default defineConfig({
   plugins: [
     vitePluginCombine({
-      src: 'src/*.js',
-      target: 'src/index.js'
+      src: ['src/*.js', '!src/index.js'],
+      target: 'src/index.js',
+      overwrite: true
     })
   ],
   build: {

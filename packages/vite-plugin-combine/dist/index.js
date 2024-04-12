@@ -21,7 +21,7 @@ function namedExport(files, target, transformName) {
     const exportName = camelCaseName(name, file, transformName);
     const relativeDir = node_path.relative(node_path.dirname(target), dir);
     return `export { default as ${exportName} } from '${`./${node_path.join(relativeDir, name)}`}';`;
-  }).join(node_os.EOL);
+  }).join(node_os.EOL).concat(node_os.EOL);
 }
 function defaultExport(files, target, transformName) {
   const importDeclare = [];
@@ -47,19 +47,39 @@ function createPlugin(opts) {
   if (!opts) {
     opts = {};
   }
-  const { src, transformName, dts } = opts;
+  const { src, transformName, overwrite } = opts;
+  const enforce = opts.enforce || "pre";
   const exportsType = opts.exports || "named";
-  let target = opts.target || "index.js";
+  const target = opts.target || "index.js";
   const cwd = opts.cwd || process.cwd();
-  if (!node_path.isAbsolute(target)) {
-    target = node_path.join(cwd, target);
+  let absTarget = target;
+  if (!node_path.isAbsolute(absTarget)) {
+    absTarget = node_path.join(cwd, absTarget);
   }
-  target = node_path.normalize(target);
-  const files = globby.globbySync(src, { cwd, absolute: true });
-  let mainCode = "";
-  return {
+  absTarget = node_path.normalize(absTarget);
+  if (!overwrite && node_fs.existsSync(absTarget)) {
+    throw new Error(`'${absTarget}' exists.`);
+  }
+  const plugin = {
     name: "vite-plugin-combine",
-    config(config) {
+    enforce
+  };
+  const files = globby.globbySync(src, { cwd, absolute: true });
+  if (files.length) {
+    let mainCode = "";
+    switch (exportsType) {
+      case "named":
+        mainCode = namedExport(files, absTarget, transformName);
+        break;
+      case "default": {
+        mainCode = defaultExport(files, absTarget, transformName);
+        break;
+      }
+      default:
+        mainCode = noneExport(files, absTarget);
+    }
+    node_fs.writeFileSync(absTarget, mainCode, "utf-8");
+    plugin.config = function(config) {
       var _a;
       const { build } = config;
       if (!build || !(build.lib && build.lib.entry) && !((_a = build.rollupOptions) == null ? void 0 : _a.input)) {
@@ -71,46 +91,21 @@ function createPlugin(opts) {
           }
         };
       }
-    },
-    resolveId(id) {
-      if (id === target) {
-        return target;
+    };
+    plugin.resolveId = function(id) {
+      if (id === target || id === absTarget) {
+        return absTarget;
       }
-    },
-    load(id) {
-      if (id === target) {
-        if (!files.length) {
-          return "";
+    };
+    if (!overwrite) {
+      plugin.closeBundle = function() {
+        try {
+          node_fs.unlinkSync(absTarget);
+        } catch (e) {
         }
-        switch (exportsType) {
-          case "named":
-            mainCode = namedExport(files, id, transformName);
-            break;
-          case "default": {
-            mainCode = defaultExport(files, id, transformName);
-            break;
-          }
-          default:
-            mainCode = noneExport(files, id);
-        }
-        return mainCode;
-      }
-    },
-    closeBundle() {
-      if (dts) {
-        let dtsPath = dts;
-        if (!node_path.isAbsolute(dtsPath)) {
-          dtsPath = node_path.join(cwd, dtsPath);
-        }
-        if (mainCode) {
-          node_fs.writeFile(node_path.join(dtsPath, "index.d.ts"), mainCode, (err) => {
-            if (err) {
-              console.error(err);
-            }
-          });
-        }
-      }
+      };
     }
-  };
+  }
+  return plugin;
 }
 module.exports = createPlugin;
