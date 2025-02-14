@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [main]
 
-# jobs:
+jobs:
 #   publish-combine:
 #     runs-on: ubuntu-latest
 #     steps:
