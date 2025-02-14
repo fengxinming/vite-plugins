@@ -1,7 +1,7 @@
 {
-  "name": "vite-plugin-combine",
-  "version": "4.0.3",
-  "description": "Combines specified files to produce a single master file.",
+  "name": "vite-plugin-separate-importer",
+  "version": "5.0.0",
+  "description": "Separate importers from your code.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
   "main": "./dist/index.js",
@@ -19,16 +19,17 @@
   "scripts": {
     "build:lib": "vite build",
     "watch": "vite build --watch",
+    "prepublishOnly": "npm run build:lib",
     "release": "npm publish"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fengxinming/vite-plugins.git",
-    "directory": "packages/vite-plugin-combine"
+    "directory": "packages/vite-plugin-separate-importer"
   },
   "keywords": [
     "vite-plugin",
-    "vite-plugin-combine"
+    "vite-plugin-separate-importer"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
@@ -39,6 +40,7 @@
   "dependencies": {
     "@types/node": "^14.18.63",
     "camelcase": "^7.0.1",
+    "es-module-lexer": "^1.5.0",
     "globby": "^13.2.2"
   },
   "files": [

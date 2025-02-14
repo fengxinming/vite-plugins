@@ -115,6 +115,26 @@ function noneExport(files: string[], target: string) {
     .join(EOL);
 }
 
+function onExit(listener: (...args: any[]) => any): void {
+  process.on('exit', listener);
+  process.on('SIGHUP', listener);
+  process.on('SIGINT', listener);
+  process.on('SIGTERM', listener);
+  process.on('SIGBREAK', listener);
+  process.on('uncaughtException', listener);
+  process.on('unhandledRejection', listener);
+}
+
+function offExit(listener: (...args: any[]) => any): void {
+  process.off('exit', listener);
+  process.off('SIGHUP', listener);
+  process.off('SIGINT', listener);
+  process.off('SIGTERM', listener);
+  process.off('SIGBREAK', listener);
+  process.off('uncaughtException', listener);
+  process.off('unhandledRejection', listener);
+}
+
 export default function createPlugin(opts: Options): Plugin {
   if (!opts) {
     opts = {} as Options;
@@ -184,11 +204,18 @@ export default function createPlugin(opts: Options): Plugin {
     };
 
     if (!overwrite) {
-      plugin.closeBundle = function () {
+      const clean = () => {
         try {
-          unlinkSync(absTarget);
+          if (existsSync(absTarget)) {
+            unlinkSync(absTarget);
+          }
+          offExit(clean);
         }
         catch (e) {}
+      };
+      onExit(clean);
+      plugin.closeBundle = function () {
+        clean();
       };
     }
   }
