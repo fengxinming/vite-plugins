@@ -155,6 +155,11 @@ export interface Options extends BasicOptions {
    * 排除不需要打包的依赖
    */
   externalizeDeps?: Array<string | RegExp>;
+
+  /**
+   * Fix https://github.com/rollup/rollup/issues/3188
+   */
+  externalGlobals?: (globals: Record<string, any>) => Plugin;
 }
 ```
 
@@ -313,17 +318,53 @@ export default defineConfig({
 });
 ```
 
+### 解决 IIFE 格式的打包问题
+
+> 引入插件 `rollup-plugin-external-globals`，具体问题参阅 https://github.com/rollup/rollup/issues/3188
+
+vite.config.mjs
+```js
+import { defineConfig } from 'vite';
+import vitePluginExternal from 'vite-plugin-external';
+import externalGlobals from 'rollup-plugin-external-globals';
+import { globbySync } from 'globby';
+
+export default defineConfig({
+  plugins: [
+    vitePluginExternal({
+      nodeBuiltins: true,
+      externalGlobals
+    })
+  ],
+  build: {
+    outDir: 'dist/external',
+    minify: false,
+    lib: {
+      formats: ['es', 'cjs'],
+      entry: globbySync('src/*.js'),
+      fileName(format, entryName) {
+        return entryName + (format === 'es' ? '.mjs' : '.js');
+      }
+    }
+  }
+});
+```
+
 ## 示例
 
-* [See vite3 demo](../../examples/vite3-external)
-* [See vite4 demo](../../examples/vite4-external)
-* [See vite5 demo](../../examples/vite5-external)
+* [See vite3 demo](../../examples/vite3-demo)
+* [See vite4 demo](../../examples/vite4-demo)
+* [See vite5 demo](../../examples/vite5-demo)
+* [See vite6 demo](../../examples/vite6-demo)
 
 ## 变更记录
+
+* 6.0.0
+  * `externalGlobals` fix https://github.com/rollup/rollup/issues/3188
+
+* 4.3.1
+  * `externalizeDeps` 配置项支持传入正则表达式
 
 * 4.3.0
   * 上一个版本的 `mode: false` 的逻辑改用 `interop: 'auto'` 代替
   * 新增字段 `nodeBuiltins` 和 `externalizeDeps` 配置项用于开发node模块后的打包处理
-
-* 4.3.1
-  * `externalizeDeps` 配置项支持传入正则表达式

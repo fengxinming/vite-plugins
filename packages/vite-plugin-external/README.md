@@ -155,6 +155,11 @@ export interface Options extends BasicOptions {
    * 排除不需要打包的依赖
    */
   externalizeDeps?: Array<string | RegExp>;
+
+  /**
+   * Fix https://github.com/rollup/rollup/issues/3188
+   */
+  externalGlobals?: (globals: Record<string, any>) => Plugin;
 }
 ```
 
@@ -354,6 +359,38 @@ export default defineConfig({
 });
 ```
 
+### fix rollup#3188
+
+> See more https://github.com/rollup/rollup/issues/3188
+
+vite.config.mjs
+```js
+import { defineConfig } from 'vite';
+import vitePluginExternal from 'vite-plugin-external';
+import externalGlobals from 'rollup-plugin-external-globals';
+import { globbySync } from 'globby';
+
+export default defineConfig({
+  plugins: [
+    vitePluginExternal({
+      nodeBuiltins: true,
+      externalGlobals
+    })
+  ],
+  build: {
+    outDir: 'dist/external',
+    minify: false,
+    lib: {
+      formats: ['es', 'cjs'],
+      entry: globbySync('src/*.js'),
+      fileName(format, entryName) {
+        return entryName + (format === 'es' ? '.mjs' : '.js');
+      }
+    }
+  }
+});
+```
+
 ## Examples
 
 * [See vite3 demo](../../examples/vite3-external)
@@ -362,9 +399,12 @@ export default defineConfig({
 
 ## Changelog
 
-* 4.3.0
-  * Use `interop: 'auto'` instead of `mode: false`.
-  * New configuration options `nodeBuiltins` and `externalizeDeps` have been introduced for handling the bundling process after developing Node.js modules.
+* 6.0.0
+  * `externalGlobals` fix https://github.com/rollup/rollup/issues/3188
 
 * 4.3.1
   * The `externalizeDeps` configuration option now supports passing in regular expressions.
+
+* 4.3.0
+  * Use `interop: 'auto'` instead of `mode: false`.
+  * New configuration options `nodeBuiltins` and `externalizeDeps` have been introduced for handling the bundling process after developing Node.js modules.

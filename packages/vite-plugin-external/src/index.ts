@@ -3,80 +3,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { builtinModules } from 'node:module';
 import { types } from 'node:util';
 import { emptyDirSync, outputFile } from 'fs-extra';
-import { RollupOptions, OutputOptions, InputPluginOption } from 'rollup';
+import { RollupOptions, InputPluginOption, OutputOptions, Plugin as RollupPlugin } from 'rollup';
 import { UserConfig, ResolvedConfig, ConfigEnv, Alias, Plugin } from 'vite';
-import externalGlobals from 'rollup-plugin-external-globals';
+import { Options } from './typings';
 
-export interface BasicOptions {
-  /**
-   * The current working directory in which to join `cacheDir`.
-   *
-   * 用于拼接 `cacheDir` 的路径。
-   *
-   * @default `process.cwd()`
-   */
-  cwd?: string;
-
-  /**
-   * Cache folder
-   *
-   * 缓存文件夹
-   *
-   * @default `${cwd}/node_modules/.vite_external`
-   */
-  cacheDir?: string;
-
-  /**
-   * External dependencies
-   *
-   * 配置外部依赖
-   */
-  externals?: Record<string, any>;
-}
-
-export interface Options extends BasicOptions {
-  /**
-   * External dependencies for specific mode
-   *
-   * 针对指定的模式配置外部依赖
-   */
-  [mode: string]: BasicOptions | any;
-
-  /**
-   * Different `externals` can be specified in different modes.
-   *
-   * 在不同的模式下，可以指定不同的外部依赖。
-   */
-  mode?: string;
-
-  /**
-   * Controls how Rollup handles default.
-   *
-   * 用于控制读取外部依赖的默认值。
-   */
-  interop?: 'auto';
-
-  /**
-   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-   *
-   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
-   */
-  enforce?: 'pre' | 'post';
-
-  /**
-   * Whether to exclude nodejs built-in modules in the bundle
-   *
-   * 是否排除 nodejs 内置模块。
-   */
-  nodeBuiltins?: boolean;
-
-  /**
-   * Specify dependencies to not be included in the bundle
-   *
-   * 排除不需要打包的依赖。
-   */
-  externalizeDeps?: Array<string | RegExp>;
-}
+export * from './typings';
 
 function setExternals(rollupOptions: RollupOptions, externalLibs: any[]) {
   if (externalLibs.length === 0) {
@@ -91,9 +22,9 @@ function setExternals(rollupOptions: RollupOptions, externalLibs: any[]) {
   }
   // string or RegExp or array
   else if (
-    typeof external === 'string' ||
-    types.isRegExp(external) ||
-    Array.isArray(external)
+    typeof external === 'string'
+    || types.isRegExp(external)
+    || Array.isArray(external)
   ) {
     rollupOptions.external = externalLibs.concat(external);
   }
@@ -106,7 +37,7 @@ function setExternals(rollupOptions: RollupOptions, externalLibs: any[]) {
     ): boolean | null | undefined | void {
       if (
         externalLibs.some((libName) =>
-          types.isRegExp(libName) ? libName.test(source) : libName === source
+          (types.isRegExp(libName) ? libName.test(source) : libName === source)
         )
       ) {
         return true;
@@ -116,49 +47,50 @@ function setExternals(rollupOptions: RollupOptions, externalLibs: any[]) {
   }
 }
 
-// function rollupOutputGlobals(
-//   output: OutputOptions,
-//   externals: Record<string, any>
-// ): void {
-//   let { globals } = output;
-//   if (!globals) {
-//     globals = {};
-//     output.globals = globals;
-//   }
-//   Object.assign(globals, externals);
-// }
+function rollupOutputGlobals(
+  output: OutputOptions,
+  externals: Record<string, any>
+): void {
+  let { globals } = output;
+  if (!globals) {
+    globals = {};
+    output.globals = globals;
+  }
+  Object.assign(globals, externals);
+}
 
 function setOutputGlobals(
   rollupOptions: RollupOptions,
-  externals?: Record<string, any>
+  externals?: Record<string, any>,
+  externalGlobals?: (globals: Record<string, any>) => RollupPlugin
 ): void {
   if (!externals) {
     return;
   }
-  rollupOptions.plugins = [
-    externalGlobals(externals),
-    ...((rollupOptions.plugins as InputPluginOption[]) || []),
-  ];
 
-  // let { plugins } = rollupOptions;
-  // if (!plugins) plugins = [];
+  if (typeof externalGlobals === 'function') {
+    rollupOptions.plugins = [
+      externalGlobals(externals),
+      ...((rollupOptions.plugins as InputPluginOption[]) || [])
+    ];
+  }
+  else {
+    let { output } = rollupOptions;
+    if (!output) {
+      output = {};
+      rollupOptions.output = output;
+    }
 
-  // plugins.push(externalGlobals(externals));
-  // console.log(plugins);
-  // let { output } = rollupOptions;
-  // if (!output) {
-  //   output = {};
-  //   rollupOptions.output = output;
-  // }
-
-  // // compat Array
-  // if (Array.isArray(output)) {
-  //   output.forEach((n) => {
-  //     rollupOutputGlobals(n, externals);
-  //   });
-  // } else {
-  //   rollupOutputGlobals(output, externals);
-  // }
+    // compat Array
+    if (Array.isArray(output)) {
+      output.forEach((n) => {
+        rollupOutputGlobals(n, externals);
+      });
+    }
+    else {
+      rollupOutputGlobals(output, externals);
+    }
+  }
 }
 
 /** compat cjs and esm */
@@ -204,7 +136,7 @@ async function addAliases(
       const libPath = join(cacheDir, `${libName.replace(/\//g, '_')}.js`);
       (alias as Alias[]).push({
         find: new RegExp(`^${libName}$`),
-        replacement: libPath,
+        replacement: libPath
       });
 
       return createFakeLib(externals[libName], libPath);
@@ -245,7 +177,8 @@ function buildOptions(opts: Options, mode: string): Options {
   }
   if (!cacheDir) {
     cacheDir = join(cwd, 'node_modules', '.vite_external');
-  } else if (!isAbsolute(cacheDir)) {
+  }
+  else if (!isAbsolute(cacheDir)) {
     cacheDir = join(cwd, cacheDir);
   }
 
@@ -253,7 +186,7 @@ function buildOptions(opts: Options, mode: string): Options {
     ...rest,
     cwd,
     cacheDir,
-    externals,
+    externals
   };
 }
 
@@ -340,7 +273,7 @@ export default function createPlugin(opts: Options): Plugin {
       }
 
       setExternals(rollupOptions, externalLibs);
-      setOutputGlobals(rollupOptions, globals);
+      setOutputGlobals(rollupOptions, globals, opts.externalGlobals);
     },
     configResolved(config: ResolvedConfig) {
       // cleanup cache
@@ -350,7 +283,8 @@ export default function createPlugin(opts: Options): Plugin {
         let metadata;
         try {
           metadata = JSON.parse(readFileSync(depCache, 'utf-8'));
-        } catch (e) {
+        }
+        catch (e) {
           return;
         }
 
@@ -367,6 +301,6 @@ export default function createPlugin(opts: Options): Plugin {
           writeFileSync(depCache, JSON.stringify(metadata));
         }
       }
-    },
+    }
   };
 }

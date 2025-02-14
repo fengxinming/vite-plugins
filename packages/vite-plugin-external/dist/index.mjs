@@ -29,21 +29,28 @@ function rollupOutputGlobals(output, externals) {
   }
   Object.assign(globals, externals);
 }
-function setOutputGlobals(rollupOptions, externals) {
+function setOutputGlobals(rollupOptions, externals, externalGlobals) {
   if (!externals) {
     return;
   }
-  let { output } = rollupOptions;
-  if (!output) {
-    output = {};
-    rollupOptions.output = output;
-  }
-  if (Array.isArray(output)) {
-    output.forEach((n) => {
-      rollupOutputGlobals(n, externals);
-    });
+  if (typeof externalGlobals === "function") {
+    rollupOptions.plugins = [
+      externalGlobals(externals),
+      ...rollupOptions.plugins || []
+    ];
   } else {
-    rollupOutputGlobals(output, externals);
+    let { output } = rollupOptions;
+    if (!output) {
+      output = {};
+      rollupOptions.output = output;
+    }
+    if (Array.isArray(output)) {
+      output.forEach((n) => {
+        rollupOutputGlobals(n, externals);
+      });
+    } else {
+      rollupOutputGlobals(output, externals);
+    }
   }
 }
 function createFakeLib(globalName, libPath) {
@@ -160,7 +167,7 @@ function createPlugin(opts) {
         build.rollupOptions = rollupOptions;
       }
       setExternals(rollupOptions, externalLibs);
-      setOutputGlobals(rollupOptions, globals);
+      setOutputGlobals(rollupOptions, globals, opts.externalGlobals);
     },
     configResolved(config) {
       if (config.command === "serve") {
@@ -169,6 +176,7 @@ function createPlugin(opts) {
         try {
           metadata = JSON.parse(readFileSync(depCache, "utf-8"));
         } catch (e) {
+          return;
         }
         if (metadata && libNames && libNames.length) {
           const { optimized } = metadata;
