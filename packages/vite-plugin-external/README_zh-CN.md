@@ -59,6 +59,12 @@ npm install vite-plugin-external --save-dev
 
 排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
 
+**`externalGlobals`**
+* Type: `(globals: Record<string, any>) => rollup.Plugin`
+* Required: false
+
+修复 https://github.com/rollup/rollup/issues/3188
+
 **`cwd`**
 * Type: `string`
 * Required: false
@@ -86,6 +92,8 @@ npm install vite-plugin-external --save-dev
 针对指定的模式配置外部依赖。
 
 ```ts
+import { Plugin } from 'rollup';
+
 export interface BasicOptions {
   /**
    * The current working directory in which to join `cacheDir`.

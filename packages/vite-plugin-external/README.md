@@ -59,6 +59,12 @@ Whether to exclude nodejs built-in modules in the bundle. [See more](#exclude-de
 
 Specify dependencies to not be included in the bundle. [See more](#exclude-dependencies)
 
+**`externalGlobals`**
+* Type: `(globals: Record<string, any>) => rollup.Plugin`
+* Required: false
+
+Fix https://github.com/rollup/rollup/issues/3188
+
 **`cwd`**
 * Type: `string`
 * Required: false
@@ -86,6 +92,8 @@ External dependencies. [See more](#normal)
 External dependencies for specific mode.
 
 ```ts
+import { Plugin } from 'rollup';
+
 export interface BasicOptions {
   /**
    * The current working directory in which to join `cacheDir`.
@@ -393,9 +401,10 @@ export default defineConfig({
 
 ## Examples
 
-* [See vite3 demo](../../examples/vite3-external)
-* [See vite4 demo](../../examples/vite4-external)
-* [See vite5 demo](../../examples/vite5-external)
+* [See vite3 demo](../../examples/vite3-demo)
+* [See vite4 demo](../../examples/vite4-demo)
+* [See vite5 demo](../../examples/vite5-demo)
+* [See vite6 demo](../../examples/vite6-demo)
 
 ## Changelog
 
