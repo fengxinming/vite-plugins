@@ -102,7 +102,7 @@ function makeCopy(transform?: (buf: Buffer, matchedPath: string) => string | Buf
               return mkdirs(dir);
             }
           }).then(() => {
-            return writeFile(to, data);
+            return writeFile(to, data as any);
           });
         });
     }
