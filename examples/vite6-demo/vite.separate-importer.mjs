@@ -1,28 +1,34 @@
 import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
-import vitePluginExternal from 'vite-plugin-external';
-import vitePluginSeparateImporter from 'vite-plugin-separate-importer';
-import pkg from './package.json';
+import createExternal from 'vite-plugin-external';
+import separateImporter from 'vite-plugin-separate-importer';
+import decamelize from 'decamelize';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
-      nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.dependencies)
+    createExternal({
+      externalizeDeps: ['vue', 'vant']
     }),
     ts({
       compilerOptions: {
         declarationDir: 'dist/separate-importer'
       }
     }),
-    vitePluginSeparateImporter({
-      hook: 'transform',
+    separateImporter({
       libs: [
         {
-          name: 'celia',
-          transformImporter(importer, libName) {
-            return `${libName}/dist/${importer}`;
+          name: 'vant',
+          importerSource(importer, libName) {
+            return {
+              es: `${libName}/es/${decamelize(importer)}`,
+              cjs: `${libName}/lib/${decamelize(importer)}`
+            };
+          },
+          insertImport(importer, libName) {
+            return {
+              es: `${libName}/es/${decamelize(importer)}/style`,
+              cjs: `${libName}/lib/${decamelize(importer)}/style`
+            };
           }
         }
       ]
@@ -33,7 +39,7 @@ export default defineConfig({
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: ['src/separate-importer.ts', 'src/separate-importer2.js'],
+      entry: ['src/separate-importer.ts'],
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }

@@ -39,6 +39,7 @@ export default defineConfig({
 
 ## Examples
 
-* [See vite3 demo](../../examples/vite3-include-css)
-* [See vite4 demo](../../examples/vite4-include-css)
-* [See vite5 demo](../../examples/vite5-include-css)
+* [See vite3 demo](../../examples/vite3-demo)
+* [See vite4 demo](../../examples/vite4-demo)
+* [See vite5 demo](../../examples/vite5-demo)
+* [See vite6 demo](../../examples/vite6-demo)

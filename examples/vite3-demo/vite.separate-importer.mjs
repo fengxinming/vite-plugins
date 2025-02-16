@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import ts from '@rollup/plugin-typescript';
 import vitePluginExternal from 'vite-plugin-external';
 import vitePluginSeparateImporter from 'vite-plugin-separate-importer';
 import pkg from './package.json';
@@ -10,11 +9,6 @@ export default defineConfig({
     vitePluginExternal({
       nodeBuiltins: true,
       externalizeDeps: Object.keys(pkg.dependencies)
-    }),
-    ts({
-      compilerOptions: {
-        declarationDir: 'dist/separate-importer'
-      }
     }),
     vitePluginSeparateImporter({
       libs: [
@@ -35,7 +29,7 @@ export default defineConfig({
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: ['src/separate-importer.ts', 'src/separate-importer2.js'],
+      entry: ['src/separate-importer.js', 'src/separate-importer2.js'],
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }

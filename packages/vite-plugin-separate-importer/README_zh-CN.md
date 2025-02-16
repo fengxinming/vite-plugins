@@ -2,32 +2,32 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-separate-importer.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-separate-importer)
 
-> Separate importers from your code. Vite >= 3.1
+> 将导入语句从代码中分离。适用于 Vite >= 3.1
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-separate-importer.svg?style=flat)](https://npmjs.org/package/vite-plugin-separate-importer)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-separate-importer.svg?style=flat)](https://npmjs.org/package/vite-plugin-separate-importer)
 
-## English | [中文](README_zh-CN.md)
+## [English](README.md) | 中文
 
-## Installation
+## 安装
 
-Install the plugin using npm:
+使用 npm 安装插件：
 
 ```bash
 npm install vite-plugin-separate-importer --save-dev
 ```
 
-Or using yarn:
+或者使用 yarn：
 
 ```bash
 yarn add vite-plugin-separate-importer --dev
 ```
 
-## Usage
+## 使用方法
 
-Import and configure the plugin in your Vite configuration file (`vite.config.ts` or `vite.config.js`):
+在你的 Vite 配置文件（如 `vite.config.ts` 或 `vite.config.js`）中引入并配置插件：
 
-### TypeScript Example
+### TypeScript 示例
 
 ```typescript
 import { defineConfig } from 'vite';
@@ -80,7 +80,7 @@ export default defineConfig({
 });
 ```
 
-### JavaScript Example
+### JavaScript 示例
 
 ```javascript
 import { defineConfig } from 'vite';
@@ -133,7 +133,7 @@ export default defineConfig({
 });
 ```
 
-## Options
+## 选项
 
 ```ts
 export interface ImportSource {
@@ -168,9 +168,9 @@ export interface Options {
 }
 ```
 
-## Examples
+## 示例
 
-- [Vite 3 Example](../../examples/vite3-demo)
-- [Vite 4 Example](../../examples/vite4-demo)
-- [Vite 5 Example](../../examples/vite5-demo)
-- [Vite 6 Example](../../examples/vite6-demo)
+- [Vite 3 示例](../../examples/vite3-demo)
+- [Vite 4 示例](../../examples/vite4-demo)
+- [Vite 5 示例](../../examples/vite5-demo)
+- [Vite 6 示例](../../examples/vite6-demo)

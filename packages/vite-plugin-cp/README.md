@@ -146,6 +146,7 @@ export default defineConfig({
 
 ## Examples
 
-* [See vite3 demo](../../examples/vite3-cp)
-* [See vite4 demo](../../examples/vite4-cp)
-* [See vite5 demo](../../examples/vite5-cp)
+* [See vite3 demo](../../examples/vite3-demo)
+* [See vite4 demo](../../examples/vite4-demo)
+* [See vite5 demo](../../examples/vite5-demo)
+* [See vite6 demo](../../examples/vite6-demo)

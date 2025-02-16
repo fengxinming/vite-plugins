@@ -1,25 +1,6 @@
-import { runQueue } from 'celia';
-import noop from 'celia/dist/noop.mjs';
+import { createApp } from 'vue';
+import { Button } from 'vant';
 
-const fns = [
-  (a) => {
-    a.i++;
-  },
-  (a) => {
-    a.i += 2;
-  }
-];
-const a = { i: 0 };
-runQueue(
-  fns,
-  (middleware, next) => {
-    middleware(a);
-    next();
-  },
-  () => {
-    a.i += 3;
-    console.info(a.i);
-    // 6
-  });
+const app = createApp();
 
-noop();
+app.use(Button);

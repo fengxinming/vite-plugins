@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-separate-importer",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Separate importers from your code.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
