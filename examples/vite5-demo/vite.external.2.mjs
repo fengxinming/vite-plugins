@@ -1,16 +1,17 @@
 import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
-import externalGlobals from 'rollup-plugin-external-globals';
 import { globbySync } from 'globby';
 import pkg from './package.json';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vitePluginExternal({
+      // for build mode
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.dependencies),
-      externalGlobals
+      externalizeDeps: Object.keys(pkg.devDependencies),
+
+      // for serve mode
+      externals: {}
     })
   ],
   build: {

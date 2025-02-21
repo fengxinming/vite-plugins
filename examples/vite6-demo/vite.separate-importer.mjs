@@ -1,23 +1,23 @@
 import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
-import createExternal from 'vite-plugin-external';
-import separateImporter from 'vite-plugin-separate-importer';
+import pluginExternal from 'vite-plugin-external';
+import pluginSeparateImporter from 'vite-plugin-separate-importer';
 import decamelize from 'decamelize';
 
 export default defineConfig({
   plugins: [
-    createExternal({
-      externalizeDeps: ['vue', 'vant']
+    pluginExternal({
+      externalizeDeps: ['antd']
     }),
     ts({
       compilerOptions: {
         declarationDir: 'dist/separate-importer'
       }
     }),
-    separateImporter({
+    pluginSeparateImporter({
       libs: [
         {
-          name: 'vant',
+          name: 'antd',
           importerSource(importer, libName) {
             return {
               es: `${libName}/es/${decamelize(importer)}`,
@@ -39,7 +39,7 @@ export default defineConfig({
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: ['src/separate-importer.ts'],
+      entry: ['src/separate-importer.tsx'],
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }

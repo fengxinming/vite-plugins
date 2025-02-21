@@ -11,6 +11,26 @@
 
 ![image](https://user-images.githubusercontent.com/6262382/126889725-a5d276ad-913a-4498-8da1-2aa3fd1404ab.png)
 
+```js
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      externals: {
+        jquery: '$',
+
+        react: 'React',
+        'react-dom/client': 'ReactDOM',
+
+        vue: 'Vue'
+      }
+    })
+  ]
+});
+```
+
 ## English | [中文](README_zh-CN.md)
 
 ## Table of contents
@@ -28,12 +48,6 @@ npm install vite-plugin-external --save-dev
 ```
 
 ## Options
-
-**`mode`**
-* Type: `string`
-* Required: false
-
-External dependencies for specific modes. [See more](#override-externals-by-mode)
 
 **`interop`**
 * Type: `'auto'`
@@ -89,16 +103,15 @@ External dependencies. [See more](#normal)
 * Type: `BasicOptions`
 * Required: false
 
-External dependencies for specific mode.
+External dependencies for specific mode. [See more](#override-externals-by-mode)
 
 ```ts
-import { Plugin } from 'rollup';
-
+import { Plugin as RollupPlugin } from 'rollup';
 export interface BasicOptions {
   /**
    * The current working directory in which to join `cacheDir`.
    *
-   * 用于拼接 `cacheDir` 的路径。
+   * 设置当前目录，用于拼接 `cacheDir` 的相对路径。
    *
    * @default `process.cwd()`
    */
@@ -116,58 +129,51 @@ export interface BasicOptions {
   /**
    * External dependencies
    *
-   * 外部依赖
+   * 配置外部依赖
    */
-  externals?: Record<string, any>;
+  externals?: Record<string, string>;
 }
 
 export interface Options extends BasicOptions {
   /**
    * External dependencies for specific mode
    *
-   * 针对指定的模式配置外部依赖。
+   * 针对指定的模式配置外部依赖
    */
   [mode: string]: BasicOptions | any;
 
   /**
-   * Different `externals` can be specified in different modes.
+   * Controls how Vite handles default.
    *
-   * 在不同的模式下，可以指定不同的外部依赖。
-   */
-  mode?: string;
-
-  /**
-   * Controls how Rollup handles default.
-   *
-   * 用于控制读取外部依赖的默认值
+   * 该选项用于控制 Vite 如何处理默认值。
    */
   interop?: 'auto';
 
   /**
    * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
    *
-   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering
+   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
    */
   enforce?: 'pre' | 'post';
 
   /**
    * Whether to exclude nodejs built-in modules in the bundle
    *
-   * 是否排除 nodejs 内置模块
+   * 是否排除 nodejs 内置模块。
    */
   nodeBuiltins?: boolean;
 
   /**
    * Specify dependencies to not be included in the bundle
    *
-   * 排除不需要打包的依赖
+   * 排除不需要打包的依赖。
    */
   externalizeDeps?: Array<string | RegExp>;
 
   /**
    * Fix https://github.com/rollup/rollup/issues/3188
    */
-  externalGlobals?: (globals: Record<string, any>) => Plugin;
+  externalGlobals?: (globals: Record<string, string>) => RollupPlugin;
 }
 ```
 
@@ -177,22 +183,31 @@ export interface Options extends BasicOptions {
 
 index.html
 ```html
-<script src="//cdn.jsdelivr.net/npm/react@16.14.0/umd/react.production.min.js"></script>
+<script src="//unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 ```
 
 vite.config.js
 ```js
 import { defineConfig } from 'vite';
-import createExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    createExternal({
+    pluginExternal({
       externals: {
-        react: 'React'
+        react: 'React',
+        'react-dom/client': 'ReactDOM'
       }
     })
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife'
+      }
+    }
+  }
 });
 ```
 
@@ -208,11 +223,11 @@ index.html
 vite.config.js
 ```js
 import { defineConfig } from 'vite';
-import createExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    createExternal({
+    pluginExternal({
       externals: {
         react: '$linkdesign.React'
       },
@@ -230,28 +245,23 @@ export default defineConfig({
 
 > Set `interop` to `'auto'` to use aliases and caching mechanisms consistently.
 
-index.html
-```html
-<script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
-```
-
 vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
-import createExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    createExternal({
+    pluginExternal({
       interop: 'auto',
       externals: {
-        react: '$linkdesign.React',
-        'react-dom': '$linkdesign.ReactDOM',
-        'prop-types': '$linkdesign.PropTypes'
+        react: 'React',
+        'react-dom/client': 'ReactDOM'
       }
     })
   ],
   build: {
+    outDir: 'dist/external',
     minify: false,
     rollupOptions: {
       output: {
@@ -265,75 +275,73 @@ export default defineConfig({
 #### Source code
 
 ```js
-import { createElement, Fragment, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { useState, StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 function App() {
   const [count, setCount] = useState(0);
-  return createElement(Fragment, null,
-    createElement('h1', null, `Count: ${count}`),
-    createElement('button', {
-      onClick: () => setCount((prev) => prev + 1)
-    }, 'Click me')
+  return (
+    <div className="box">
+      <h1>Count: {count}</h1>
+      <button onClick={() => setCount((prev) => prev + 1)}>Click me</button>
+    </div>
   );
 }
-ReactDOM.render(
-  createElement(App),
-  document.getElementById('root')
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
 );
 ```
 
 #### Output bundle
 
-Set `interop` to `'auto'`
+**Set `interop` to `'auto'`(Vite 6.x)**
 
 ```js
 (function() {
   "use strict";
-  function getDefaultExportFromCjs(x) {
-    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  var react;
+  var hasRequiredReact;
+  function requireReact() {
+    if (hasRequiredReact) return react;
+    hasRequiredReact = 1;
+    react = React;
+    return react;
   }
-  var react = $linkdesign.React;
-  var reactDom = $linkdesign.ReactDOM;
-  const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDom);
+  var reactExports = requireReact();
+  var reactDom_client;
+  var hasRequiredReactDom_client;
+  function requireReactDom_client() {
+    if (hasRequiredReactDom_client) return reactDom_client;
+    hasRequiredReactDom_client = 1;
+    reactDom_client = ReactDOM;
+    return reactDom_client;
+  }
+  var reactDom_clientExports = requireReactDom_client();
   function App() {
-    const [count, setCount] = react.useState(0);
-    return react.createElement(
-      react.Fragment,
-      null,
-      react.createElement("h1", null, `Count: ${count}`),
-      react.createElement("button", {
-        onClick: () => setCount((prev) => prev + 1)
-      }, "Click me")
-    );
+    const [count, setCount] = reactExports.useState(0);
+    return /* @__PURE__ */ React.createElement("div", { className: "box" }, /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
   }
-  ReactDOM.render(
-    react.createElement(App),
-    document.getElementById("root")
+  reactDom_clientExports.createRoot(document.getElementById("root")).render(
+    /* @__PURE__ */ React.createElement(reactExports.StrictMode, null, /* @__PURE__ */ React.createElement(App, null))
   );
 })();
 ```
 
-Without `interop` option
+**Without `interop` option**
 
 ```js
-(function(react, ReactDOM) {
+(function(react, client) {
   "use strict";
   function App() {
     const [count, setCount] = react.useState(0);
-    return react.createElement(
-      react.Fragment,
-      null,
-      react.createElement("h1", null, `Count: ${count}`),
-      react.createElement("button", {
-        onClick: () => setCount((prev) => prev + 1)
-      }, "Click me")
-    );
+    return /* @__PURE__ */ React.createElement("div", { className: "box" }, /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
   }
-  ReactDOM.render(
-    react.createElement(App),
-    document.getElementById("root")
+  client.createRoot(document.getElementById("root")).render(
+    /* @__PURE__ */ React.createElement(react.StrictMode, null, /* @__PURE__ */ React.createElement(App, null))
   );
-})($linkdesign.React, $linkdesign.ReactDOM);
+})(React, ReactDOM);
 ```
 
 ### Exclude dependencies
@@ -343,13 +351,13 @@ Without `interop` option
 vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
-import vitePluginExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 import { globbySync } from 'globby';
 import pkg from './package.json';
 
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
+    pluginExternal({
       nodeBuiltins: true,
       externalizeDeps: Object.keys(pkg.dependencies)
     })
@@ -374,25 +382,23 @@ export default defineConfig({
 vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
-import vitePluginExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 import externalGlobals from 'rollup-plugin-external-globals';
-import { globbySync } from 'globby';
 
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
-      nodeBuiltins: true,
-      externalGlobals
+    pluginExternal({
+      externalGlobals,
+      externals: {
+        react: 'React',
+        'react-dom/client': 'ReactDOM'
+      }
     })
   ],
   build: {
-    outDir: 'dist/external',
-    minify: false,
-    lib: {
-      formats: ['es', 'cjs'],
-      entry: globbySync('src/*.js'),
-      fileName(format, entryName) {
-        return entryName + (format === 'es' ? '.mjs' : '.js');
+    rollupOptions: {
+      output: {
+        format: 'iife'
       }
     }
   }
@@ -409,7 +415,7 @@ export default defineConfig({
 ## Changelog
 
 * 6.0.0
-  * `externalGlobals` fix https://github.com/rollup/rollup/issues/3188
+  * New configuration option `externalGlobals` to fix https://github.com/rollup/rollup/issues/3188
 
 * 4.3.1
   * The `externalizeDeps` configuration option now supports passing in regular expressions.

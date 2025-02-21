@@ -1,6 +1,3 @@
-declare module 'vue' {
-  export function createApp();
-}
-declare module 'vant' {
+declare module 'antd' {
   export const Button: any;
 }

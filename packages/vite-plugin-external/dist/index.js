@@ -4,24 +4,6 @@ const node_fs = require("node:fs");
 const node_module = require("node:module");
 const node_util = require("node:util");
 const fsExtra = require("fs-extra");
-function setExternals(rollupOptions, externalLibs) {
-  if (externalLibs.length === 0) {
-    return;
-  }
-  const { external } = rollupOptions;
-  if (!external) {
-    rollupOptions.external = externalLibs;
-  } else if (typeof external === "string" || node_util.types.isRegExp(external) || Array.isArray(external)) {
-    rollupOptions.external = externalLibs.concat(external);
-  } else if (typeof external === "function") {
-    rollupOptions.external = function(source, importer, isResolved) {
-      if (externalLibs.some((libName) => node_util.types.isRegExp(libName) ? libName.test(source) : libName === source)) {
-        return true;
-      }
-      return external(source, importer, isResolved);
-    };
-  }
-}
 function rollupOutputGlobals(output, externals) {
   let { globals } = output;
   if (!globals) {
@@ -30,13 +12,13 @@ function rollupOutputGlobals(output, externals) {
   }
   Object.assign(globals, externals);
 }
-function setOutputGlobals(rollupOptions, externals, externalGlobals) {
-  if (!externals) {
+function setOutputGlobals(rollupOptions, globals, externalGlobals) {
+  if (!globals) {
     return;
   }
   if (typeof externalGlobals === "function") {
     rollupOptions.plugins = [
-      externalGlobals(externals),
+      externalGlobals(globals),
       ...rollupOptions.plugins || []
     ];
   } else {
@@ -47,20 +29,38 @@ function setOutputGlobals(rollupOptions, externals, externalGlobals) {
     }
     if (Array.isArray(output)) {
       output.forEach((n) => {
-        rollupOutputGlobals(n, externals);
+        rollupOutputGlobals(n, globals);
       });
     } else {
-      rollupOutputGlobals(output, externals);
+      rollupOutputGlobals(output, globals);
     }
+  }
+}
+function setExternals(rollupOptions, externalNames) {
+  if (externalNames.length === 0) {
+    return;
+  }
+  const { external } = rollupOptions;
+  if (!external) {
+    rollupOptions.external = externalNames;
+  } else if (typeof external === "string" || node_util.types.isRegExp(external) || Array.isArray(external)) {
+    rollupOptions.external = externalNames.concat(external);
+  } else if (typeof external === "function") {
+    rollupOptions.external = function(source, importer, isResolved) {
+      if (externalNames.some((libName) => node_util.types.isRegExp(libName) ? libName.test(source) : libName === source)) {
+        return true;
+      }
+      return external(source, importer, isResolved);
+    };
   }
 }
 function createFakeLib(globalName, libPath) {
   const cjs = `module.exports = ${globalName};`;
   return fsExtra.outputFile(libPath, cjs, "utf-8");
 }
-async function addAliases(config, cacheDir, externals, libNames) {
+async function setAliases(config, cacheDir, globals) {
   fsExtra.emptyDirSync(cacheDir);
-  if (libNames.length === 0 || !externals) {
+  if (!globals) {
     return;
   }
   let { resolve } = config;
@@ -79,13 +79,13 @@ async function addAliases(config, cacheDir, externals, libNames) {
     });
     resolve.alias = alias;
   }
-  await Promise.all(libNames.map((libName) => {
+  await Promise.all(Object.entries(globals).map(([libName, globalName]) => {
     const libPath = node_path.join(cacheDir, `${libName.replace(/\//g, "_")}.js`);
     alias.push({
       find: new RegExp(`^${libName}$`),
       replacement: libPath
     });
-    return createFakeLib(externals[libName], libPath);
+    return createFakeLib(globalName, libPath);
   }));
 }
 function buildOptions(opts, mode) {
@@ -130,29 +130,32 @@ function buildOptions(opts, mode) {
   };
 }
 function createPlugin(opts) {
-  let libNames;
+  let externalNames;
+  let globals;
   return {
     name: "vite-plugin-external",
     enforce: opts.enforce,
     async config(config, { mode, command }) {
-      const { cacheDir, externals, interop } = buildOptions(opts, mode);
-      libNames = !externals ? [] : Object.keys(externals);
-      let externalLibs = libNames;
-      let globals = externals;
-      if (command === "serve" || interop === "auto") {
-        await addAliases(config, cacheDir, globals, libNames);
-        externalLibs = [];
+      opts = buildOptions(opts, mode);
+      globals = opts.externals;
+      externalNames = globals ? Object.keys(globals) : [];
+      if (externalNames.length === 0) {
         globals = void 0;
       }
+      const cacheDir = opts.cacheDir;
+      if (command === "serve" || opts.interop === "auto") {
+        await setAliases(config, cacheDir, globals);
+        return;
+      }
       if (command === "build") {
-        if (opts.nodeBuiltins) {
-          externalLibs = externalLibs.concat(node_module.builtinModules.map((builtinModule) => {
+        const { nodeBuiltins, externalizeDeps } = opts;
+        if (nodeBuiltins) {
+          externalNames = externalNames.concat(node_module.builtinModules.map((builtinModule) => {
             return new RegExp(`^(?:node:)?${builtinModule}(?:/.+)*$`);
           }));
         }
-        const { externalizeDeps } = opts;
         if (externalizeDeps) {
-          externalLibs = externalLibs.concat(externalizeDeps.map((dep) => {
+          externalNames = externalNames.concat(externalizeDeps.map((dep) => {
             return node_util.types.isRegExp(dep) ? dep : new RegExp(`^${dep}(?:/.+)*$`);
           }));
         }
@@ -167,7 +170,7 @@ function createPlugin(opts) {
         rollupOptions = {};
         build.rollupOptions = rollupOptions;
       }
-      setExternals(rollupOptions, externalLibs);
+      setExternals(rollupOptions, externalNames);
       setOutputGlobals(rollupOptions, globals, opts.externalGlobals);
     },
     configResolved(config) {
@@ -179,10 +182,10 @@ function createPlugin(opts) {
         } catch (e) {
           return;
         }
-        if (metadata && libNames && libNames.length) {
+        if (metadata && externalNames && externalNames.length) {
           const { optimized } = metadata;
           if (optimized && Object.keys(optimized).length) {
-            libNames.forEach((libName) => {
+            externalNames.forEach((libName) => {
               if (optimized[libName]) {
                 delete optimized[libName];
               }

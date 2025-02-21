@@ -1,9 +1,9 @@
-import { Plugin } from 'rollup';
+import { Plugin as RollupPlugin } from 'rollup';
 export interface BasicOptions {
     /**
      * The current working directory in which to join `cacheDir`.
      *
-     * 用于拼接 `cacheDir` 的路径。
+     * 设置当前目录，用于拼接 `cacheDir` 的相对路径。
      *
      * @default `process.cwd()`
      */
@@ -21,7 +21,7 @@ export interface BasicOptions {
      *
      * 配置外部依赖
      */
-    externals?: Record<string, any>;
+    externals?: Record<string, string>;
 }
 export interface Options extends BasicOptions {
     /**
@@ -37,9 +37,9 @@ export interface Options extends BasicOptions {
      */
     mode?: string;
     /**
-     * Controls how Rollup handles default.
+     * Controls how Vite handles default.
      *
-     * 用于控制读取外部依赖的默认值。
+     * 该选项用于控制 Vite 如何处理默认值。
      */
     interop?: 'auto';
     /**
@@ -63,5 +63,5 @@ export interface Options extends BasicOptions {
     /**
      * Fix https://github.com/rollup/rollup/issues/3188
      */
-    externalGlobals?: (globals: Record<string, any>) => Plugin;
+    externalGlobals?: (globals: Record<string, string>) => RollupPlugin;
 }

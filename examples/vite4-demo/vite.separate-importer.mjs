@@ -1,22 +1,22 @@
 import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
-import vitePluginExternal from 'vite-plugin-external';
-import vitePluginSeparateImporter from 'vite-plugin-separate-importer';
+import pluginExternal from 'vite-plugin-external';
+import pluginSeparateImporter from 'vite-plugin-separate-importer';
 import pkg from './package.json';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
+    pluginExternal({
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.dependencies)
+      externalizeDeps: Object.keys(pkg.devDependencies)
     }),
     ts({
       compilerOptions: {
         declarationDir: 'dist/separate-importer'
       }
     }),
-    vitePluginSeparateImporter({
+    pluginSeparateImporter({
       libs: [
         {
           name: 'celia',

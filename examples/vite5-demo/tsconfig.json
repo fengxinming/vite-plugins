@@ -1,13 +1,19 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
   "compilerOptions": {
     "declaration": true,
     "declarationDir": "dist",
-    "stripInternal": true
+    "stripInternal": true,
+
+    "types": ["node", "vue"]
   },
   "include": [
-    "src/*.ts"
-  ],
+    "src/vue/*.ts",
+    "src/vue/*.vue",
+    "src/*.ts",
+    "vite-env.d.ts",
+    "custom-modules.d.ts"
+, "src/vue/App.vue"  ],
   "exclude": [
     "dist",
     "node_modules"

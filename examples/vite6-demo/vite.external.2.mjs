@@ -7,8 +7,12 @@ import pkg from './package.json';
 export default defineConfig({
   plugins: [
     vitePluginExternal({
+      // for build mode
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.dependencies)
+      externalizeDeps: Object.keys(pkg.devDependencies),
+
+      // for serve mode
+      externals: {}
     })
   ],
   build: {
