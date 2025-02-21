@@ -11,9 +11,10 @@
     "src/vue/*.ts",
     "src/vue/*.vue",
     "src/*.ts",
+    "src/*.tsx",
     "vite-env.d.ts",
     "custom-modules.d.ts"
-, "src/vue/App.vue"  ],
+  ],
   "exclude": [
     "dist",
     "node_modules"

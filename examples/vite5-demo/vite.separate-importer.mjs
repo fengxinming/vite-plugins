@@ -2,14 +2,12 @@ import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
 import pluginExternal from 'vite-plugin-external';
 import pluginSeparateImporter from 'vite-plugin-separate-importer';
-import pkg from './package.json';
+import decamelize from 'decamelize';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     pluginExternal({
-      nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.devDependencies)
+      externalizeDeps: ['antd']
     }),
     ts({
       compilerOptions: {
@@ -19,12 +17,18 @@ export default defineConfig({
     pluginSeparateImporter({
       libs: [
         {
-          name: 'celia',
+          name: 'antd',
           importerSource(importer, libName) {
-            return `${libName}/es/${importer}`;
+            return {
+              es: `${libName}/es/${decamelize(importer)}`,
+              cjs: `${libName}/lib/${decamelize(importer)}`
+            };
           },
-          importerSourceForCJS(importerSource) {
-            return importerSource.replace('/es/', '/lib/');
+          insertImport(importer, libName) {
+            return {
+              es: `${libName}/es/${decamelize(importer)}/style`,
+              cjs: `${libName}/lib/${decamelize(importer)}/style`
+            };
           }
         }
       ]
@@ -35,7 +39,7 @@ export default defineConfig({
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: ['src/separate-importer.ts', 'src/separate-importer2.js'],
+      entry: ['src/separate-importer.tsx'],
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }

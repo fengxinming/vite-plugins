@@ -1,23 +1,28 @@
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 import pluginSeparateImporter from 'vite-plugin-separate-importer';
+import decamelize from 'decamelize';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     pluginExternal({
-      nodeBuiltins: true,
-      externalizeDeps: Object.keys()
+      externalizeDeps: ['antd']
     }),
     pluginSeparateImporter({
       libs: [
         {
-          name: 'celia',
+          name: 'antd',
           importerSource(importer, libName) {
-            return `${libName}/es/${importer}`;
+            return {
+              es: `${libName}/es/${decamelize(importer)}`,
+              cjs: `${libName}/lib/${decamelize(importer)}`
+            };
           },
-          importerSourceForCJS(importerSource) {
-            return importerSource.replace('/es/', '/lib/');
+          insertImport(importer, libName) {
+            return {
+              es: `${libName}/es/${decamelize(importer)}/style`,
+              cjs: `${libName}/lib/${decamelize(importer)}/style`
+            };
           }
         }
       ]
@@ -28,7 +33,7 @@ export default defineConfig({
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: ['src/separate-importer.js', 'src/separate-importer2.js'],
+      entry: ['src/separate-importer.jsx'],
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }

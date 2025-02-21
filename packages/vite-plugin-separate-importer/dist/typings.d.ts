@@ -2,10 +2,6 @@ export interface ImportSource {
     es: string;
     cjs?: string;
 }
-/**
- * 插件配置接口，用于定义待转换的库名称及其处理逻辑
- * Interface for plugin configuration to define the library names and processing logic
- */
 export interface libConfig {
     /**
      * 待转换的库名称，可以是单个字符串或字符串数组
@@ -25,8 +21,8 @@ export interface libConfig {
 }
 export interface Options {
     /**
-      * 待转换的模块配置
-      * Module configuration to be converted
-      */
+    * 插件配置接口，用于定义待转换的库名称及其处理逻辑
+    * Interface for plugin configuration to define the library names and processing logic
+    */
     libs?: libConfig[];
 }

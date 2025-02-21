@@ -15,7 +15,8 @@
     "build:mock-data": "vite build --config=vite.mock-data.mjs",
     "build:reverse-proxy": "vite build --config=vite.reverse-proxy.mjs",
     "build:separate-importer": "vite build --config=vite.separate-importer.mjs",
-    "dev:external": "vite dev --config=vite.external.dev.mjs"
+    "dev:external": "vite dev --config=vite.external.dev.mjs",
+    "build": "pnpm run /^build:.*/"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",

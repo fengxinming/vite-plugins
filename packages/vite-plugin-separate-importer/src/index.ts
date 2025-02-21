@@ -118,17 +118,17 @@ function processLibs(
   export default defineConfig({
     plugins: [
       createExternal({
-        externalizeDeps: ['vue', 'vant']
+        externalizeDeps: ['antd']
       }),
       ts({
         compilerOptions: {
-          declarationDir: 'dist/separate-importer'
+          declarationDir: 'dist'
         }
       }),
       separateImporter({
         libs: [
           {
-            name: 'vant',
+            name: 'antd',
             importerSource(importer, libName) {
               return {
                 es: `${libName}/es/${decamelize(importer)}`,
@@ -146,11 +146,10 @@ function processLibs(
       })
     ],
     build: {
-      outDir: 'dist/separate-importer',
       minify: false,
       lib: {
         formats: ['es', 'cjs'],
-        entry: ['src/separate-importer.ts'],
+        entry: ['src/*.tsx'],
         fileName(format, entryName) {
           return entryName + (format === 'es' ? '.mjs' : '.js');
         }
@@ -162,7 +161,10 @@ function processLibs(
  * @param opts options
  * @returns a vite plugin
  */
-function createPlugin(this: PluginContext, { libs = [] }: Options = {}) {
+function createPlugin(
+  this: PluginContext,
+  { enforce, libs = [] }: Options = {}
+): Plugin | undefined {
   if (!Array.isArray(libs) || libs.length === 0) {
     return;
   }
@@ -191,6 +193,7 @@ function createPlugin(this: PluginContext, { libs = [] }: Options = {}) {
 
   return {
     name: 'vite-plugin-separate-importer',
+    enforce,
 
     async transform(
       this: PluginContext,

@@ -2,12 +2,12 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-separate-importer.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-separate-importer)
 
-> Separate importers from your code. Vite >= 3.1
+> Transform bulk imports from a single source module into individual file imports from the source module (Vite >= 3.1)
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-separate-importer.svg?style=flat)](https://npmjs.org/package/vite-plugin-separate-importer)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-separate-importer.svg?style=flat)](https://npmjs.org/package/vite-plugin-separate-importer)
 
-## English | [中文](README_zh-CN.md)
+## [中文](README_zh-CN.md) | English
 
 ## Installation
 
@@ -25,31 +25,27 @@ yarn add vite-plugin-separate-importer --dev
 
 ## Usage
 
-Import and configure the plugin in your Vite configuration file (`vite.config.ts` or `vite.config.js`):
+Import and configure the plugin in your Vite configuration file (e.g., `vite.config.ts` or `vite.config.js`):
 
-### TypeScript Example
+### Configuration Example
 
 ```typescript
 import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
-import createExternal from 'vite-plugin-external';
-import separateImporter from 'vite-plugin-separate-importer';
+import pluginExternal from 'vite-plugin-external';
+import pluginSeparateImporter from 'vite-plugin-separate-importer';
 import decamelize from 'decamelize';
 
 export default defineConfig({
   plugins: [
-    createExternal({
-      externalizeDeps: ['vue', 'vant']
+    pluginExternal({
+      externalizeDeps: ['antd']
     }),
-    ts({
-      compilerOptions: {
-        declarationDir: 'dist/separate-importer'
-      }
-    }),
-    separateImporter({
+    ts(),
+    pluginSeparateImporter({
       libs: [
         {
-          name: 'vant',
+          name: 'antd',
           importerSource(importer, libName) {
             return {
               es: `${libName}/es/${decamelize(importer)}`,
@@ -67,11 +63,10 @@ export default defineConfig({
     })
   ],
   build: {
-    outDir: 'dist/separate-importer',
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: ['src/separate-importer.ts'],
+      entry: ['src/*.tsx'],
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }
@@ -80,57 +75,25 @@ export default defineConfig({
 });
 ```
 
-### JavaScript Example
+### Wrapped Component Example
+```tsx
+import { Button } from 'antd';
 
-```javascript
-import { defineConfig } from 'vite';
-import ts from '@rollup/plugin-typescript';
-import createExternal from 'vite-plugin-external';
-import separateImporter from 'vite-plugin-separate-importer';
-import decamelize from 'decamelize';
+export function WrappedButton() {
+  return <Button>Wrapped Button</Button>;
+}
+```
 
-export default defineConfig({
-  plugins: [
-    createExternal({
-      externalizeDeps: ['vue', 'vant']
-    }),
-    ts({
-      compilerOptions: {
-        declarationDir: 'dist/separate-importer'
-      }
-    }),
-    separateImporter({
-      libs: [
-        {
-          name: 'vant',
-          importerSource(importer, libName) {
-            return {
-              es: `${libName}/es/${decamelize(importer)}`,
-              cjs: `${libName}/lib/${decamelize(importer)}`
-            };
-          },
-          insertImport(importer, libName) {
-            return {
-              es: `${libName}/es/${decamelize(importer)}/style`,
-              cjs: `${libName}/lib/${decamelize(importer)}/style`
-            };
-          }
-        }
-      ]
-    })
-  ],
-  build: {
-    outDir: 'dist/separate-importer',
-    minify: false,
-    lib: {
-      formats: ['es', 'cjs'],
-      entry: ['src/separate-importer.ts'],
-      fileName(format, entryName) {
-        return entryName + (format === 'es' ? '.mjs' : '.js');
-      }
-    }
-  }
-});
+### Compiled Output
+```js
+import Button from "antd/es/button";
+import "antd/es/button/style";
+function WrappedButton() {
+  return /* @__PURE__ */ React.createElement(Button, null, "Wrapped Button");
+}
+export {
+  WrappedButton
+};
 ```
 
 ## Options
@@ -141,30 +104,33 @@ export interface ImportSource {
   cjs?: string;
 }
 
-export interface libConfig {
+export interface LibConfig {
   /**
-   * 待转换的库名称，可以是单个字符串或字符串数组
    * Library name(s) to be transformed, can be a single string or an array of strings
    */
   name: string | string[];
   /**
-   * 模块的新路径
    * New path for the module
    */
   importerSource?: (importer: string, libName: string) => string | ImportSource;
   /**
-   * 插入导入声明
    * Insert import source
    */
   insertImport?: (importer: string, libName: string) => string | Array<string | ImportSource>;
 }
 
 export interface Options {
- /**
- * 插件配置接口，用于定义待转换的库名称及其处理逻辑
- * Interface for plugin configuration to define the library names and processing logic
- */
- libs?: libConfig[];
+  /**
+   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+   *
+   * Enforce execution order, `pre` before, `post` after, reference https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+   */
+  enforce?: 'pre' | 'post';
+
+  /**
+   * Interface for plugin configuration to define the library names and processing logic
+   */
+  libs?: LibConfig[];
 }
 ```
 
