@@ -34,17 +34,17 @@ jobs:
   #       env:
   #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
-  publish-external:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish ./packages/vite-plugin-external
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+  # publish-external:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish ./packages/vite-plugin-external
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
   # publish-hook-use:
   #   runs-on: ubuntu-latest
