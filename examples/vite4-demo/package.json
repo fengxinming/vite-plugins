@@ -19,7 +19,6 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^14.18.63",
-    "celia": "^9.0.2",
     "vite": "^4.5.0",
     "vite-plugin-combine": "workspace:^",
     "vite-plugin-cp": "workspace:^",

@@ -15,12 +15,58 @@ npm install vite-plugin-mock-data --save-dev
 
 ## Options
 
+```ts
+import { Config as SirvConfig, HTTPVersion, RouteOptions, Handler } from 'find-my-way';
+
+export interface HandleRoute {
+  file?: string;
+  handler?: any | Handler<HTTPVersion.V1>;
+  options?: RouteOptions;
+  store?: any;
+}
+
+export interface RouteConfig {
+  [route: string]: string | Handler<HTTPVersion.V1> | HandleRoute;
+}
+
+export interface Options {
+  /**
+   * The directory to serve files from.
+   * @default `process.cwd()`
+   */
+  cwd?: string;
+
+  /**
+   * If `true`, these mock routes is matched after internal middlewares are installed.
+   * @default `false`
+   */
+  isAfter?: boolean;
+
+  /**
+   * Specify the directory to define mock assets.
+   */
+  assets?: string;
+
+  /**
+   * Initial options of `find-my-way`. see more at https://github.com/delvedor/find-my-way#findmywayoptions
+   */
+  routerOptions?: SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2>;
+
+  /**
+   * Initial list of mock routes that should be added to the dev server
+   * or specify the directory to define mock routes that should be added to the dev server.
+   */
+  routes?: RouteConfig | Array<RouteConfig | string> | string;
+}
+```
+
 * `cwd` - Default: `process.cwd()`.
 * `isAfter` - If `true`, these mock routes is matched after internal middlewares are installed.
-* `mockAssetsDir` - Specify the directory to define mock assets.
-* `mockRouterOptions` - [Initial options of `find-my-way`](https://github.com/delvedor/find-my-way#findmywayoptions)
-* `mockRoutes` - Initial list of mock routes that should be added to the dev server.
-* `mockRoutesDir` - Specify the directory to define mock routes that should be added to the dev server.
+* `assets` - Specify the directory to define mock assets.
+* `routerOptions` - [Initial options of `find-my-way`](https://github.com/delvedor/find-my-way#findmywayoptions)
+* `routes`
+  * `RouteConfig | Array<RouteConfig | string>` - Initial list of mock routes that should be added to the dev server.
+  * `string` - Specify the directory to define mock routes that should be added to the dev server.
 
 ## Usage
 
@@ -33,7 +79,7 @@ import mockData from 'vite-plugin-mock-data';
 export default defineConfig({
   plugins: [
     mockData({
-      mockAssetsDir: './mockAssets'
+      assets: './mockAssets'
     })
   ]
 });
@@ -67,7 +113,7 @@ import mockData from 'vite-plugin-mock-data';
 export default defineConfig({
   plugins: [
     mockData({
-      mockRoutes: {
+      routes: {
         '/hello': 'hello',
         '/hello2'(req, res) {
           res.statusCode = 200;
@@ -110,7 +156,7 @@ import mockData from 'vite-plugin-mock-data';
 export default defineConfig({
   plugins: [
     mockData({
-      mockRoutesDir: './mock'
+      routes: './mock'
     })
   ]
 });
