@@ -2,7 +2,7 @@
 const node_path = require("node:path");
 const node_module = require("node:module");
 const node_fs = require("node:fs");
-const globby = require("globby");
+const tinyglobby = require("tinyglobby");
 const getRouter = require("find-my-way");
 const sirv = require("sirv");
 const vite = require("vite");
@@ -12,6 +12,31 @@ function isObject(val) {
 }
 function toAbsolute(pth, cwd) {
   return node_path.isAbsolute(pth) ? pth : node_path.posix.join(cwd || process.cwd(), pth);
+}
+async function getRoute(filename) {
+  let config;
+  switch (node_path.extname(filename)) {
+    case ".js":
+      config = node_module.createRequire(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.tagName.toUpperCase() === "SCRIPT" && _documentCurrentScript.src || new URL("index.js", document.baseURI).href)(filename);
+      break;
+    case ".mjs":
+      config = (await import(filename)).default;
+      break;
+    case ".json":
+      config = JSON.parse(node_fs.readFileSync(filename, "utf-8"));
+      break;
+  }
+  return config;
+}
+async function loadRoutes(dir, routes) {
+  const paths = await tinyglobby.glob(`${dir}/**/*.{js,mjs,json}`, { absolute: true });
+  const configs = await Promise.all(paths.map(getRoute));
+  configs.reduce((prev, cur) => {
+    if (cur) {
+      prev.push(cur);
+    }
+    return prev;
+  }, routes);
 }
 function sirvOptions(headers) {
   return {
@@ -81,44 +106,30 @@ function configureServer(server, routerOpts, routes, serve, cwd) {
   });
 }
 function createPlugin(opts) {
-  const { isAfter, mockRouterOptions, mockAssetsDir, cwd = process.cwd() } = opts;
-  let { mockRoutesDir } = opts;
-  let mockRoutes = opts.mockRoutes || [];
-  if (isObject(mockRoutes) && !Array.isArray(mockRoutes)) {
-    mockRoutes = [mockRoutes];
-  }
+  const { isAfter, routerOptions, routes, assets, cwd = process.cwd() } = opts;
+  const allRoutes = [];
   return {
     name: "vite-plugin-mock-data",
     async configureServer(server) {
-      if (mockRoutesDir) {
-        mockRoutesDir = toAbsolute(mockRoutesDir, cwd);
-        const paths = await globby.globby(`${mockRoutesDir}/**/*.{js,mjs,json}`);
-        await Promise.all(paths.map((file) => {
-          return (async () => {
-            let config;
-            switch (node_path.extname(file)) {
-              case ".js":
-                config = node_module.createRequire(typeof document === "undefined" ? require("url").pathToFileURL(__filename).href : _documentCurrentScript && _documentCurrentScript.src || new URL("index.js", document.baseURI).href)(file);
-                break;
-              case ".mjs":
-                config = (await import(file)).default;
-                break;
-              case ".json":
-                config = JSON.parse(node_fs.readFileSync(file, "utf-8"));
-                break;
-            }
-            if (config) {
-              mockRoutes.push(config);
-            }
-          })();
-        }));
+      if (typeof routes === "string") {
+        await loadRoutes(toAbsolute(routes, cwd), allRoutes);
+      } else if (Array.isArray(routes)) {
+        for (const route of routes) {
+          if (typeof route === "string") {
+            await loadRoutes(toAbsolute(route, cwd), allRoutes);
+          } else {
+            allRoutes.push(route);
+          }
+        }
+      } else if (isObject(routes)) {
+        allRoutes.push(routes);
       }
       let serve = null;
-      if (mockAssetsDir) {
-        serve = sirv(toAbsolute(mockAssetsDir, cwd), sirvOptions(server.config.server.headers));
+      if (assets) {
+        serve = sirv(toAbsolute(assets, cwd), sirvOptions(server.config.server.headers));
       }
-      if (mockRoutes && mockRoutes.length > 0) {
-        return isAfter ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd) : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
+      if (allRoutes && allRoutes.length > 0) {
+        return isAfter ? () => configureServer(server, routerOptions, allRoutes, serve, cwd) : configureServer(server, routerOptions, allRoutes, serve, cwd);
       }
     }
   };

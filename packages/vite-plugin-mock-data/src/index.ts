@@ -2,50 +2,15 @@ import { isAbsolute, posix, parse, extname } from 'node:path';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { OutgoingHttpHeaders } from 'node:http';
-import { globby } from 'globby';
+import { glob } from 'tinyglobby';
 import getRouter, { Config as SirvConfig, HTTPVersion, HTTPMethod, RouteOptions, Handler } from 'find-my-way';
 import sirv, { RequestHandler, Options as SirvOptions } from 'sirv';
 import { Plugin, ViteDevServer, send } from 'vite';
+import { Options, RouteConfig, HandleRoute } from './typings';
 
-export interface HandleRoute {
-  file?: string;
-  handler?: any | Handler<HTTPVersion.V1>;
-  options?: RouteOptions;
-  store?: any;
-}
+export * from './typings';
 
-export interface RouteConfig {
-  [route: string]: string | Handler<HTTPVersion.V1> | HandleRoute;
-}
-
-export interface Options {
-  /**
-   * The directory to serve files from.
-   * @default `process.cwd()`
-   */
-  cwd?: string;
-
-  /**
-   * If `true`, these mock routes is matched after internal middlewares are installed.
-   * @default `false`
-   */
-  isAfter?: boolean;
-
-  /** Specify the directory to define mock assets. */
-  mockAssetsDir?: string;
-
-  /** Initial options of `find-my-way`. see more at https://github.com/delvedor/find-my-way#findmywayoptions */
-  mockRouterOptions?: SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2>;
-
-  /** Initial list of mock routes that should be added to the dev server. */
-  mockRoutes?: RouteConfig | RouteConfig[];
-
-  /** Specify the directory to define mock routes that should be added to the dev server. */
-  mockRoutesDir?: string;
-}
-
-
-function isObject(val: any): boolean {
+function isObject<T = any>(val: T): boolean {
   return val && typeof val === 'object';
 }
 
@@ -53,6 +18,33 @@ function toAbsolute(pth: string, cwd): string {
   return isAbsolute(pth)
     ? pth
     : posix.join(cwd || process.cwd(), pth);
+}
+
+async function getRoute(filename: string): Promise<RouteConfig | undefined> {
+  let config: RouteConfig | undefined;
+  switch (extname(filename)) {
+    case '.js':
+      config = createRequire(import.meta.url)(filename);
+      break;
+    case '.mjs':
+      config = (await import(filename)).default;
+      break;
+    case '.json':
+      config = JSON.parse(readFileSync(filename, 'utf-8'));
+      break;
+  }
+  return config;
+}
+
+async function loadRoutes(dir: string, routes: RouteConfig[]): Promise<void> {
+  const paths = await glob(`${dir}/**/*.{js,mjs,json}`, { absolute: true });
+  const configs = await Promise.all(paths.map(getRoute));
+  configs.reduce((prev, cur) => {
+    if (cur) {
+      prev.push(cur);
+    }
+    return prev;
+  }, routes);
 }
 
 function sirvOptions(headers?: OutgoingHttpHeaders): SirvOptions {
@@ -162,7 +154,7 @@ function configureServer(
  * export default defineConfig({
  *   plugins: [
  *     mockData({
- *       mockRoutesDir: './mock'
+ *       routes: './mock'
  *     })
  *   ]
  * });
@@ -174,61 +166,47 @@ function configureServer(
 export default function createPlugin(opts: Options): Plugin {
   const {
     isAfter,
-    mockRouterOptions,
-    mockAssetsDir,
+    routerOptions,
+    routes,
+    assets,
     cwd = process.cwd()
   } = opts;
-  let {
-    mockRoutesDir
-  } = opts;
 
-  let mockRoutes: RouteConfig[] = (opts.mockRoutes || []) as RouteConfig[];
-
-  if (isObject(mockRoutes) && !Array.isArray(mockRoutes)) {
-    mockRoutes = [mockRoutes];
-  }
+  const allRoutes: RouteConfig[] = [];
 
   return {
     name: 'vite-plugin-mock-data',
 
     async configureServer(server: ViteDevServer) {
-      if (mockRoutesDir) {
-        mockRoutesDir = toAbsolute(mockRoutesDir, cwd);
-
-        const paths = await globby(`${mockRoutesDir}/**/*.{js,mjs,json}`);
-        await Promise.all(paths.map((file) => {
-          return (async () => {
-            let config: RouteConfig | undefined;
-            switch (extname(file)) {
-              case '.js':
-                config = createRequire(import.meta.url)(file);
-                break;
-              case '.mjs':
-                config = (await import(file)).default;
-                break;
-              case '.json':
-                config = JSON.parse(readFileSync(file, 'utf-8'));
-                break;
-            }
-            if (config) {
-              mockRoutes.push(config);
-            }
-          })();
-        }));
+      if (typeof routes === 'string') {
+        await loadRoutes(toAbsolute(routes, cwd), allRoutes);
+      }
+      else if (Array.isArray(routes)) {
+        for (const route of routes) {
+          if (typeof route === 'string') {
+            await loadRoutes(toAbsolute(route, cwd), allRoutes);
+          }
+          else {
+            allRoutes.push(route);
+          }
+        }
+      }
+      else if (isObject(routes as RouteConfig)) {
+        allRoutes.push(routes as RouteConfig);
       }
 
       let serve: RequestHandler | null = null;
-      if (mockAssetsDir) {
+      if (assets) {
         serve = sirv(
-          toAbsolute(mockAssetsDir, cwd),
+          toAbsolute(assets, cwd),
           sirvOptions(server.config.server.headers)
         );
       }
 
-      if (mockRoutes && mockRoutes.length > 0) {
+      if (allRoutes && allRoutes.length > 0) {
         return isAfter
-          ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd)
-          : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
+          ? () => configureServer(server, routerOptions, allRoutes, serve, cwd)
+          : configureServer(server, routerOptions, allRoutes, serve, cwd);
       }
     }
   };

@@ -13,3 +13,4 @@
 * [vite-plugin-include-css](packages/vite-plugin-include-css) - 打包 css 代码到 一个 js 文件中.
 * [vite-plugin-mock-data](packages/vite-plugin-mock-data) - 配置本地mock数据。
 * [vite-plugin-reverse-proxy](packages/vite-plugin-reverse-proxy) - 配合Chrome插件[XSwitch](https://chrome.google.com/webstore/detail/xswitch/idkjhjggpffolpidfkikidcokdkdaogg)将线上资源代理的本地调试。
+* [vite-vite-plugin-separate-importer](packages/vite-plugin-separate-importer) - 将原来从一个源模块批量导入内容变成分批从源模块下导入单个文件。

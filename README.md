@@ -13,3 +13,4 @@
 * [vite-plugin-include-css](packages/vite-plugin-include-css) - build css into individual js files instead of using css links.
 * [vite-plugin-mock-data](packages/vite-plugin-mock-data) - Provides a simple way to mock data.
 * [vite-plugin-reverse-proxy](packages/vite-plugin-reverse-proxy) - Makes the script to be served with the text/javascript MIME type instead of module MIME type.
+* [vite-vite-plugin-separate-importer](packages/vite-plugin-separate-importer) - Transform bulk imports from a single source module into individual file imports from the source module.

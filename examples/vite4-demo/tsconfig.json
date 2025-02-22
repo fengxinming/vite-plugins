@@ -6,7 +6,9 @@
     "stripInternal": true
   },
   "include": [
-    "src"
+    "src/*.ts",
+    "src/*.tsx",
+    "custom-modules.d.ts"
   ],
   "exclude": [
     "dist",

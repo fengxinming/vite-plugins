@@ -13,7 +13,8 @@
     "build:packages": "pnpm run -r --parallel build:lib",
     "build:examples": "pnpm run -r --parallel build",
     "prepare": "husky install",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "build:all": "pnpm -r --parallel --stream run build:lib"
   },
   "repository": {
     "type": "git",
@@ -28,8 +29,14 @@
   "dependencies": {
     "@rollup/plugin-typescript": "^11.1.5",
     "@types/node": "^14.18.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
     "lerna": "^6.6.2",
-    "vite": "^6.1.0"
+    "pug": "^3.0.3",
+    "tinyglobby": "^0.2.12",
+    "vite": "^6.1.0",
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.2.2"
   },
   "engines": {
     "node": ">=14.18.0"

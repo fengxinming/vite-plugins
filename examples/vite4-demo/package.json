@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev:external": "vite dev --config=vite.external.mjs",
     "build:combine": "vite build --config=vite.combine.mjs",
     "build:cp": "vite build --config=vite.cp.mjs",
     "build:external": "vite build --config=vite.external.mjs",
@@ -12,11 +11,15 @@
     "build:include-css": "vite build --config=vite.include-css.mjs",
     "build:mock-data": "vite build --config=vite.mock-data.mjs",
     "build:reverse-proxy": "vite build --config=vite.reverse-proxy.mjs",
+    "build:separate-importer": "vite build --config=vite.separate-importer.mjs",
+    "dev:external": "vite dev --config=vite.external.mjs",
+    "dev:mock-data": "vite dev --config=vite.mock-data.mjs",
     "build": "pnpm run /^build:.*/"
   },
-  "dependencies": {
+  "devDependencies": {
     "@rollup/plugin-typescript": "^11.1.6",
     "@types/node": "^14.18.63",
+    "celia": "^9.0.2",
     "vite": "^4.5.0",
     "vite-plugin-combine": "workspace:^",
     "vite-plugin-cp": "workspace:^",
@@ -24,7 +27,8 @@
     "vite-plugin-hook-use": "workspace:^",
     "vite-plugin-include-css": "workspace:^",
     "vite-plugin-mock-data": "workspace:^",
-    "vite-plugin-reverse-proxy": "workspace:^"
+    "vite-plugin-reverse-proxy": "workspace:^",
+    "vite-plugin-separate-importer": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }

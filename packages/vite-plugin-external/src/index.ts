@@ -2,148 +2,13 @@ import { join, isAbsolute } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { builtinModules } from 'node:module';
 import { types } from 'node:util';
-import { emptyDirSync, outputFile } from 'fs-extra';
-import { RollupOptions, InputPluginOption, OutputOptions, Plugin as RollupPlugin } from 'rollup';
-import { UserConfig, ResolvedConfig, ConfigEnv, Alias, Plugin } from 'vite';
+import { UserConfig, ResolvedConfig, ConfigEnv, Plugin } from 'vite';
 import { Options } from './typings';
+import { setOutputGlobals } from './handleGlobals';
+import { setExternals } from './handleExternals';
+import { setAliases } from './handleAliases';
 
 export * from './typings';
-
-function setExternals(rollupOptions: RollupOptions, externalLibs: any[]) {
-  if (externalLibs.length === 0) {
-    return;
-  }
-
-  const { external } = rollupOptions;
-
-  // if external indicates
-  if (!external) {
-    rollupOptions.external = externalLibs;
-  }
-  // string or RegExp or array
-  else if (
-    typeof external === 'string'
-    || types.isRegExp(external)
-    || Array.isArray(external)
-  ) {
-    rollupOptions.external = externalLibs.concat(external);
-  }
-  // function
-  else if (typeof external === 'function') {
-    rollupOptions.external = function (
-      source: string,
-      importer: string | undefined,
-      isResolved: boolean
-    ): boolean | null | undefined | void {
-      if (
-        externalLibs.some((libName) =>
-          (types.isRegExp(libName) ? libName.test(source) : libName === source)
-        )
-      ) {
-        return true;
-      }
-      return external(source, importer, isResolved);
-    };
-  }
-}
-
-function rollupOutputGlobals(
-  output: OutputOptions,
-  externals: Record<string, any>
-): void {
-  let { globals } = output;
-  if (!globals) {
-    globals = {};
-    output.globals = globals;
-  }
-  Object.assign(globals, externals);
-}
-
-function setOutputGlobals(
-  rollupOptions: RollupOptions,
-  externals?: Record<string, any>,
-  externalGlobals?: (globals: Record<string, any>) => RollupPlugin
-): void {
-  if (!externals) {
-    return;
-  }
-
-  if (typeof externalGlobals === 'function') {
-    rollupOptions.plugins = [
-      externalGlobals(externals),
-      ...((rollupOptions.plugins as InputPluginOption[]) || [])
-    ];
-  }
-  else {
-    let { output } = rollupOptions;
-    if (!output) {
-      output = {};
-      rollupOptions.output = output;
-    }
-
-    // compat Array
-    if (Array.isArray(output)) {
-      output.forEach((n) => {
-        rollupOutputGlobals(n, externals);
-      });
-    }
-    else {
-      rollupOutputGlobals(output, externals);
-    }
-  }
-}
-
-/** compat cjs and esm */
-function createFakeLib(globalName: string, libPath: string): Promise<void> {
-  const cjs = `module.exports = ${globalName};`;
-  return outputFile(libPath, cjs, 'utf-8');
-}
-
-async function addAliases(
-  config: UserConfig,
-  cacheDir: string,
-  externals: Record<string, any> | undefined,
-  libNames: string[]
-): Promise<void> {
-  // cleanup cache dir
-  emptyDirSync(cacheDir);
-
-  if (libNames.length === 0 || !externals) {
-    return;
-  }
-
-  let { resolve } = config;
-  if (!resolve) {
-    resolve = {};
-    config.resolve = resolve;
-  }
-  let { alias } = resolve;
-  if (!alias) {
-    alias = [];
-    resolve.alias = alias;
-  }
-
-  // #1 if alias is object type
-  if (!Array.isArray(alias)) {
-    alias = Object.entries(alias).map(([key, value]) => {
-      return { find: key, replacement: value };
-    });
-    resolve.alias = alias;
-  }
-
-  await Promise.all(
-    libNames.map((libName) => {
-      const libPath = join(cacheDir, `${libName.replace(/\//g, '_')}.js`);
-      (alias as Alias[]).push({
-        find: new RegExp(`^${libName}$`),
-        replacement: libPath
-      });
-
-      return createFakeLib(externals[libName], libPath);
-    })
-  );
-}
-
 function buildOptions(opts: Options, mode: string): Options {
   let {
     cwd,
@@ -223,37 +88,45 @@ function buildOptions(opts: Options, mode: string): Options {
  * @returns a vite plugin
  */
 export default function createPlugin(opts: Options): Plugin {
-  let libNames: any[];
+  let externalNames: any[];
+  let globals: Record<string, string> | undefined;
 
   return {
     name: 'vite-plugin-external',
     enforce: opts.enforce,
     async config(config: UserConfig, { mode, command }: ConfigEnv) {
-      const { cacheDir, externals, interop } = buildOptions(opts, mode);
+      opts = buildOptions(opts, mode);
 
-      libNames = !externals ? [] : Object.keys(externals);
-      let externalLibs = libNames;
-      let globals = externals;
-
-      // if development mode
-      if (command === 'serve' || interop === 'auto') {
-        await addAliases(config, cacheDir as string, globals, libNames);
-        externalLibs = [];
+      globals = opts.externals;
+      externalNames = globals ? Object.keys(globals) : [];
+      if (externalNames.length === 0) {
         globals = void 0;
       }
 
+      const cacheDir = opts.cacheDir as string;
+
+      // if development mode
+      if (command === 'serve' || opts.interop === 'auto') {
+        await setAliases(config, cacheDir, globals);
+        return;
+      }
+
+      // externalize dependencies for build command
       if (command === 'build') {
-        if (opts.nodeBuiltins) {
-          externalLibs = externalLibs.concat(
+        const { nodeBuiltins, externalizeDeps } = opts;
+
+        // handle nodejs built-in modules
+        if (nodeBuiltins) {
+          externalNames = externalNames.concat(
             builtinModules.map((builtinModule) => {
               return new RegExp(`^(?:node:)?${builtinModule}(?:/.+)*$`);
             })
           );
         }
 
-        const { externalizeDeps } = opts;
+        // externalize given dependencies
         if (externalizeDeps) {
-          externalLibs = externalLibs.concat(
+          externalNames = externalNames.concat(
             externalizeDeps.map((dep) => {
               return types.isRegExp(dep) ? dep : new RegExp(`^${dep}(?:/.+)*$`);
             })
@@ -272,7 +145,7 @@ export default function createPlugin(opts: Options): Plugin {
         build.rollupOptions = rollupOptions;
       }
 
-      setExternals(rollupOptions, externalLibs);
+      setExternals(rollupOptions, externalNames);
       setOutputGlobals(rollupOptions, globals, opts.externalGlobals);
     },
     configResolved(config: ResolvedConfig) {
@@ -288,10 +161,10 @@ export default function createPlugin(opts: Options): Plugin {
           return;
         }
 
-        if (metadata && libNames && libNames.length) {
+        if (metadata && externalNames && externalNames.length) {
           const { optimized } = metadata;
           if (optimized && Object.keys(optimized).length) {
-            libNames.forEach((libName) => {
+            externalNames.forEach((libName) => {
               if (optimized[libName]) {
                 delete optimized[libName];
               }
