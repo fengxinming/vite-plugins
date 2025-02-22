@@ -5,23 +5,16 @@ import pluginView from 'vite-plugin-view';
 
 export default defineConfig({
   plugins: [
-    pluginView({
-      engine: 'pug',
-      pretty: true
-    }),
     vue(),
+    pluginView({
+      engine: 'pug'
+    }),
     pluginExternal({
       externals: {
         vue: 'Vue'
       }
     })
   ],
-  optimizeDeps: {
-    extensions: ['.pug']
-  },
-  resolve: {
-    extensions: ['.pug']
-  },
   server: {
     open: true
   },
@@ -29,7 +22,6 @@ export default defineConfig({
     outDir: 'dist/vue',
     minify: false,
     rollupOptions: {
-      input: 'index.pug',
       output: {
         format: 'iife'
       }

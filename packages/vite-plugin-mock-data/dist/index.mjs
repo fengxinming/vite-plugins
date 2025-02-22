@@ -1,7 +1,7 @@
-import { extname, isAbsolute, posix, parse } from "node:path";
+import { posix, isAbsolute, extname, parse } from "node:path";
 import { createRequire } from "node:module";
 import { readFileSync } from "node:fs";
-import { globby } from "globby";
+import { glob } from "tinyglobby";
 import getRouter from "find-my-way";
 import sirv from "sirv";
 import { send } from "vite";
@@ -10,6 +10,31 @@ function isObject(val) {
 }
 function toAbsolute(pth, cwd) {
   return isAbsolute(pth) ? pth : posix.join(cwd || process.cwd(), pth);
+}
+async function getRoute(filename) {
+  let config;
+  switch (extname(filename)) {
+    case ".js":
+      config = createRequire(import.meta.url)(filename);
+      break;
+    case ".mjs":
+      config = (await import(filename)).default;
+      break;
+    case ".json":
+      config = JSON.parse(readFileSync(filename, "utf-8"));
+      break;
+  }
+  return config;
+}
+async function loadRoutes(dir, routes) {
+  const paths = await glob(`${dir}/**/*.{js,mjs,json}`, { absolute: true });
+  const configs = await Promise.all(paths.map(getRoute));
+  configs.reduce((prev, cur) => {
+    if (cur) {
+      prev.push(cur);
+    }
+    return prev;
+  }, routes);
 }
 function sirvOptions(headers) {
   return {
@@ -79,44 +104,30 @@ function configureServer(server, routerOpts, routes, serve, cwd) {
   });
 }
 function createPlugin(opts) {
-  const { isAfter, mockRouterOptions, mockAssetsDir, cwd = process.cwd() } = opts;
-  let { mockRoutesDir } = opts;
-  let mockRoutes = opts.mockRoutes || [];
-  if (isObject(mockRoutes) && !Array.isArray(mockRoutes)) {
-    mockRoutes = [mockRoutes];
-  }
+  const { isAfter, routerOptions, routes, assets, cwd = process.cwd() } = opts;
+  const allRoutes = [];
   return {
     name: "vite-plugin-mock-data",
     async configureServer(server) {
-      if (mockRoutesDir) {
-        mockRoutesDir = toAbsolute(mockRoutesDir, cwd);
-        const paths = await globby(`${mockRoutesDir}/**/*.{js,mjs,json}`);
-        await Promise.all(paths.map((file) => {
-          return (async () => {
-            let config;
-            switch (extname(file)) {
-              case ".js":
-                config = createRequire(import.meta.url)(file);
-                break;
-              case ".mjs":
-                config = (await import(file)).default;
-                break;
-              case ".json":
-                config = JSON.parse(readFileSync(file, "utf-8"));
-                break;
-            }
-            if (config) {
-              mockRoutes.push(config);
-            }
-          })();
-        }));
+      if (typeof routes === "string") {
+        await loadRoutes(toAbsolute(routes, cwd), allRoutes);
+      } else if (Array.isArray(routes)) {
+        for (const route of routes) {
+          if (typeof route === "string") {
+            await loadRoutes(toAbsolute(route, cwd), allRoutes);
+          } else {
+            allRoutes.push(route);
+          }
+        }
+      } else if (isObject(routes)) {
+        allRoutes.push(routes);
       }
       let serve = null;
-      if (mockAssetsDir) {
-        serve = sirv(toAbsolute(mockAssetsDir, cwd), sirvOptions(server.config.server.headers));
+      if (assets) {
+        serve = sirv(toAbsolute(assets, cwd), sirvOptions(server.config.server.headers));
       }
-      if (mockRoutes && mockRoutes.length > 0) {
-        return isAfter ? () => configureServer(server, mockRouterOptions, mockRoutes, serve, cwd) : configureServer(server, mockRouterOptions, mockRoutes, serve, cwd);
+      if (allRoutes && allRoutes.length > 0) {
+        return isAfter ? () => configureServer(server, routerOptions, allRoutes, serve, cwd) : configureServer(server, routerOptions, allRoutes, serve, cwd);
       }
     }
   };

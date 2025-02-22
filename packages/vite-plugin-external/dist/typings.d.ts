@@ -31,12 +31,6 @@ export interface Options extends BasicOptions {
      */
     [mode: string]: BasicOptions | any;
     /**
-     * Different `externals` can be specified in different modes.
-     *
-     * 在不同的模式下，可以指定不同的外部依赖。
-     */
-    mode?: string;
-    /**
      * Controls how Vite handles default.
      *
      * 该选项用于控制 Vite 如何处理默认值。

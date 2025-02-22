@@ -16,6 +16,7 @@
     "build:reverse-proxy": "vite build --config=vite.reverse-proxy.mjs",
     "build:separate-importer": "vite build --config=vite.separate-importer.mjs",
     "dev:external": "vite dev --config=vite.external.dev.mjs",
+    "dev:mock-data": "vite dev --config=vite.mock-data.mjs",
     "build": "pnpm run /^build:.*/"
   },
   "devDependencies": {
@@ -30,7 +31,8 @@
     "vite-plugin-include-css": "workspace:^",
     "vite-plugin-mock-data": "workspace:^",
     "vite-plugin-reverse-proxy": "workspace:^",
-    "vite-plugin-separate-importer": "workspace:^"
+    "vite-plugin-separate-importer": "workspace:^",
+    "vite-plugin-view": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }

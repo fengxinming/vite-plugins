@@ -65,7 +65,7 @@ function processLibs(libName, specifiers, lib) {
   }
   return newImportDeclarationStr.slice(0, -1);
 }
-function createPlugin({ libs = [] } = {}) {
+function createPlugin({ enforce, libs = [] } = {}) {
   if (!Array.isArray(libs) || libs.length === 0) {
     return;
   }
@@ -89,6 +89,7 @@ function createPlugin({ libs = [] } = {}) {
   }
   return {
     name: "vite-plugin-separate-importer",
+    enforce,
     async transform(code) {
       await esModuleLexer.init;
       const [imports] = esModuleLexer.parse(code);

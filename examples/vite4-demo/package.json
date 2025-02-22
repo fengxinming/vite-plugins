@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev:external": "vite dev --config=vite.external.mjs",
     "build:combine": "vite build --config=vite.combine.mjs",
     "build:cp": "vite build --config=vite.cp.mjs",
     "build:external": "vite build --config=vite.external.mjs",
@@ -13,6 +12,8 @@
     "build:mock-data": "vite build --config=vite.mock-data.mjs",
     "build:reverse-proxy": "vite build --config=vite.reverse-proxy.mjs",
     "build:separate-importer": "vite build --config=vite.separate-importer.mjs",
+    "dev:external": "vite dev --config=vite.external.mjs",
+    "dev:mock-data": "vite dev --config=vite.mock-data.mjs",
     "build": "pnpm run /^build:.*/"
   },
   "devDependencies": {

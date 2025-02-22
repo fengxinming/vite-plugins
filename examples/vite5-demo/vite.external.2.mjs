@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
-import { globbySync } from 'globby';
+import { globSync } from 'tinyglobby';
 import pkg from './package.json';
 
 export default defineConfig({
@@ -19,7 +19,7 @@ export default defineConfig({
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: globbySync('src/*.js'),
+      entry: globSync('src/*.js'),
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }

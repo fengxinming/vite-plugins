@@ -21,8 +21,14 @@ export interface libConfig {
 }
 export interface Options {
     /**
-    * 插件配置接口，用于定义待转换的库名称及其处理逻辑
-    * Interface for plugin configuration to define the library names and processing logic
-    */
+     * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+     *
+     * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
+     */
+    enforce?: 'pre' | 'post';
+    /**
+     * 插件配置接口，用于定义待转换的库名称及其处理逻辑
+     * Interface for plugin configuration to define the library names and processing logic
+     */
     libs?: libConfig[];
 }

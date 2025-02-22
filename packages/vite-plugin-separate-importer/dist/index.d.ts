@@ -16,17 +16,17 @@ export * from './typings';
   export default defineConfig({
     plugins: [
       createExternal({
-        externalizeDeps: ['vue', 'vant']
+        externalizeDeps: ['antd']
       }),
       ts({
         compilerOptions: {
-          declarationDir: 'dist/separate-importer'
+          declarationDir: 'dist'
         }
       }),
       separateImporter({
         libs: [
           {
-            name: 'vant',
+            name: 'antd',
             importerSource(importer, libName) {
               return {
                 es: `${libName}/es/${decamelize(importer)}`,
@@ -44,11 +44,10 @@ export * from './typings';
       })
     ],
     build: {
-      outDir: 'dist/separate-importer',
       minify: false,
       lib: {
         formats: ['es', 'cjs'],
-        entry: ['src/separate-importer.ts'],
+        entry: ['src/*.tsx'],
         fileName(format, entryName) {
           return entryName + (format === 'es' ? '.mjs' : '.js');
         }
@@ -60,5 +59,5 @@ export * from './typings';
  * @param opts options
  * @returns a vite plugin
  */
-declare function createPlugin(this: PluginContext, { libs }?: Options): Plugin<any> | undefined;
+declare function createPlugin(this: PluginContext, { enforce, libs }?: Options): Plugin | undefined;
 export default createPlugin;

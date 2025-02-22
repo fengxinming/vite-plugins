@@ -4,7 +4,6 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev:external": "vite dev --config=vite.external.js",
     "build:combine": "vite build --config=vite.combine.js",
     "build:cp": "vite build --config=vite.cp.js",
     "build:external": "vite build --config=vite.external.js",
@@ -12,7 +11,9 @@
     "build:include-css": "vite build --config=vite.include-css.js",
     "build:mock-data": "vite build --config=vite.mock-data.js",
     "build:reverse-proxy": "vite build --config=vite.reverse-proxy.js",
-    "build:separate-importer": "vite build --config=vite.separate-importer.mjs",
+    "build:separate-importer": "vite build --config=vite.separate-importer.js",
+    "dev:external": "vite dev --config=vite.external.js",
+    "dev:mock-data": "vite dev --config=vite.mock-data.js",
     "build": "pnpm run /^build:.*/"
   },
   "devDependencies": {
