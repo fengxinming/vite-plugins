@@ -19,7 +19,6 @@
   "scripts": {
     "build:lib": "vite build",
     "watch": "vite build --watch",
-    "prepublishOnly": "npm run build:lib",
     "release": "npm publish"
   },
   "repository": {
@@ -39,7 +38,6 @@
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
     "@types/node": "^14.18.63",
-    "camelcase": "^7.0.1",
     "es-module-lexer": "^1.5.0"
   },
   "files": [
