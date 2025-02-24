@@ -2,23 +2,24 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-combine.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-combine)
 
-> `vite-plugin-combine` is a Vite plugin that combines multiple module files into a single target file. It supports various export types (named exports, default exports, no exports) and can automatically generate corresponding import statements based on configuration. (Vite >= 3.1)
+> `vite-plugin-combine` 是一个 Vite 插件，用于将多个模块文件组合成一个目标文件。它支持多种导出方式（命名导出、默认导出、无导出），并可以根据配置自动生成相应的导入语句。(Vite >= 3.1)
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 
-## English | [中文](README_zh-CN.md)
+## [English](README.md) | 中文
 
-## Installation
+## 安装
+
+使用 npm 或 yarn 安装插件：
 
 ```bash
 npm install vite-plugin-combine --save-dev
 ```
 
+## 使用方法
 
-## Usage
-
-Import and configure the plugin in your `vite.config.ts`:
+在 `vite.config.ts` 中引入并配置插件：
 
 ```typescript
 import { defineConfig } from 'vite';
@@ -45,7 +46,7 @@ export default defineConfig({
 });
 ```
 
-## Configuration Options
+## 配置项
 
 ```ts
 export type NameExport = (name: string, filePath: string) => string;
@@ -98,18 +99,18 @@ export interface Options {
 }
 ```
 
-| Option Name  | Type                          | Default Value | Description                                                                 |
-| ------------ | ----------------------------- | ------------- | --------------------------------------------------------------------------- |
-| src          | string                        | -             | Source file matching pattern, supports glob syntax                         |
-| target       | string                        | `'index.js'`  | Target file path                                                            |
-| exports      | `'named'` \| `'default'` \| `'none'` | `'named'` | Export type: named exports, default export, no exports                     |
-| nameExport   | boolean \| function           | `true`        | Enable camel case conversion or provide a custom function for export names  |
-| enforce      | `'pre'` \| `'post'`           | `'pre'`       | Plugin execution timing, `pre` before other plugins, `post` after other plugins |
-| cwd          | string                        | `process.cwd()` | Current working directory, defaults to project root directory               |
+| 参数名       | 类型                | 默认值          | 描述                                                         |
+| ------------ | ------------------- | --------------- | ------------------------------------------------------------ |
+| src          | string              | -               | 源文件匹配模式，支持 glob 语法                               |
+| target       | string              | `'index.js'`    | 目标文件路径                                                 |
+| exports      | `'named'` \| `'default'` \| `'none'` | `'named'` | 导出类型：命名导出、默认导出、不导出                       |
+| nameExport   | boolean \| function | `true`          | 是否启用驼峰命名转换，或提供自定义函数生成导出名称           |
+| enforce      | `'pre'` \| `'post'`  | `'pre'`         | 插件执行时机，`pre` 表示在其他插件之前执行，`post` 表示在其他插件之后执行 |
+| cwd          | string              | `process.cwd()` | 当前工作目录，默认为项目根目录                               |
 
-## Example
+## 示例
 
-Assuming you have the following file structure:
+假设你有以下文件结构：
 
 ```
 src/
@@ -117,10 +118,9 @@ src/
   |     |- Button.ts
   |     |- Input.ts
   |     |- Select.ts
-  |- index.ts
 ```
 
-Configure as follows:
+配置如下：
 
 ```typescript
 combine({
@@ -131,7 +131,7 @@ combine({
 })
 ```
 
-This will generate the following `src/index.ts` file:
+将会生成如下的 `src/index.ts` 文件：
 
 ```typescript
 export { default as myButton } from './components/Button';
@@ -139,7 +139,7 @@ export { default as myInput } from './components/Input';
 export { default as mySelect } from './components/Select';
 ```
 
-## Examples
+## 示例
 
 * [vite3 demo](../../examples/vite3-demo)
 * [vite4 demo](../../examples/vite4-demo)

@@ -6,10 +6,10 @@ export default defineConfig({
   plugins: [
     vitePluginCp({
       targets: [
-        { src: '../../node_modules/vite/dist', dest: 'dist/test' },
-        { src: '../../node_modules/vite/dist', dest: 'dist/test2', flatten: false },
-        { src: '../../node_modules/vite/README.md', dest: 'dist' },
-        { src: '../../node_modules/vite/**/*.ts', dest: 'dist/types' }
+        { src: './node_modules/vite/dist', dest: 'dist/cp/test' },
+        { src: './node_modules/vite/dist', dest: 'dist/cp/test2', flatten: false },
+        { src: './node_modules/vite/README.md', dest: 'dist/cp' },
+        { src: './node_modules/vite/**/*.ts', dest: 'dist/cp/types' }
       ]
     })
   ],

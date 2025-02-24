@@ -7,15 +7,21 @@ export default defineConfig({
   plugins: [
     vitePluginCombine({
       src: 'src/*.ts',
-      target: 'src/index.ts'
+      target: 'src/index.ts',
+      exports: 'default'
     }),
-    ts()
+    ts({
+      compilerOptions: {
+        declarationDir: 'dist/combine'
+      }
+    })
   ],
   build: {
+    outDir: 'dist/combine',
     minify: false,
     lib: {
       formats: ['es'],
-      fileName: 'combine'
+      fileName: '[name]'
     }
   }
 });

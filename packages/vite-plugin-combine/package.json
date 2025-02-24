@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-combine",
-  "version": "4.0.3",
+  "version": "6.0.0",
   "description": "Combines specified files to produce a single master file.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -37,9 +37,11 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
+    "tinyglobby": "^0.2.12"
+  },
+  "devDependencies": {
     "@types/node": "^14.18.63",
-    "camelcase": "^7.0.1",
-    "globby": "^13.2.2"
+    "camelcase": "^8.0.0"
   },
   "files": [
     "dist"

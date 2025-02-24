@@ -6,22 +6,25 @@ import vitePluginCombine from 'vite-plugin-combine';
 export default defineConfig({
   plugins: [
     vitePluginCombine({
-      src: ['src/*.ts', '!src/noop.ts', '!src/entry.ts'],
-      target: 'src/index.ts',
-      exports: 'default'
+      src: ['src/*.ts', '!src/index.ts'],
+      target: 'src/combine.ts',
+      nameExport: (name) => `my${name}`
     }),
-    ts()
+    ts({
+      compilerOptions: {
+        declarationDir: 'dist/combine/types'
+      }
+    })
   ],
+  resolve: {
+    preserveSymlinks: true
+  },
   build: {
     outDir: 'dist/combine',
     minify: false,
     lib: {
-      entry: [
-        'src/index.ts',
-        'src/noop.ts'
-      ],
       formats: ['es'],
-      fileName: 'combine'
+      fileName: '[name]'
     }
   }
 });
