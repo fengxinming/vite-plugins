@@ -7,6 +7,8 @@
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 
+## [English](README.md) | 中文
+
 ## 安装
 
 使用 npm 或 yarn 安装插件：
