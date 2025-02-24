@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build:combine": "vite build --config=vite.combine.mjs",
+    "build:combine.1": "vite build --config=vite.combine.1.mjs",
+    "build:combine.2": "vite build --config=vite.combine.2.mjs",
     "build:cp": "vite build --config=vite.cp.mjs",
     "build:external": "vite build --config=vite.external.mjs",
     "build:hook-use": "vite build --config=vite.hook-use.mjs",
