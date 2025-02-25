@@ -1,4 +1,5 @@
 "use strict";
+const node_fs = require("node:fs");
 const node_os = require("node:os");
 const node_path = require("node:path");
 const tinyglobby = require("tinyglobby");
@@ -122,11 +123,43 @@ function noneExport(files, target) {
     return `import '${relativeDir ? node_path.join(relativeDir, name) : `./${name}`}';`;
   }).join(node_os.EOL);
 }
-function createPlugin(opts) {
+function rebuildInput(input, files) {
+  if (typeof input === "string") {
+    return [input].concat(files);
+  } else if (Array.isArray(input)) {
+    return input.concat(files);
+  } else if (input && typeof input === "object") {
+    return files.reduce((prev, cur) => {
+      const obj = node_path.parse(cur);
+      prev[obj.name] = cur;
+      return prev;
+    }, input);
+  }
+  return files;
+}
+function onExit(listener) {
+  process.on("exit", listener);
+  process.on("SIGHUP", listener);
+  process.on("SIGINT", listener);
+  process.on("SIGTERM", listener);
+  process.on("SIGBREAK", listener);
+  process.on("uncaughtException", listener);
+  process.on("unhandledRejection", listener);
+}
+function offExit(listener) {
+  process.off("exit", listener);
+  process.off("SIGHUP", listener);
+  process.off("SIGINT", listener);
+  process.off("SIGTERM", listener);
+  process.off("SIGBREAK", listener);
+  process.off("uncaughtException", listener);
+  process.off("unhandledRejection", listener);
+}
+function pluginCombine(opts) {
   if (!opts) {
     opts = {};
   }
-  const { src, nameExport } = opts;
+  const { src, overwrite, nameExport } = opts;
   const enforce = opts.enforce || "pre";
   const exportsType = opts.exports || "named";
   const target = opts.target || "index.js";
@@ -136,50 +169,76 @@ function createPlugin(opts) {
     absTarget = node_path.join(cwd, absTarget);
   }
   absTarget = vite.normalizePath(absTarget);
+  if (!overwrite && node_fs.existsSync(absTarget)) {
+    throw new Error(`'${absTarget}' exists.`);
+  }
   const files = tinyglobby.globSync(src, { cwd, absolute: true });
   if (!files.length) {
     return;
   }
+  let mainCode = "";
+  switch (exportsType) {
+    case "named":
+      mainCode = namedExport(files, absTarget, nameExport);
+      break;
+    case "default": {
+      mainCode = defaultExport(files, absTarget, nameExport);
+      break;
+    }
+    default:
+      mainCode = noneExport(files, absTarget);
+  }
+  node_fs.writeFileSync(absTarget, mainCode);
   const plugin = {
     name: "vite-plugin-combine",
     enforce,
     config(config) {
-      var _a;
+      const inputs = files.concat(absTarget);
       const { build } = config;
-      if (!build || !(build.lib && build.lib.entry) && !((_a = build.rollupOptions) == null ? void 0 : _a.input)) {
-        return {
-          build: {
-            lib: {
-              entry: files.concat(absTarget)
+      if (build) {
+        const { lib, rollupOptions } = build;
+        if (lib && typeof lib === "object") {
+          return {
+            build: {
+              lib: {
+                entry: rebuildInput(lib.entry, inputs)
+              }
             }
-          }
-        };
-      }
-    },
-    resolveId(id) {
-      if (id === absTarget) {
-        return id;
-      }
-    },
-    load(id) {
-      if (id !== absTarget) {
-        return;
-      }
-      let mainCode = "";
-      switch (exportsType) {
-        case "named":
-          mainCode = namedExport(files, absTarget, nameExport);
-          break;
-        case "default": {
-          mainCode = defaultExport(files, absTarget, nameExport);
-          break;
+          };
+        } else if (rollupOptions && typeof rollupOptions === "object") {
+          return {
+            build: {
+              rollupOptions: {
+                input: rebuildInput(rollupOptions.input, inputs)
+              }
+            }
+          };
         }
-        default:
-          mainCode = noneExport(files, absTarget);
       }
-      return mainCode;
+      return {
+        build: {
+          lib: {
+            entry: inputs
+          }
+        }
+      };
     }
   };
+  if (!overwrite) {
+    const clean = () => {
+      try {
+        if (node_fs.existsSync(absTarget)) {
+          node_fs.unlinkSync(absTarget);
+        }
+        offExit(clean);
+      } catch (e) {
+      }
+    };
+    onExit(clean);
+    plugin.closeBundle = function() {
+      clean();
+    };
+  }
   return plugin;
 }
-module.exports = createPlugin;
+module.exports = pluginCombine;

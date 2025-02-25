@@ -15,7 +15,6 @@
 npm install vite-plugin-combine --save-dev
 ```
 
-
 ## Usage
 
 Import and configure the plugin in your `vite.config.ts`:
@@ -27,7 +26,7 @@ import combine from 'vite-plugin-combine';
 export default defineConfig({
   plugins: [
     combine({
-      src: 'src/**/*.ts', // 匹配要组合的文件路径
+      src: 'src/*.ts', // 匹配要组合的文件路径
       target: 'src/index.ts', // 目标文件路径
       exports: 'named', // 导出类型：'named' | 'default' | 'none'
     })
@@ -47,29 +46,78 @@ export default defineConfig({
 
 ## Configuration Options
 
+### `src`
+
+- **Type**: `string | string[]`
+- **Description**: Pattern to match source files, supports glob syntax.
+
+### `target`
+
+- **Type**: `string`
+- **Default Value**: `'index.js'`
+- **Description**: Path to the target file after combination.
+
+### `exports`
+
+- **Type**: `'named' | 'default' | 'none'`
+- **Default Value**: `'named'`
+- **Description**: Export type, optional values: `'named'` (named export), `'default'` (default export), `'none'` (no export).
+
+### `overwrite`
+
+- **Type**: `boolean`
+- **Description**: Whether to overwrite the existing target file if it exists.
+
+### `nameExport`
+
+- **Type**: `boolean | function`
+- **Default Value**: `true`
+- **Description**: Whether to enable camel case naming or provide a custom function to generate export names.
+
+### `enforce`
+
+- **Type**: `'pre' | 'post'`
+- **Default Value**: `'pre'`
+- **Description**: Plugin execution order, `pre` means before other plugins, `post` means after other plugins.
+
+### `cwd`
+
+- **Type**: `string`
+- **Default Value**: `process.cwd()`
+- **Description**: Current working directory, defaults to the project root directory.
+
 ```ts
 export type NameExport = (name: string, filePath: string) => string;
 
 export interface Options {
   /**
-   * Files prepared for combine.
+   * Path to the files to be combined, supports glob patterns.
    *
-   * 准备合并的文件
+   * 需要合并的文件路径，支持 glob 模式。
    */
   src: string | string[];
   /**
-   * Combines into the target file.
+   * Path to the target file after combination.
    *
-   * 组合到目标文件
+   * 合并后的目标文件路径。
    *
    * @default 'index.js'
    */
   target: string;
 
   /**
-   * Name exports.
+   * Whether to overwrite the existing target file。
    *
-   * 给导出的内容命名
+   * 是否覆盖已存在的目标文件。
+   *
+   * @default false
+   */
+  overwrite?: boolean;
+
+  /**
+   * Custom function or boolean value for controlling the generation of export names.
+   *
+   * 自定义导出名称的函数或布尔值，用于控制导出名称的生成方式。
    */
   nameExport?: NameExport | boolean;
 
@@ -98,15 +146,6 @@ export interface Options {
 }
 ```
 
-| Option Name  | Type                          | Default Value | Description                                                                 |
-| ------------ | ----------------------------- | ------------- | --------------------------------------------------------------------------- |
-| src          | string                        | -             | Source file matching pattern, supports glob syntax                         |
-| target       | string                        | `'index.js'`  | Target file path                                                            |
-| exports      | `'named'` \| `'default'` \| `'none'` | `'named'` | Export type: named exports, default export, no exports                     |
-| nameExport   | boolean \| function           | `true`        | Enable camel case conversion or provide a custom function for export names  |
-| enforce      | `'pre'` \| `'post'`           | `'pre'`       | Plugin execution timing, `pre` before other plugins, `post` after other plugins |
-| cwd          | string                        | `process.cwd()` | Current working directory, defaults to project root directory               |
-
 ## Example
 
 Assuming you have the following file structure:
@@ -117,15 +156,14 @@ src/
   |     |- Button.ts
   |     |- Input.ts
   |     |- Select.ts
-  |- index.ts
 ```
 
 Configure as follows:
 
-```typescript
-combine({
-  src: './src/components/**/*.ts',
-  target: './src/index.ts',
+```ts
+pluginCombine({
+  src: 'src/components/**/*.ts',
+  target: 'src/index.ts',
   exports: 'named',
   nameExport: (name, filePath) => `my${name}`
 })
@@ -133,11 +171,16 @@ combine({
 
 This will generate the following `src/index.ts` file:
 
-```typescript
+```ts
 export { default as myButton } from './components/Button';
 export { default as myInput } from './components/Input';
 export { default as mySelect } from './components/Select';
 ```
+
+## Notes
+
+- If the target file already exists and the `overwrite` option is `false`, the plugin will throw an error.
+- The plugin will automatically clean up the generated target file when the process exits, unless the `overwrite` option is `true`.
 
 ## Examples
 

@@ -50,6 +50,7 @@
     "eslint-plugin-jsx-advanced": "^1.0.0",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-simple-import-sort": "^12.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^12.5.0",
     "react": "^16.14.0",
