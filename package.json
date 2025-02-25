@@ -2,10 +2,7 @@
   "name": "vite-plugins",
   "version": "1.0.0",
   "description": "Some custom plugins for vitejs.",
-  "main": "index.js",
-  "directories": {
-    "example": "examples"
-  },
+  "private": true,
   "scripts": {
     "deps": "npm run clean && pnpm install",
     "clean": "rm -rf node_modules ./*/*/node_modules",
@@ -13,8 +10,7 @@
     "build:packages": "pnpm run -r --parallel build:lib",
     "build:examples": "pnpm run -r --parallel build",
     "prepare": "husky install",
-    "docs": "typedoc",
-    "build:all": "pnpm -r --parallel --stream run build:lib"
+    "docs": "typedoc"
   },
   "repository": {
     "type": "git",
@@ -28,7 +24,6 @@
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
     "@rollup/plugin-typescript": "^11.1.5",
-    "@types/node": "^14.18.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
     "lerna": "^6.6.2",
@@ -45,6 +40,7 @@
     "@babel/preset-react": "^7.13.13",
     "@commitlint/cli": "^17.6.1",
     "@commitlint/config-conventional": "^17.6.1",
+    "@types/node": "^14.18.0",
     "eslint": "^8.48.0",
     "eslint-config-fe": "^2.1.0",
     "eslint-plugin-jsx-advanced": "^1.0.0",
