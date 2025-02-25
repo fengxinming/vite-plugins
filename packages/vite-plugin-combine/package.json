@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-combine",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "description": "Combines specified files to produce a single master file.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",

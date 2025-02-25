@@ -1,23 +1,31 @@
 export type NameExport = (name: string, filePath: string) => string;
 export interface Options {
     /**
-     * Files prepared for combine.
+     * Path to the files to be combined, supports glob patterns.
      *
-     * 准备合并的文件
+     * 需要合并的文件路径，支持 glob 模式。
      */
     src: string | string[];
     /**
-     * Combines into the target file.
+     * Path to the target file after combination.
      *
-     * 组合到目标文件
+     * 合并后的目标文件路径。
      *
      * @default 'index.js'
      */
     target: string;
     /**
-     * Name exports.
+     * Whether to overwrite the existing target file。
      *
-     * 给导出的内容命名
+     * 是否覆盖已存在的目标文件。
+     *
+     * @default false
+     */
+    overwrite?: boolean;
+    /**
+     * Custom function or boolean value for controlling the generation of export names.
+     *
+     * 自定义导出名称的函数或布尔值，用于控制导出名称的生成方式。
      */
     nameExport?: NameExport | boolean;
     /**

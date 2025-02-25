@@ -1,10 +1,13 @@
+import { existsSync, unlinkSync, writeFileSync } from 'node:fs';
 import { EOL } from 'node:os';
-import { parse, isAbsolute, join, relative, dirname } from 'node:path';
-import camelCase from 'camelcase';
-import { globSync } from 'tinyglobby';
+import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
-import { PluginOption, normalizePath } from 'vite';
-import { Options, NameExport } from './typings';
+import camelCase from 'camelcase';
+import { InputOption } from 'rollup';
+import { globSync } from 'tinyglobby';
+import { normalizePath, PluginOption } from 'vite';
+
+import { NameExport, Options } from './typings';
 
 export * from './typings';
 
@@ -49,7 +52,7 @@ function defaultExport(files: string[], target: string, nameExport?: NameExport 
     : '';
 }
 
-function noneExport(files: string[], target: string) {
+function noneExport(files: string[], target: string): string {
   return files
     .map((file) => {
       const { name, dir } = parse(file);
@@ -59,13 +62,50 @@ function noneExport(files: string[], target: string) {
     .join(EOL);
 }
 
+function rebuildInput(input: InputOption | undefined, files: string[]): InputOption {
+  if (typeof input === 'string') {
+    return [input].concat(files);
+  }
+  else if (Array.isArray(input)) {
+    return input.concat(files);
+  }
+  else if (input && typeof input === 'object') {
+    return files.reduce((prev, cur) => {
+      const obj = parse(cur);
+      prev[obj.name] = cur;
+      return prev;
+    }, input);
+  }
+  return files;
+}
 
-export default function createPlugin(opts: Options): PluginOption {
+function onExit(listener: (...args: any[]) => any): void {
+  process.on('exit', listener);
+  process.on('SIGHUP', listener);
+  process.on('SIGINT', listener);
+  process.on('SIGTERM', listener);
+  process.on('SIGBREAK', listener);
+  process.on('uncaughtException', listener);
+  process.on('unhandledRejection', listener);
+}
+
+function offExit(listener: (...args: any[]) => any): void {
+  process.off('exit', listener);
+  process.off('SIGHUP', listener);
+  process.off('SIGINT', listener);
+  process.off('SIGTERM', listener);
+  process.off('SIGBREAK', listener);
+  process.off('uncaughtException', listener);
+  process.off('unhandledRejection', listener);
+}
+
+
+export default function pluginCombine(opts: Options): PluginOption {
   if (!opts) {
     opts = {} as Options;
   }
 
-  const { src, nameExport } = opts;
+  const { src, overwrite, nameExport } = opts;
 
   const enforce = opts.enforce || 'pre';
   // 导出类型
@@ -82,6 +122,9 @@ export default function createPlugin(opts: Options): PluginOption {
     absTarget = join(cwd, absTarget);
   }
   absTarget = normalizePath(absTarget);
+  if (!overwrite && existsSync(absTarget)) {
+    throw new Error(`'${absTarget}' exists.`);
+  }
 
   const files = globSync(src, { cwd, absolute: true });
 
@@ -89,46 +132,77 @@ export default function createPlugin(opts: Options): PluginOption {
     return;
   }
 
+  let mainCode = '';
+  switch (exportsType) {
+    case 'named':
+      mainCode = namedExport(files, absTarget, nameExport);
+      break;
+    case 'default': {
+      mainCode = defaultExport(files, absTarget, nameExport);
+      break;
+    }
+    default:
+      mainCode = noneExport(files, absTarget);
+  }
+  writeFileSync(absTarget, mainCode);
+
   const plugin: PluginOption = {
     name: 'vite-plugin-combine',
     enforce,
 
     config(config) {
+      const inputs = files.concat(absTarget);
       const { build } = config;
-      if (!build || (!(build.lib && build.lib.entry) && !build.rollupOptions?.input)) {
-        return {
-          build: {
-            lib: {
-              entry: files.concat(absTarget)
+      if (build) {
+        const { lib, rollupOptions } = build;
+
+        // 库模式
+        if (lib && typeof lib === 'object') {
+          return {
+            build: {
+              lib: {
+                entry: rebuildInput(lib.entry, inputs)
+              }
             }
-          }
-        };
-      }
-    },
-    resolveId(id: string) {
-      if (id === absTarget) {
-        return id;
-      }
-    },
-    load(id: string) {
-      if (id !== absTarget) {
-        return;
-      }
-      let mainCode = '';
-      switch (exportsType) {
-        case 'named':
-          mainCode = namedExport(files, absTarget, nameExport);
-          break;
-        case 'default': {
-          mainCode = defaultExport(files, absTarget, nameExport);
-          break;
+          };
         }
-        default:
-          mainCode = noneExport(files, absTarget);
+
+        // 可能配置了 input
+        else if (rollupOptions && typeof rollupOptions === 'object') {
+          return {
+            build: {
+              rollupOptions: {
+                input: rebuildInput(rollupOptions.input, inputs)
+              }
+            }
+          };
+        }
       }
-      return mainCode;
+      return {
+        build: {
+          lib: {
+            entry: inputs
+          }
+        }
+      };
     }
   };
+
+  if (!overwrite) {
+    const clean = () => {
+      try {
+        if (existsSync(absTarget)) {
+          unlinkSync(absTarget);
+        }
+        offExit(clean);
+      }
+      catch (e) {}
+    };
+    onExit(clean);
+    plugin.closeBundle = function () {
+      clean();
+    };
+  }
 
   return plugin;
 }

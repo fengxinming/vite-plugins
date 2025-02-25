@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
+import { defineConfig } from 'vite';
 import vitePluginCombine from 'vite-plugin-combine';
 
 // https://vitejs.dev/config/

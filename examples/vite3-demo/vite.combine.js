@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     vitePluginCombine({
       src: 'src/utils/*.js',
-      target: 'src/index.js'
+      target: 'src/combine.js'
     })
   ],
   build: {
