@@ -1,14 +1,14 @@
-# 使用示例
+# Usage Examples
 
-## 常规使用
+## Basic Usage
 
-index.html
+**index.html**
 ```html
 <script src="//unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 ```
 
-vite.config.mjs
+**vite.config.mjs**
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -25,16 +25,18 @@ export default defineConfig({
 });
 ```
 
-## 在不同的模式下覆盖externals
+---
 
-> 有时候可能开发环境和生产环境用到的 cdn 不一致。针对这种情况，可以配置 `development` 和 `production` 两个模式，分别对应开发环境和生产环境的外部依赖。
+## Overriding externals in Different Modes
 
-index.html
+> Sometimes development and production environments use different CDNs. To handle this, you can configure `development` and `production` modes for separate external dependency setups.
+
+**index.html**
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
 
-vite.config.mjs
+**vite.config.mjs**
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -55,11 +57,13 @@ export default defineConfig({
 });
 ```
 
-## 使用兼容的方式读取外部依赖
+---
 
-> 设置 `interop` 为 `'auto'` 即统一使用别名和缓存机制。
+## Using Compatible Syntax to Reference External Dependencies
 
-vite.config.mjs
+> Set `interop` to `'auto'` to uniformly use aliasing and caching mechanisms.
+
+**vite.config.mjs**
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -86,8 +90,7 @@ export default defineConfig({
 });
 ```
 
-### 测试代码
-
+### Test Code
 ```js
 import { useState, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -108,10 +111,9 @@ createRoot(document.getElementById('root')).render(
 );
 ```
 
-### 对比输出内容
+### Output Comparison
 
-**`interop` 为 `'auto'` 时(Vite 6.x)**
-
+**With `interop: 'auto'` (Vite 6.x)**
 ```js
 (function() {
   "use strict";
@@ -143,8 +145,7 @@ createRoot(document.getElementById('root')).render(
 })();
 ```
 
-**未配置 `interop`**
-
+**Without `interop` Configuration**
 ```js
 (function(react, client) {
   "use strict";
@@ -158,11 +159,13 @@ createRoot(document.getElementById('root')).render(
 })(React, ReactDOM);
 ```
 
-## 排除不需要打包的依赖
+---
 
-> 比如要排除 `node_modules` 内的依赖，可以使用 `externalizeDeps` 排除它们。或者使用 `nodeBuiltins` 排除 Nodejs 内置模块。
+## Excluding Unneeded Dependencies
 
-vite.config.mjs
+> To exclude dependencies in `node_modules` or Node.js built-in modules, use `externalizeDeps` and `nodeBuiltins`.
+
+**vite.config.mjs**
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -189,11 +192,13 @@ export default defineConfig({
 });
 ```
 
-## 解决 IIFE 格式的打包问题
+---
 
-> 引入插件 `rollup-plugin-external-globals`，具体问题参阅 https://github.com/rollup/rollup/issues/3188
+## Solving IIFE Bundling Issues
 
-vite.config.mjs
+> Use the `rollup-plugin-external-globals` plugin to fix [Rollup issue #3188](https://github.com/rollup/rollup/issues/3188).
+
+**vite.config.mjs**
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
