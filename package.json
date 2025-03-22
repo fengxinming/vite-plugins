@@ -1,7 +1,7 @@
 {
   "name": "vite-plugins",
   "version": "1.0.0",
-  "description": "Some custom plugins for vitejs.",
+  "description": "A collection of custom plugins designed to enhance the functionality of the Vite build tool.",
   "private": true,
   "scripts": {
     "deps": "npm run clean && pnpm install",
@@ -10,7 +10,10 @@
     "build:packages": "pnpm run -r --parallel build:lib",
     "build:examples": "pnpm run -r --parallel build",
     "prepare": "husky install",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "repository": {
     "type": "git",
@@ -27,9 +30,12 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/tsconfig": "^0.7.0",
     "lerna": "^6.6.2",
+    "markdown-it-mathjax3": "^4.3.2",
     "pug": "^3.0.3",
     "tinyglobby": "^0.2.12",
     "vite": "^6.1.0",
+    "vitepress": "^1.6.3",
+    "vitepress-plugin-group-icons": "^1.3.8",
     "vue": "^3.5.13",
     "vue-tsc": "^2.2.2"
   },
@@ -42,14 +48,12 @@
     "@commitlint/config-conventional": "^17.6.1",
     "@types/node": "^14.18.0",
     "eslint": "^8.48.0",
-    "eslint-config-fe": "^2.1.0",
-    "eslint-plugin-jsx-advanced": "^1.0.0",
+    "eslint-config-fe": "^2.1.2",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^12.5.0",
-    "react": "^16.14.0",
-    "typedoc": "^0.25.4"
+    "react": "^16.14.0"
   }
 }
