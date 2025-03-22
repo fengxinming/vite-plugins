@@ -38,7 +38,6 @@ jobs:
           node-version: 20  # 指定 Node.js 版本
       - run: npm run clean
       - run: npm i
-      - run: npm run typedoc      # 将ts文件构建成md文件
       - run: npm run docs:build   # 执行构建命令（生成 dist/ 目录）
         env:
           BASE_URL: ${{ env.base_url }}
