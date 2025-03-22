@@ -5,7 +5,8 @@
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 
-> 使用范围 Vite >= 3.1
+> 从运行时代码和构建后的 bundles 中排除指定的模块依赖项。
+> 使用范围 Vite >= 3.1。
 
 ## 说明
 

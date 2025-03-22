@@ -1,34 +1,36 @@
-import { defineConfig } from 'vitepress'
+import { DefaultTheme, defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export const en = defineConfig({
-  description: "A flexible and simple JS logging library that allows logging or collecting logs in different environments by configuring various Appenders.",
+  description: "A collection of custom plugins designed to enhance the functionality of the Vite build tool.",
   lang: 'en-US',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
-      { text: 'Guide', link: '/guide/introduce', activeMatch: '/guide/' },
-      { text: 'Reference', link: '/reference/use-appenders', activeMatch: '/reference/' }
+      { 
+        text: 'Guide',
+        link: '/guide/introduction',
+        activeMatch: '/guide/'
+      },
+      { 
+        text: 'Plugins',
+        activeMatch: '/plugins/',
+        items: navPlugins() 
+      }
     ],
 
     sidebar: {
       '/guide/': {
         base: '/guide/',
         items: [
-          { text: 'Introduce', link: 'introduce' },
-          { text: 'Quick Start', link: 'quick-start' },
-          { text: 'Contribution Guide', link: 'contribution' }
+          { text: 'Introduce', link: 'introduction' },
+          { text: 'Local debugging', link: 'local-debugging' },
+          { text: 'Contribution', link: 'contribution' }
         ]
       },
-      '/reference/': {
-        base: '/reference/',
-        items: [
-          { text: 'Configure Multiple Appenders', link: 'use-appenders' },
-          { text: 'API Request Logging with Context', link: 'use-context' },
-          { text: 'Dynamic Logging Level Adjustment', link: 'use-level' },
-          { text: 'Resource Cleanup Before Process Termination', link: 'use-shutdown' },
-          { text: 'Performance Optimization Suggestions', link: 'performance' }
-        ]
+      '/plugins/': {
+        base: '/plugins/',
+        items: sidebarPlugins()
       }
     },
 
@@ -37,3 +39,34 @@ export const en = defineConfig({
     ]
   }
 })
+
+function navPlugins(): DefaultTheme.NavItemWithLink[] {
+  return [
+    // { text: 'vite-plugin-combine', link: '/plugins/vite-plugin-combine/introduce' },
+    // { text: 'vite-plugin-cp', link: '/plugins/vite-plugin-cp' },
+    { 
+      text: 'vite-plugin-external',
+      activeMatch: '/plugins/vite-plugin-external/',
+      link: '/plugins/vite-plugin-external/introduce'
+     },
+    // { text: 'vite-plugin-hook-use', link: '/plugins/vite-plugin-hook-use' },
+    // { text: 'vite-plugin-include-css', link: '/plugins/vite-plugin-include-css' },
+    // { text: 'vite-plugin-mock-data', link: '/plugins/vite-plugin-mock-data' },
+    // { text: 'vite-plugin-reverse-proxy', link: '/plugins/vite-plugin-reverse-proxy' },
+    // { text: 'vite-plugin-separate-importer', link: '/plugins/vite-plugin-separate-importer' }
+  ];
+}
+
+function sidebarPlugins(): DefaultTheme.SidebarItem[] {
+  return [
+    {
+      text: 'vite-plugin-external',
+      base: '/plugins/vite-plugin-external/',
+      items: [
+        { text: 'Introduction', link: 'introduction' },
+        { text: 'Options', link: 'options' },
+        { text: 'Usage Examples', link: 'usage' }
+      ]
+    }
+  ];
+}

@@ -1,133 +1,110 @@
-# 参数介绍
+# Options
 
-## 参数定义
+## Options Definition
 
 **`interop`**
 * Type: `'auto'`
 * Required: false
 
-该选项用于控制 Vite 如何处理默认值。[示例](#使用兼容的方式读取外部依赖)
+This option controls how Vite handles default values. [Example](/plugins/vite-plugin-external/usage#using-compatible-syntax-to-reference-external-dependencies)
 
 **`enforce`**
 * Type: `'pre' | 'post'`
 * Required: false
 
-强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering 。
+Forces plugin execution order: `'pre'` (before other plugins), `'post'` (after other plugins). Refer to [Vite Plugin Ordering](https://vitejs.dev/guide/api-plugin.html#plugin-ordering).
 
 **`nodeBuiltins`**
 * Type: `boolean`
 * Required: false
 
-是否排除 nodejs 内置模块。
+Excludes Node.js built-in modules from the bundle.
 
 **`externalizeDeps`**
 * Type: `Array<string | RegExp>`
 * Required: false
 
-排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
+Specifies dependencies to exclude from bundling. [Example](/plugins/vite-plugin-external/usage#excluding-unneeded-dependencies)
 
 **`externalGlobals`**
 * Type: `(globals: Record<string, any>) => rollup.Plugin`
 * Required: false
 
-修复 https://github.com/rollup/rollup/issues/3188 [示例](#解决-IIFE-格式的打包问题)
+Fixes [Rollup issue #3188](https://github.com/rollup/rollup/issues/3188). [Example](#solving-iife-bundling-issues)
 
 **`cwd`**
 * Type: `string`
 * Required: false
 * Default: `process.cwd()`
 
-设置当前目录，用于拼接 `cacheDir` 的相对路径。
+Sets current working directory for resolving `cacheDir` relative paths.
 
 **`cacheDir`**
 * Type: `string`
 * Required: false
 * Default: `${cwd}/node_modules/.vite_external`
 
-缓存文件夹。
+Cache directory path.
 
 **`externals`**
-* Type: `Record<string, any>`
-* Require: false
+* Type: `Record<string, string>`
+* Required: false
 
-配置外部依赖。[示例](#常规使用)
+Configures external dependencies. [Example](/plugins/vite-plugin-external/usage#basic-usage)
 
 **`[mode: string]`**
 * Type: `BasicOptions`
-* Require: false
+* Required: false
 
-针对指定的模式配置外部依赖。[示例](#在不同的模式下覆盖externals)
+Configures external dependencies for specific modes. [Example](/plugins/vite-plugin-external/usage#overriding-externals-in-different-modes)
 
-## Typescript定义
+---
 
-```ts
+## TypeScript Definitions
+
+```typescript
 import { Plugin as RollupPlugin } from 'rollup';
+
 export interface BasicOptions {
   /**
-   * The current working directory in which to join `cacheDir`.
-   *
-   * 设置当前目录，用于拼接 `cacheDir` 的相对路径。
-   *
+   * Current working directory for resolving `cacheDir`
    * @default `process.cwd()`
    */
   cwd?: string;
 
-  /**
-   * Cache folder
-   *
-   * 缓存文件夹
-   *
-   * @default `${cwd}/node_modules/.vite_external`
-   */
+  /** Cache folder path */
   cacheDir?: string;
 
   /**
-   * External dependencies
-   *
-   * 配置外部依赖
+   * External dependencies configuration
    */
   externals?: Record<string, string>;
 }
 
 export interface Options extends BasicOptions {
   /**
-   * External dependencies for specific mode
-   *
-   * 针对指定的模式配置外部依赖
+   * Mode-specific external dependency configurations
    */
   [mode: string]: BasicOptions | any;
 
-  /**
-   * Controls how Vite handles default.
-   *
-   * 该选项用于控制 Vite 如何处理默认值。
-   */
+  /** Controls default value handling */
   interop?: 'auto';
 
   /**
-   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-   *
-   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
+   * Plugin execution order
+   * @see [Vite Plugin Ordering](https://vitejs.dev/guide/api-plugin.html#plugin-ordering)
    */
   enforce?: 'pre' | 'post';
 
-  /**
-   * Whether to exclude nodejs built-in modules in the bundle
-   *
-   * 是否排除 nodejs 内置模块。
-   */
+  /** Exclude Node.js built-in modules */
   nodeBuiltins?: boolean;
 
-  /**
-   * Specify dependencies to not be included in the bundle
-   *
-   * 排除不需要打包的依赖。
-   */
+  /** Dependencies to exclude from bundling */
   externalizeDeps?: Array<string | RegExp>;
 
   /**
-   * Fix https://github.com/rollup/rollup/issues/3188
+   * Rollup plugin for global externals
+   * Fixes [Rollup issue #3188](https://github.com/rollup/rollup/issues/3188)
    */
   externalGlobals?: (globals: Record<string, string>) => RollupPlugin;
 }
-```

@@ -6,7 +6,7 @@
 * Type: `'auto'`
 * Required: false
 
-该选项用于控制 Vite 如何处理默认值。[示例](#使用兼容的方式读取外部依赖)
+该选项用于控制 Vite 如何处理默认值。[示例](/zh/plugins/vite-plugin-external/usage#使用兼容的方式读取外部依赖)
 
 **`enforce`**
 * Type: `'pre' | 'post'`
@@ -24,13 +24,13 @@
 * Type: `Array<string | RegExp>`
 * Required: false
 
-排除不需要打包的依赖。[示例](#排除不需要打包的依赖)
+排除不需要打包的依赖。[示例](/zh/plugins/vite-plugin-external/usage#排除不需要打包的依赖)
 
 **`externalGlobals`**
 * Type: `(globals: Record<string, any>) => rollup.Plugin`
 * Required: false
 
-修复 https://github.com/rollup/rollup/issues/3188 [示例](#解决-IIFE-格式的打包问题)
+修复 https://github.com/rollup/rollup/issues/3188 [示例](/zh/plugins/vite-plugin-external/usage#解决-iife-格式的打包问题)
 
 **`cwd`**
 * Type: `string`
@@ -50,13 +50,13 @@
 * Type: `Record<string, any>`
 * Require: false
 
-配置外部依赖。[示例](#常规使用)
+配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#基础使用)
 
 **`[mode: string]`**
 * Type: `BasicOptions`
 * Require: false
 
-针对指定的模式配置外部依赖。[示例](#在不同的模式下覆盖externals)
+针对指定的模式配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#在不同的模式下覆盖externals)
 
 ## Typescript定义
 

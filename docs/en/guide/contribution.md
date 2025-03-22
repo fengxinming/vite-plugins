@@ -1,9 +1,8 @@
-# 贡献指南
+# Contribution
 
-欢迎贡献代码！请确保你的代码符合项目规范。
+We welcome contributions from the community! If you find a bug or want to suggest an improvement, feel free to open an issue or submit a pull request.
 
-## 提交PR前
-
-- 确保 vscode 安装了 eslint 插件
-- 添加新功能的示例代码
-- 更新文档说明
+## How to Contribute
+1. Fork the repository.
+2. Create a new branch for your changes.
+3. Submit a pull request with a clear description of your changes.
