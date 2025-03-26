@@ -1,5 +1,6 @@
-import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
+import { defineConfig } from 'vite';
+
 import pkg from './package.json';
 
 const externals = Object.keys(pkg.dependencies)

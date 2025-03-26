@@ -1,59 +1,17 @@
-import { join, isAbsolute } from 'node:path';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { builtinModules } from 'node:module';
+import { join } from 'node:path';
 import { types } from 'node:util';
-import { UserConfig, ResolvedConfig, ConfigEnv, Plugin } from 'vite';
-import { Options } from './typings';
-import { setOutputGlobals } from './handleGlobals';
-import { setExternals } from './handleExternals';
+
+import { ConfigEnv, Plugin, ResolvedConfig, UserConfig } from 'vite';
+
 import { setAliases } from './handleAliases';
+import { setExternals } from './handleExternals';
+import { setOutputGlobals } from './handleGlobals';
+import { buildOptions } from './handleOptions';
+import { Options } from './typings';
 
 export * from './typings';
-function buildOptions(opts: Options, mode: string): Options {
-  let {
-    cwd,
-    cacheDir,
-    externals,
-    // eslint-disable-next-line prefer-const
-    ...rest
-  } = opts || {};
-  const modeOptions: Options | undefined = opts[mode];
-
-  if (modeOptions) {
-    Object.entries(modeOptions).forEach(([key, value]) => {
-      if (value) {
-        switch (key) {
-          case 'cwd':
-            cwd = value;
-            break;
-          case 'cacheDir':
-            cacheDir = value;
-            break;
-          case 'externals':
-            externals = Object.assign({}, externals, value);
-            break;
-        }
-      }
-    });
-  }
-
-  if (!cwd) {
-    cwd = process.cwd();
-  }
-  if (!cacheDir) {
-    cacheDir = join(cwd, 'node_modules', '.vite_external');
-  }
-  else if (!isAbsolute(cacheDir)) {
-    cacheDir = join(cwd, cacheDir);
-  }
-
-  return {
-    ...rest,
-    cwd,
-    cacheDir,
-    externals
-  };
-}
 
 /**
  * provides a way of excluding dependencies from the runtime code and output bundles.
@@ -87,7 +45,7 @@ function buildOptions(opts: Options, mode: string): Options {
  * @param opts options
  * @returns a vite plugin
  */
-export default function createPlugin(opts: Options): Plugin {
+export default function pluginExternal(opts: Options): Plugin {
   let externalNames: any[];
   let globals: Record<string, string> | undefined;
 

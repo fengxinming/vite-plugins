@@ -1,6 +1,7 @@
-import { emptyDirSync, outputFile } from 'fs-extra';
 import { join } from 'node:path';
-import { UserConfig, Alias } from 'vite';
+
+import { emptyDirSync, outputFile } from 'fs-extra';
+import { Alias, UserConfig } from 'vite';
 
 /** compat cjs and esm */
 function createFakeLib(globalName: string, libPath: string): Promise<void> {

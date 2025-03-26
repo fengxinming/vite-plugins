@@ -128,7 +128,7 @@ function buildOptions(opts, mode) {
     externals
   };
 }
-function createPlugin(opts) {
+function pluginExternal(opts) {
   let externalNames;
   let globals;
   return {
@@ -197,5 +197,5 @@ function createPlugin(opts) {
   };
 }
 export {
-  createPlugin as default
+  pluginExternal as default
 };

@@ -1,4 +1,4 @@
-import { RollupOptions, InputPluginOption, OutputOptions, Plugin as RollupPlugin } from 'rollup';
+import { InputPluginOption, OutputOptions, Plugin as RollupPlugin, RollupOptions } from 'rollup';
 
 function rollupOutputGlobals(
   output: OutputOptions,
@@ -9,7 +9,14 @@ function rollupOutputGlobals(
     globals = {};
     output.globals = globals;
   }
-  Object.assign(globals, externals);
+  if (typeof globals === 'function') {
+    output.globals = function (name) {
+      return externals[name] || globals(name);
+    };
+  }
+  else {
+    Object.assign(globals, externals);
+  }
 }
 
 export function setOutputGlobals(

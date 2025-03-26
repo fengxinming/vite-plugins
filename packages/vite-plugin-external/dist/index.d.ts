@@ -33,4 +33,4 @@ export * from './typings';
  * @param opts options
  * @returns a vite plugin
  */
-export default function createPlugin(opts: Options): Plugin;
+export default function pluginExternal(opts: Options): Plugin;
