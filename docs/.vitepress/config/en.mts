@@ -23,7 +23,7 @@ export const en = defineConfig({
       '/guide/': {
         base: '/guide/',
         items: [
-          { text: 'Introduce', link: 'introduction' },
+          { text: 'Introduction', link: 'introduction' },
           { text: 'Local debugging', link: 'local-debugging' },
           { text: 'Contribution', link: 'contribution' }
         ]
@@ -42,12 +42,12 @@ export const en = defineConfig({
 
 function navPlugins(): DefaultTheme.NavItemWithLink[] {
   return [
-    // { text: 'vite-plugin-combine', link: '/plugins/vite-plugin-combine/introduce' },
+    // { text: 'vite-plugin-combine', link: '/plugins/vite-plugin-combine/introduction' },
     // { text: 'vite-plugin-cp', link: '/plugins/vite-plugin-cp' },
     { 
       text: 'vite-plugin-external',
       activeMatch: '/plugins/vite-plugin-external/',
-      link: '/plugins/vite-plugin-external/introduce'
+      link: '/plugins/vite-plugin-external/introduction'
      },
     // { text: 'vite-plugin-hook-use', link: '/plugins/vite-plugin-hook-use' },
     // { text: 'vite-plugin-include-css', link: '/plugins/vite-plugin-include-css' },

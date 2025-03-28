@@ -25,7 +25,7 @@ export default defineConfig({
 });
 ```
 
-## 在不同的模式下覆盖externals
+## 多模式场景配置
 
 > 有时候可能开发环境和生产环境用到的 cdn 不一致。针对这种情况，可以配置 `development` 和 `production` 两个模式，分别对应开发环境和生产环境的外部依赖。
 
@@ -55,9 +55,9 @@ export default defineConfig({
 });
 ```
 
-## 使用兼容的方式读取外部依赖
+## 运行时检测外部依赖
 
-> 设置 `interop` 为 `'auto'` 即统一使用别名和缓存机制。
+> 设置 `interop` 为 `'auto'`，注入辅助函数，运行时检测外部依赖
 
 vite.config.mjs
 ```js
@@ -158,7 +158,7 @@ createRoot(document.getElementById('root')).render(
 })(React, ReactDOM);
 ```
 
-## 排除不需要打包的依赖
+## 构建时仅排除依赖
 
 > 比如要排除 `node_modules` 内的依赖，可以使用 `externalizeDeps` 排除它们。或者使用 `nodeBuiltins` 排除 Nodejs 内置模块。
 

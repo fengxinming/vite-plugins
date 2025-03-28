@@ -1,58 +1,16 @@
-import { join, isAbsolute } from 'node:path';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { builtinModules } from 'node:module';
-import { types } from 'node:util';
-import { UserConfig, ResolvedConfig, ConfigEnv, Plugin } from 'vite';
+import { Plugin, version } from 'vite';
+
+import { PLUGIN_NAME } from './common/constants';
+import { logger } from './common/logger';
+// import past from './past';
+import rollback from './rollback';
 import { Options } from './typings';
-import { setOutputGlobals } from './handleGlobals';
-import { setExternals } from './handleExternals';
-import { setAliases } from './handleAliases';
+import v6 from './v6';
 
-export * from './typings';
-function buildOptions(opts: Options, mode: string): Options {
-  let {
-    cwd,
-    cacheDir,
-    externals,
-    // eslint-disable-next-line prefer-const
-    ...rest
-  } = opts || {};
-  const modeOptions: Options | undefined = opts[mode];
-
-  if (modeOptions) {
-    Object.entries(modeOptions).forEach(([key, value]) => {
-      if (value) {
-        switch (key) {
-          case 'cwd':
-            cwd = value;
-            break;
-          case 'cacheDir':
-            cacheDir = value;
-            break;
-          case 'externals':
-            externals = Object.assign({}, externals, value);
-            break;
-        }
-      }
-    });
-  }
-
-  if (!cwd) {
-    cwd = process.cwd();
-  }
-  if (!cacheDir) {
-    cacheDir = join(cwd, 'node_modules', '.vite_external');
-  }
-  else if (!isAbsolute(cacheDir)) {
-    cacheDir = join(cwd, cacheDir);
-  }
-
-  return {
-    ...rest,
-    cwd,
-    cacheDir,
-    externals
-  };
+let major: number;
+if (version) {
+  const [v] = version.split('.');
+  major = parseInt(v, 10);
 }
 
 /**
@@ -60,120 +18,46 @@ function buildOptions(opts: Options, mode: string): Options {
  *
  * @example
  * ```js
- * import createExternal from 'vite-plugin-external';
+ * import pluginExternal from 'vite-plugin-external';
  *
  * export default defineConfig({
  *  plugins: [
- *    createExternal({
+ *    pluginExternal({
  *      externals: {
- *        react: 'React'
- *      }
+        jquery: '$',
+
+        react: 'React',
+        'react-dom/client': 'ReactDOM',
+
+        vue: 'Vue'
+      }
  *    })
- *  ],
- *  build: {
- *    cssCodeSplit: false,
- *    rollupOptions: {
- *      output: {
- *        manualChunks: undefined,
- *        assetFileNames: 'assets/[name][extname]',
- *        entryFileNames: '[name].js',
- *        format: 'iife'
- *      }
- *    }
- *  }
+ *  ]
  * });
  * ```
  *
  * @param opts options
  * @returns a vite plugin
  */
-export default function createPlugin(opts: Options): Plugin {
-  let externalNames: any[];
-  let globals: Record<string, string> | undefined;
-
-  return {
-    name: 'vite-plugin-external',
-    enforce: opts.enforce,
-    async config(config: UserConfig, { mode, command }: ConfigEnv) {
-      opts = buildOptions(opts, mode);
-
-      globals = opts.externals;
-      externalNames = globals ? Object.keys(globals) : [];
-      if (externalNames.length === 0) {
-        globals = void 0;
-      }
-
-      const cacheDir = opts.cacheDir as string;
-
-      // if development mode
-      if (command === 'serve' || opts.interop === 'auto') {
-        await setAliases(config, cacheDir, globals);
-        return;
-      }
-
-      // externalize dependencies for build command
-      if (command === 'build') {
-        const { nodeBuiltins, externalizeDeps } = opts;
-
-        // handle nodejs built-in modules
-        if (nodeBuiltins) {
-          externalNames = externalNames.concat(
-            builtinModules.map((builtinModule) => {
-              return new RegExp(`^(?:node:)?${builtinModule}(?:/.+)*$`);
-            })
-          );
-        }
-
-        // externalize given dependencies
-        if (externalizeDeps) {
-          externalNames = externalNames.concat(
-            externalizeDeps.map((dep) => {
-              return types.isRegExp(dep) ? dep : new RegExp(`^${dep}(?:/.+)*$`);
-            })
-          );
-        }
-      }
-
-      let { build } = config;
-      if (!build) {
-        build = {};
-        config.build = build;
-      }
-      let { rollupOptions } = build;
-      if (!rollupOptions) {
-        rollupOptions = {};
-        build.rollupOptions = rollupOptions;
-      }
-
-      setExternals(rollupOptions, externalNames);
-      setOutputGlobals(rollupOptions, globals, opts.externalGlobals);
-    },
-    configResolved(config: ResolvedConfig) {
-      // cleanup cache
-      if (config.command === 'serve') {
-        const depCache = join(config.cacheDir, 'deps', '_metadata.json');
-
-        let metadata;
-        try {
-          metadata = JSON.parse(readFileSync(depCache, 'utf-8'));
-        }
-        catch (e) {
-          return;
-        }
-
-        if (metadata && externalNames && externalNames.length) {
-          const { optimized } = metadata;
-          if (optimized && Object.keys(optimized).length) {
-            externalNames.forEach((libName) => {
-              if (optimized[libName]) {
-                delete optimized[libName];
-              }
-            });
-          }
-
-          writeFileSync(depCache, JSON.stringify(metadata));
-        }
-      }
-    }
+export default function pluginExternal(opts: Options): Plugin {
+  const plugin: Plugin = {
+    name: PLUGIN_NAME,
+    enforce: opts.enforce
   };
+
+  if (major >= 6 && !opts.rollback) {
+    logger.name += '-v6';
+    Object.assign(plugin, v6(opts));
+  }
+  else {
+    Object.assign(plugin, rollback(opts));
+  }
+
+  // else {
+  //   Object.assign(plugin, past(opts));
+  // }
+
+  return plugin;
 }
+
+export * from './typings';

@@ -1,4 +1,4 @@
-import { useState, StrictMode } from 'react';
+import { StrictMode, useState, version } from 'react';
 import { createRoot } from 'react-dom/client';
 function App() {
   const [count, setCount] = useState(0);
@@ -12,6 +12,7 @@ function App() {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    {version}
     <App />
   </StrictMode>,
 );

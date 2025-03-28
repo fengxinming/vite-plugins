@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-external",
-  "version": "6.0.1",
-  "description": "Provides a way of excluding dependencies from the runtime code and output bundles.",
+  "version": "6.1.0-rc.1",
+  "description": "Excludes specified module dependencies from runtime code and built bundles.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
   "main": "./dist/index.js",
@@ -15,6 +15,7 @@
   "scripts": {
     "build:lib": "vite build",
     "watch": "vite build --watch",
+    "prepublishOnly": "npm run build:lib",
     "release": "npm publish"
   },
   "engines": {
@@ -35,11 +36,15 @@
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "homepage": "https://fengxinming.github.io/vite-plugins/",
   "dependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "@types/node": "^14.18.63",
+    "base-log-factory": "^2.0.9",
+    "blf-colorful-appender": "^1.0.2",
     "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^14.18.63"
   },
   "files": [
     "dist"

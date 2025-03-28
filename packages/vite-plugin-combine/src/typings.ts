@@ -54,4 +54,11 @@ export interface Options {
    * 当前工作目录
    */
   cwd?: string;
+
+  /**
+   * Handle code before writing to the file.
+   *
+   * 写入文件前处理代码字符串
+   */
+  beforeWrite?: (code: string) => string | void | undefined | null;
 }

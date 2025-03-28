@@ -2,13 +2,13 @@
 
 ## Basic Usage
 
-**index.html**
+index.html
 ```html
 <script src="//unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
 <script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 ```
 
-**vite.config.mjs**
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -25,18 +25,16 @@ export default defineConfig({
 });
 ```
 
----
+## Multi-mode Configuration
 
-## Overriding externals in Different Modes
+> Sometimes different CDNs are used in development and production environments. To handle this, configure modes like `development` and `production` for respective external dependencies.
 
-> Sometimes development and production environments use different CDNs. To handle this, you can configure `development` and `production` modes for separate external dependency setups.
-
-**index.html**
+index.html
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
 
-**vite.config.mjs**
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -57,13 +55,11 @@ export default defineConfig({
 });
 ```
 
----
+## Runtime Detection of External Dependencies
 
-## Using Compatible Syntax to Reference External Dependencies
+> Set `interop` to `'auto'` to inject helper functions for runtime detection of external dependencies.
 
-> Set `interop` to `'auto'` to uniformly use aliasing and caching mechanisms.
-
-**vite.config.mjs**
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -91,6 +87,7 @@ export default defineConfig({
 ```
 
 ### Test Code
+
 ```js
 import { useState, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -113,7 +110,8 @@ createRoot(document.getElementById('root')).render(
 
 ### Output Comparison
 
-**With `interop: 'auto'` (Vite 6.x)**
+**When `interop` is set to `'auto'` (Vite 6.x):**
+
 ```js
 (function() {
   "use strict";
@@ -145,7 +143,8 @@ createRoot(document.getElementById('root')).render(
 })();
 ```
 
-**Without `interop` Configuration**
+**Without `interop` Configuration:**
+
 ```js
 (function(react, client) {
   "use strict";
@@ -159,13 +158,11 @@ createRoot(document.getElementById('root')).render(
 })(React, ReactDOM);
 ```
 
----
+## Exclude Dependencies During Build
 
-## Excluding Unneeded Dependencies
+> To exclude dependencies from `node_modules`, use `externalizeDeps`. Or use `nodeBuiltins` to exclude Node.js built-in modules.
 
-> To exclude dependencies in `node_modules` or Node.js built-in modules, use `externalizeDeps` and `nodeBuiltins`.
-
-**vite.config.mjs**
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -192,13 +189,11 @@ export default defineConfig({
 });
 ```
 
----
+## Resolve IIFE Packaging Issues
 
-## Solving IIFE Bundling Issues
+> Use plugin `rollup-plugin-external-globals` to fix issues like [Rollup#3188](https://github.com/rollup/rollup/issues/3188).
 
-> Use the `rollup-plugin-external-globals` plugin to fix [Rollup issue #3188](https://github.com/rollup/rollup/issues/3188).
-
-**vite.config.mjs**
+vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -222,4 +217,3 @@ export default defineConfig({
     }
   }
 });
-```

@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, version } from 'react';
 import ReactDOM from 'react-dom';
-
-import './index.css';
 
 function App() {
   const [count, setCount] = useState(0);
   return (
     <>
+      <p>{version}</p>
       <h1>Count: {count}</h1>
       <button onClick={() => setCount((prev) => prev + 1)}>Click me</button>
     </>

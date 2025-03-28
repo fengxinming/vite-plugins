@@ -159,7 +159,7 @@ function pluginCombine(opts) {
     opts = {};
   }
   const { src, overwrite, nameExport } = opts;
-  const enforce = opts.enforce || "pre";
+  const enforce = "enforce" in opts ? opts.enforce : "pre";
   const exportsType = opts.exports || "named";
   const target = opts.target || "index.js";
   const cwd = opts.cwd || process.cwd();
@@ -187,11 +187,18 @@ function pluginCombine(opts) {
     default:
       mainCode = noneExport(files, absTarget);
   }
+  const { beforeWrite } = opts;
+  if (typeof beforeWrite === "function") {
+    const str = beforeWrite(mainCode);
+    if (typeof str === "string") {
+      mainCode = str;
+    }
+  }
   writeFileSync(absTarget, mainCode);
   const plugin = {
     name: "vite-plugin-combine",
     enforce,
-    config(config) {
+    async config(config) {
       const inputs = files.concat(absTarget);
       const { build } = config;
       if (build) {

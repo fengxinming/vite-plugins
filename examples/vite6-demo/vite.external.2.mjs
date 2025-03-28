@@ -1,22 +1,24 @@
+import { globSync } from 'tinyglobby';
 import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
-import { globSync } from 'tinyglobby';
+
 import pkg from './package.json';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vitePluginExternal({
+      logLevel: 'TRACE',
       // for build mode
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.devDependencies),
+      externalizeDeps: Object.keys(pkg.devDependencies)
 
       // for serve mode
-      externals: {}
+      // externals: {}
     })
   ],
   build: {
-    outDir: 'dist/external',
+    outDir: 'dist/external/2',
     minify: false,
     lib: {
       formats: ['es', 'cjs'],

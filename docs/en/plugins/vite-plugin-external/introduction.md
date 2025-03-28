@@ -6,15 +6,21 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 
 > Exclude specified module dependencies from runtime code and built bundles.
-> Supports Vite >= 3.1.
+> Supported Vite versions: >= 3.1.
 
 ## Description
 
-When the `command` value is `'serve'`, the plugin converts `externals` into `alias` configuration to leverage Vite's file loading capabilities. When the `command` value is `'build'`, it converts `externals` into `rollupOptions` configuration, including `external` and `output.globals`. However, you can set `interop` to `'auto'` to uniformly convert `externals` into `alias` configuration. The bundled code will use compatible import syntax for external dependencies.
+### Workflow for Vite 6.x and Earlier
 
-## Runtime Flow
+When the `command` value is `'serve'`, the plugin converts `externals` into `alias` configuration to leverage Vite's file loading capabilities. When `command` is `'build'`, it converts `externals` into `rollupOptions` configuration containing `external` and `output.globals`. However, you can configure `interop` as `'auto'` to uniformly convert `externals` into `alias` configuration, resulting in compatible import code in the bundled output.
+
+#### Runtime Flow
 
 ![image](https://user-images.githubusercontent.com/6262382/126889725-a5d276ad-913a-4498-8da1-2aa3fd1404ab.png)
+
+### Workflow for Vite 6.x and Later
+
+When `command` is `'serve'`, the plugin prebuilds `externals` and reads Vite cache upon request hits. It supports `externals` as `object` or `function` from v6.1.
 
 ```js
 import { defineConfig } from 'vite';
@@ -25,10 +31,8 @@ export default defineConfig({
     pluginExternal({
       externals: {
         jquery: '$',
-
         react: 'React',
         'react-dom/client': 'ReactDOM',
-
         vue: 'Vue'
       }
     })
@@ -38,12 +42,17 @@ export default defineConfig({
 
 ## Changelog
 
+* **6.1.0**
+  * Reimplemented external plugin logic for Vite 6.x compatibility
+  * Added optional `rollback` parameter to revert to previous implementation
+  * Added optional `logLevel` parameter to control logging level (values: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF")
+
 * **6.0.0**
-  * Added `externalGlobals` field to fix [Rollup issue #3188](https://github.com/rollup/rollup/issues/3188)
+  * Added optional `externalGlobals` parameter to fix issue [rollup#3188](https://github.com/rollup/rollup/issues/3188)
 
 * **4.3.1**
-  * `externalizeDeps` configuration supports passing regular expressions
+  * `externalizeDeps` configuration supports regex patterns
 
 * **4.3.0**
   * Previous `mode: false` logic replaced with `interop: 'auto'`
-  * Added `nodeBuiltins` and `externalizeDeps` configuration for Node module bundling
+  * Added `nodeBuiltins` and `externalizeDeps` configurations for Node module bundling

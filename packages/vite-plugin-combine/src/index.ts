@@ -1,4 +1,5 @@
 import { existsSync, unlinkSync, writeFileSync } from 'node:fs';
+// import { writeFile } from 'node:fs/promises';
 import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
@@ -107,7 +108,7 @@ export default function pluginCombine(opts: Options): PluginOption {
 
   const { src, overwrite, nameExport } = opts;
 
-  const enforce = opts.enforce || 'pre';
+  const enforce = ('enforce' in opts) ? opts.enforce : 'pre';
   // 导出类型
   const exportsType = opts.exports || 'named';
   // 组合到目标文件中
@@ -144,13 +145,20 @@ export default function pluginCombine(opts: Options): PluginOption {
     default:
       mainCode = noneExport(files, absTarget);
   }
+  const { beforeWrite } = opts;
+  if (typeof beforeWrite === 'function') {
+    const str = beforeWrite(mainCode);
+    if (typeof str === 'string') {
+      mainCode = str;
+    }
+  }
   writeFileSync(absTarget, mainCode);
 
   const plugin: PluginOption = {
     name: 'vite-plugin-combine',
     enforce,
 
-    config(config) {
+    async config(config) {
       const inputs = files.concat(absTarget);
       const { build } = config;
       if (build) {

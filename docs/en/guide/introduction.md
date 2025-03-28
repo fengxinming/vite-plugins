@@ -12,7 +12,7 @@
 
 **Functionality**: Copies files to a specified directory. -->
 
-### [vite-plugin-external](/zh/plugins/vite-plugin-external/introduce)
+### [vite-plugin-external](/zh/plugins/vite-plugin-external/introduction)
 
 **Functionality**: Excludes specified module dependencies from runtime code and built bundles.
 

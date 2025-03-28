@@ -1,6 +1,7 @@
+import { globSync } from 'tinyglobby';
 import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
-import { globSync } from 'tinyglobby';
+
 import pkg from './package.json';
 
 export default defineConfig({
@@ -8,10 +9,10 @@ export default defineConfig({
     vitePluginExternal({
       // for build mode
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.devDependencies),
+      externalizeDeps: Object.keys(pkg.devDependencies)
 
       // for serve mode
-      externals: {}
+      // externals: {}
     })
   ],
   build: {
