@@ -17,8 +17,8 @@
     "release:combine": "pnpm run --filter=vite-plugin-combine release",
     "build:external": "pnpm run --filter=vite-plugin-external build:lib",
     "build:combine": "pnpm run --filter=vite-plugin-combine build:lib",
-    "test:external": "pnpm run -r --parallel /build:external\\.*/",
-    "test:combine": "pnpm run -r --parallel /build:combine\\.*/"
+    "test:external": "npm run build:external && pnpm run -r --parallel /build:external\\.*/",
+    "test:combine": "npm run build:external && npm run build:combine && pnpm run -r --parallel /build:combine\\.*/"
   },
   "repository": {
     "type": "git",

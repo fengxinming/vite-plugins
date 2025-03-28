@@ -19,6 +19,7 @@
   "scripts": {
     "build:lib": "vite build",
     "watch": "vite build --watch",
+    "prepublishOnly": "npm run build:lib",
     "release": "npm publish"
   },
   "repository": {
