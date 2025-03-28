@@ -5,7 +5,9 @@ import vitePluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     vitePluginExternal({
+      logLevel: 'TRACE',
       interop: 'auto',
+      rollback: true,
       externals: {
         react: '$linkdesign.React',
         'react-dom': '$linkdesign.ReactDOM',
@@ -18,6 +20,7 @@ export default defineConfig({
   },
   build: {
     minify: false,
+    outDir: 'dist/external/2',
     rollupOptions: {
       output: {
         format: 'iife'

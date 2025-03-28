@@ -6,7 +6,7 @@
 * Type: `'auto'`
 * Required: false
 
-该选项用于控制 Vite 如何处理默认值。[示例](/zh/plugins/vite-plugin-external/usage#使用兼容的方式读取外部依赖)
+该选项用于控制 Vite 如何处理默认值。[示例](/zh/plugins/vite-plugin-external/usage#运行时检测外部依赖)
 
 **`enforce`**
 * Type: `'pre' | 'post'`
@@ -18,19 +18,32 @@
 * Type: `boolean`
 * Required: false
 
-是否排除 nodejs 内置模块。
+是否排除 nodejs 内置模块。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
 
 **`externalizeDeps`**
 * Type: `Array<string | RegExp>`
 * Required: false
 
-排除不需要打包的依赖。[示例](/zh/plugins/vite-plugin-external/usage#排除不需要打包的依赖)
+排除不需要打包的依赖。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
 
 **`externalGlobals`**
 * Type: `(globals: Record<string, any>) => rollup.Plugin`
 * Required: false
 
-修复 https://github.com/rollup/rollup/issues/3188 [示例](/zh/plugins/vite-plugin-external/usage#解决-iife-格式的打包问题)
+解决 IIFE 格式的打包问题 https://github.com/rollup/rollup/issues/3188 [示例](/zh/plugins/vite-plugin-external/usage#解决-iife-格式的打包问题)
+
+**`logLevel`**
+* Type: `"TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"`
+* Required: false
+* Default: `"WARN"`
+
+输出日志等级
+
+**`rollback`**
+* Type: `boolean`
+* Required: false
+
+是否回退到历史方案
 
 **`cwd`**
 * Type: `string`
@@ -56,12 +69,25 @@
 * Type: `BasicOptions`
 * Require: false
 
-针对指定的模式配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#在不同的模式下覆盖externals)
+针对指定的模式配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#多模式场景配置)
 
 ## Typescript定义
 
 ```ts
-import { Plugin as RollupPlugin } from 'rollup';
+import type { LogLevel } from 'base-log-factory';
+import type { NullValue, Plugin as RollupPlugin } from 'rollup';
+import { ConfigEnv } from 'vite';
+
+export type ExternalFn = (
+  source: string,
+  importer: string | undefined,
+  isResolved: boolean
+) => string | boolean | NullValue;
+
+export type ModuleNameMap = Record<string, string> | ((id: string) => string);
+
+export type { LogLevel } from 'base-log-factory';
+
 export interface BasicOptions {
   /**
    * The current working directory in which to join `cacheDir`.
@@ -86,7 +112,14 @@ export interface BasicOptions {
    *
    * 配置外部依赖
    */
-  externals?: Record<string, string>;
+  externals?: Record<string, string> | ExternalFn;
+
+  /**
+   * Log level
+   *
+   * 输出日志等级
+   */
+  logLevel?: LogLevel;
 }
 
 export interface Options extends BasicOptions {
@@ -96,6 +129,13 @@ export interface Options extends BasicOptions {
    * 针对指定的模式配置外部依赖
    */
   [mode: string]: BasicOptions | any;
+
+  /**
+   * Roll back to the old logic
+   *
+   * 回退到历史方案
+   */
+  rollback?: boolean;
 
   /**
    * Controls how Vite handles default.
@@ -128,6 +168,11 @@ export interface Options extends BasicOptions {
   /**
    * Fix https://github.com/rollup/rollup/issues/3188
    */
-  externalGlobals?: (globals: Record<string, string>) => RollupPlugin;
+  externalGlobals?: (globals: ModuleNameMap) => RollupPlugin;
+}
+
+export interface ResolvedOptions extends Options, ConfigEnv {
+  cwd: string;
+  cacheDir: string;
 }
 ```

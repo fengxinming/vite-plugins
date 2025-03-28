@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { writeFile, mkdir } from 'node:fs/promises';
 
 export async function outputFile(file, data, options = 'utf-8') {
   const dir = dirname(file);

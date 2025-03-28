@@ -1,4 +1,9 @@
-import { Plugin as RollupPlugin } from 'rollup';
+import type { LogLevel } from 'base-log-factory';
+import type { NullValue, Plugin as RollupPlugin } from 'rollup';
+import { ConfigEnv } from 'vite';
+export type ExternalFn = (source: string, importer: string | undefined, isResolved: boolean) => string | boolean | NullValue;
+export type ModuleNameMap = Record<string, string> | ((id: string) => string);
+export type { LogLevel } from 'base-log-factory';
 export interface BasicOptions {
     /**
      * The current working directory in which to join `cacheDir`.
@@ -21,7 +26,13 @@ export interface BasicOptions {
      *
      * 配置外部依赖
      */
-    externals?: Record<string, string>;
+    externals?: Record<string, string> | ExternalFn;
+    /**
+     * Log level
+     *
+     * 输出日志等级
+     */
+    logLevel?: LogLevel;
 }
 export interface Options extends BasicOptions {
     /**
@@ -30,6 +41,12 @@ export interface Options extends BasicOptions {
      * 针对指定的模式配置外部依赖
      */
     [mode: string]: BasicOptions | any;
+    /**
+     * Roll back to the old logic
+     *
+     * 回退到历史方案
+     */
+    rollback?: boolean;
     /**
      * Controls how Vite handles default.
      *
@@ -57,5 +74,9 @@ export interface Options extends BasicOptions {
     /**
      * Fix https://github.com/rollup/rollup/issues/3188
      */
-    externalGlobals?: (globals: Record<string, string>) => RollupPlugin;
+    externalGlobals?: (globals: ModuleNameMap) => RollupPlugin;
+}
+export interface ResolvedOptions extends Options, ConfigEnv {
+    cwd: string;
+    cacheDir: string;
 }

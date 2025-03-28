@@ -10,10 +10,12 @@
     "build:packages": "pnpm run -r --parallel build:lib",
     "build:examples": "pnpm run -r --parallel build",
     "prepare": "husky install",
-    "docs": "typedoc",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:build": "npm run typedoc && vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "release:external": "pnpm run --filter=vite-plugin-external release",
+    "build:external": "pnpm run --filter=vite-plugin-external build:lib",
+    "test:external": "pnpm run -r --parallel /build:external\\.*/"
   },
   "repository": {
     "type": "git",

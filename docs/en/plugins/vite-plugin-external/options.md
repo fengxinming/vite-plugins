@@ -1,43 +1,56 @@
-# Options
+# Option Reference
 
-## Options Definition
+## Parameter Definitions
 
 **`interop`**
 * Type: `'auto'`
 * Required: false
 
-This option controls how Vite handles default values. [Example](/plugins/vite-plugin-external/usage#using-compatible-syntax-to-reference-external-dependencies)
+This option controls how Vite handles default values. [Example](/plugins/vite-plugin-external/usage#runtime-detection-of-external-dependencies)
 
 **`enforce`**
 * Type: `'pre' | 'post'`
 * Required: false
 
-Forces plugin execution order: `'pre'` (before other plugins), `'post'` (after other plugins). Refer to [Vite Plugin Ordering](https://vitejs.dev/guide/api-plugin.html#plugin-ordering).
+Enforce order. Values: `pre` (before) or `post` (after). Refer to [Vite Plugin Ordering](https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering).
 
 **`nodeBuiltins`**
 * Type: `boolean`
 * Required: false
 
-Excludes Node.js built-in modules from the bundle.
+Whether to exclude Node.js built-in modules. [Example](/plugins/vite-plugin-external/usage#exclude-dependencies-during-build)
 
 **`externalizeDeps`**
 * Type: `Array<string | RegExp>`
 * Required: false
 
-Specifies dependencies to exclude from bundling. [Example](/plugins/vite-plugin-external/usage#excluding-unneeded-dependencies)
+Specify dependencies to exclude from bundling. [Example](/plugins/vite-plugin-external/usage#exclude-dependencies-during-build)
 
 **`externalGlobals`**
 * Type: `(globals: Record<string, any>) => rollup.Plugin`
 * Required: false
 
-Fixes [Rollup issue #3188](https://github.com/rollup/rollup/issues/3188). [Example](#solving-iife-bundling-issues)
+Resolve IIFE Packaging Issues [Rollup Issue #3188](https://github.com/rollup/rollup/issues/3188). [Example](/plugins/vite-plugin-external/usage#resolve-iife-packaging-issues)
+
+**`logLevel`**
+* Type: `"TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"`
+* Required: false
+* Default: `"WARN"`
+
+Sets the logging level.
+
+**`rollback`**
+* Type: `boolean`
+* Required: false
+
+Whether to revert to the legacy implementation.
 
 **`cwd`**
 * Type: `string`
 * Required: false
 * Default: `process.cwd()`
 
-Sets current working directory for resolving `cacheDir` relative paths.
+Sets the current directory for resolving `cacheDir` relative paths.
 
 **`cacheDir`**
 * Type: `string`
@@ -47,64 +60,98 @@ Sets current working directory for resolving `cacheDir` relative paths.
 Cache directory path.
 
 **`externals`**
-* Type: `Record<string, string>`
+* Type: `Record<string, any>`
 * Required: false
 
-Configures external dependencies. [Example](/plugins/vite-plugin-external/usage#basic-usage)
+Configure external dependencies. [Example](/plugins/vite-plugin-external/usage#basic-usage)
 
 **`[mode: string]`**
 * Type: `BasicOptions`
 * Required: false
 
-Configures external dependencies for specific modes. [Example](/plugins/vite-plugin-external/usage#overriding-externals-in-different-modes)
+Configure external dependencies for specific modes. [Example](/plugins/vite-plugin-external/usage#multi-mode-configuration)
 
 ---
 
 ## TypeScript Definitions
 
 ```typescript
-import { Plugin as RollupPlugin } from 'rollup';
+import type { LogLevel } from 'base-log-factory';
+import type { NullValue, Plugin as RollupPlugin } from 'rollup';
+import { ConfigEnv } from 'vite';
+
+export type ExternalFn = (
+  source: string,
+  importer: string | undefined,
+  isResolved: boolean
+) => string | boolean | NullValue;
+
+export type ModuleNameMap = Record<string, string> | ((id: string) => string);
+
+export type { LogLevel } from 'base-log-factory';
 
 export interface BasicOptions {
   /**
-   * Current working directory for resolving `cacheDir`
+   * Current working directory for resolving `cacheDir` paths.
    * @default `process.cwd()`
    */
   cwd?: string;
 
-  /** Cache folder path */
+  /**
+   * Cache directory path
+   * @default `${cwd}/node_modules/.vite_external`
+   */
   cacheDir?: string;
 
   /**
    * External dependencies configuration
    */
-  externals?: Record<string, string>;
+  externals?: Record<string, string> | ExternalFn;
+
+  /**
+   * Logging level configuration
+   */
+  logLevel?: LogLevel;
 }
 
 export interface Options extends BasicOptions {
   /**
-   * Mode-specific external dependency configurations
+   * Mode-specific external dependencies configuration
    */
   [mode: string]: BasicOptions | any;
 
-  /** Controls default value handling */
+  /**
+   * Revert to legacy implementation
+   */
+  rollback?: boolean;
+
+  /**
+   * Controls Vite's default handling behavior
+   */
   interop?: 'auto';
 
   /**
-   * Plugin execution order
-   * @see [Vite Plugin Ordering](https://vitejs.dev/guide/api-plugin.html#plugin-ordering)
+   * Plugin execution order ("pre" or "post")
    */
   enforce?: 'pre' | 'post';
 
-  /** Exclude Node.js built-in modules */
+  /**
+   * Exclude Node.js built-in modules
+   */
   nodeBuiltins?: boolean;
 
-  /** Dependencies to exclude from bundling */
+  /**
+   * Dependencies to exclude from bundling
+   */
   externalizeDeps?: Array<string | RegExp>;
 
   /**
-   * Rollup plugin for global externals
-   * Fixes [Rollup issue #3188](https://github.com/rollup/rollup/issues/3188)
+   * Fix Rollup#3188 issue
    */
-  externalGlobals?: (globals: Record<string, string>) => RollupPlugin;
+  externalGlobals?: (globals: ModuleNameMap) => RollupPlugin;
+}
+
+export interface ResolvedOptions extends Options, ConfigEnv {
+  cwd: string;
+  cacheDir: string;
 }

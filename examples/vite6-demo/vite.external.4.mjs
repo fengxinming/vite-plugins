@@ -1,35 +1,25 @@
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
 import pluginExternal from 'vite-plugin-external';
-import pluginView from 'vite-plugin-view';
 
 export default defineConfig({
   plugins: [
-    pluginView({
-      engine: 'pug',
-      pretty: true
-    }),
-    vue(),
+    react(),
     pluginExternal({
+      logLevel: 'TRACE',
       externals: {
-        vue: 'Vue'
+        react: 'React',
+        'react-dom/client': 'ReactDOM'
       }
     })
   ],
-  optimizeDeps: {
-    extensions: ['.pug']
-  },
-  resolve: {
-    extensions: ['.pug']
-  },
   server: {
     open: true
   },
   build: {
-    outDir: 'dist/vue',
+    outDir: 'dist/external/4',
     minify: false,
     rollupOptions: {
-      input: 'index.pug',
       output: {
         format: 'iife'
       }

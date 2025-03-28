@@ -8,7 +8,7 @@ hero:
   tagline: Come and give it a try!
   actions:
     - theme: brand
-      text: Introduce
+      text: Introduction
       link: /guide/introduction
     # - theme: alt
     #   text: API Examples

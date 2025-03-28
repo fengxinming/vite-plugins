@@ -4,6 +4,7 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
+      logLevel: 'TRACE',
       interop: 'auto',
       externals: {
         react: 'React',
@@ -11,8 +12,11 @@ export default defineConfig({
       }
     })
   ],
+  server: {
+    open: true
+  },
   build: {
-    outDir: 'dist/external',
+    outDir: 'dist/external/1',
     minify: false,
     rollupOptions: {
       output: {

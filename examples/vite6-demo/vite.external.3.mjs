@@ -1,6 +1,6 @@
+import externalGlobals from 'rollup-plugin-external-globals';
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
-import externalGlobals from 'rollup-plugin-external-globals';
 
 export default defineConfig({
   plugins: [
@@ -13,7 +13,7 @@ export default defineConfig({
     })
   ],
   build: {
-    outDir: 'dist/external',
+    outDir: 'dist/external/3',
     minify: false,
     rollupOptions: {
       output: {

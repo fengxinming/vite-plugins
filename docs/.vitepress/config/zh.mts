@@ -42,12 +42,12 @@ export const zh = defineConfig({
 
 function navPlugins(): DefaultTheme.NavItemWithLink[] {
   return [
-    // { text: 'vite-plugin-combine', link: '/zh/plugins/vite-plugin-combine/introduce' },
+    // { text: 'vite-plugin-combine', link: '/zh/plugins/vite-plugin-combine/introduction' },
     // { text: 'vite-plugin-cp', link: '/zh/plugins/vite-plugin-cp' },
     { 
       text: 'vite-plugin-external',
       activeMatch: '/zh/plugins/vite-plugin-external/',
-      link: '/zh/plugins/vite-plugin-external/introduce'
+      link: '/zh/plugins/vite-plugin-external/introduction'
      },
     // { text: 'vite-plugin-hook-use', link: '/zh/plugins/vite-plugin-hook-use' },
     // { text: 'vite-plugin-include-css', link: '/zh/plugins/vite-plugin-include-css' },
@@ -63,7 +63,7 @@ function sidebarPlugins(): DefaultTheme.SidebarItem[] {
       text: 'vite-plugin-external',
       base: '/zh/plugins/vite-plugin-external/',
       items: [
-        { text: '介绍', link: 'introduce' },
+        { text: '介绍', link: 'introduction' },
         { text: '配置项', link: 'options' },
         { text: '使用示例', link: 'usage' }
       ]
