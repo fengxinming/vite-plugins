@@ -9,18 +9,18 @@ on:
   pull_request:
     branches: [main]
 
-# jobs:
-#   publish-combine:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: actions/setup-node@v3
-#         with:
-#           node-version: 18
-#           registry-url: https://registry.npmjs.org/
-#       - run: npm publish ./packages/vite-plugin-combine
-#         env:
-#           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+jobs:
+  publish-combine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish ./packages/vite-plugin-combine
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
   # publish-cp:
   #   runs-on: ubuntu-latest
@@ -91,5 +91,17 @@ on:
   #         node-version: 18
   #         registry-url: https://registry.npmjs.org/
   #     - run: npm publish ./packages/vite-plugin-reverse-proxy
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  # publish-separate-importer:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish ./packages/vite-plugin-separate-importer
   #       env:
   #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
