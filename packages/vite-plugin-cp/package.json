@@ -38,8 +38,8 @@
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
     "@types/node": "^14.18.63",
-    "fs-extra": "^11.1.1",
-    "globby": "^13.2.2"
+    "fs-extra": "^11.3.0",
+    "tinyglobby": "^0.2.12"
   },
   "files": [
     "dist"

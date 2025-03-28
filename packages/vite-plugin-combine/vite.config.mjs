@@ -7,7 +7,9 @@ import pkg from './package.json';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    ts(),
+    ts({
+      tsconfig: './tsconfig.build.json'
+    }),
     pluginExternal({
       nodeBuiltins: true,
       externalizeDeps: Object.keys(pkg.dependencies).concat('vite')

@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 
-import { Plugin } from 'vite';
 import {
   intro,
   outro,
   spinner
 } from '@clack/prompts';
 import color from 'picocolors';
+import { Plugin } from 'vite';
 
 const s = spinner();
 

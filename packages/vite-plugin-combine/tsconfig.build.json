@@ -2,14 +2,14 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "declaration": true,
-    "declarationDir": "dist",
-    "stripInternal": true
+    "emitDeclarationOnly": true,
+    "declarationDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "./node_modules/vite/client.d.ts"
   ],
   "exclude": [
-    "dist",
-    "node_modules"
+    "dist"
   ]
 }

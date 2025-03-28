@@ -1,120 +1,39 @@
-import { join, isAbsolute, parse, relative } from 'node:path';
 import { statSync } from 'node:fs';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
+import { isAbsolute, join, parse, relative } from 'node:path';
+import { inspect } from 'node:util';
+
+import { copy, ensureDir, outputFile } from 'fs-extra';
+import { glob } from 'tinyglobby';
 import { Plugin } from 'vite';
-import { copy, pathExists, mkdirs } from 'fs-extra';
-import { globby, Options as GlobbyOptions } from 'globby';
 
-export interface Target {
-  /**
-   * Path or glob of what to copy.
-   *
-   * 要复制的目录、文件或者 `globby` 匹配规则。
-   */
-  src: string | string[];
+import { Options, transformFile } from './typings';
 
-  /**
-   * One or more destinations where to copy.
-   *
-   * 复制到目标目录。
-   */
-  dest: string;
-
-  /**
-   * Rename the file after copying.
-   *
-   * 复制后重命名文件。
-   */
-  rename?: string | ((name: string) => string);
-
-  /**
-   * Remove the directory structure of copied files, if `src` is a directory.
-   *
-   * 是否删除复制的文件目录结构，`src` 为目录时有效。
-   */
-  flatten?: boolean;
-
-  /**
-   * Options for globby. See more at https://github.com/sindresorhus/globby#options
-   *
-   * globby 的选项，设置 `src` 的匹配参数
-   */
-  globbyOptions?: GlobbyOptions;
-
-  /**
-   * Transform the file before copying.
-   *
-   * 复制前转换文件内容。
-   */
-  transform?: (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
+function isObject<T>(v: T) {
+  return v && typeof v === 'object';
 }
 
-export interface Options {
-  /**
-   * Default `'closeBundle'`, vite hook the plugin should use.
-   *
-   * 默认 `'closeBundle'`，调用指定钩子函数时开始复制。
-   *
-   * @default 'closeBundle'
-   */
-  hook?: string;
-
-  /**
-   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-   *
-   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering
-   */
-  enforce?: 'pre' | 'post';
-
-  /**
-   * Options for globby. See more at https://github.com/sindresorhus/globby#options
-   *
-   * globby 的选项，设置 `src` 的匹配参数。
-   */
-  globbyOptions?: GlobbyOptions;
-
-  /**
-   * Default `process.cwd()`, The current working directory in which to search.
-   *
-   * 默认 `process.cwd()`，用于拼接 `src` 的路径。
-   *
-   * @default `process.cwd()`
-   */
-  cwd?: string;
-
-  /**
-   * Array of targets to copy.
-   *
-   * 复制文件的规则配置。
-   */
-  targets: Target[];
+function stringify(value) {
+  return inspect(value, { breakLength: Infinity });
 }
 
-function makeCopy(transform?: (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>) {
+function toAbsolutePath(pth: string, cwd: string): string {
+  if (!isAbsolute(pth)) {
+    pth = join(cwd, pth);
+  }
+  return pth;
+}
+
+function makeCopy(transform?: transformFile) {
   return transform
     ? function (from: string, to: string) {
       return readFile(from)
         .then((buf: Buffer) => transform(buf, from))
         .then((data: string | Buffer) => {
-          const { dir } = parse(to);
-          return pathExists(dir).then((itDoes) => {
-            if (!itDoes) {
-              return mkdirs(dir);
-            }
-          }).then(() => {
-            return writeFile(to, data as any);
-          });
+          return outputFile(to, data as any);
         });
     }
     : copy;
-}
-
-function transformName(name: string, rename?: string | ((name: string) => string)): string {
-  if (typeof rename === 'function') {
-    return rename(name) || name;
-  }
-
-  return rename || name;
 }
 
 /**
@@ -147,14 +66,18 @@ function transformName(name: string, rename?: string | ((name: string) => string
  * @param opts Options
  * @returns a vite plugin
  */
-export default function createPlugin(opts: Options): Plugin {
+export default function createPlugin(opts: Options) {
   const {
     hook = 'closeBundle',
     enforce,
     targets,
     cwd = process.cwd(),
-    globbyOptions
+    globOptions
   } = opts || {};
+
+  if (!Array.isArray(targets) || !targets.length) {
+    return;
+  }
 
   const plugin: Plugin = {
     name: 'vite-plugin-cp'
@@ -163,17 +86,6 @@ export default function createPlugin(opts: Options): Plugin {
   if (enforce) {
     plugin.enforce = enforce;
   }
-
-  if (!Array.isArray(targets) || !targets.length) {
-    return plugin;
-  }
-
-  const toAbsolutePath = (pth: string) => {
-    if (!isAbsolute(pth)) {
-      pth = join(cwd, pth);
-    }
-    return pth;
-  };
 
   let called = false;
 
@@ -186,49 +98,88 @@ export default function createPlugin(opts: Options): Plugin {
     called = true;
 
     const startTime = Date.now();
-    await Promise.all(targets.map(({ src, dest, rename, flatten, globbyOptions: gOptions, transform }) => {
-      dest = toAbsolutePath(dest);
-      const cp = makeCopy(transform);
 
-      const glob = (pattern: string) => {
-        let notFlatten = false;
+    await Promise.all(targets.map((target) => {
+      if (!isObject(target)) {
+        throw new Error(`${stringify(target)} target must be an object`);
+      }
+
+      const { src, rename, flatten, globOptions: gOptions, transform } = target;
+      let { dest } = target;
+
+      if (!src || !dest) {
+        throw new Error(`${stringify(target)} target must have "src" and "dest" properties`);
+      }
+
+      // dest become absolute path
+      dest = toAbsolutePath(dest, cwd);
+      const cpFile = makeCopy(transform);
+
+      const run = async (pattern: string) => {
+        // src become absolute path
+        pattern = toAbsolutePath(pattern, cwd);
+
+        let isDir = false;
         try {
-          notFlatten = statSync(pattern).isDirectory() && flatten === false;
+          // check if 'pattern' is directory
+          isDir = statSync(pattern).isDirectory();
         }
-        catch (e) {}
+        catch (e) {
+          // 'pattern' is not a file or directory
+        }
 
-        return globby(pattern, gOptions || globbyOptions).then((matchedPaths) => {
-          if (!matchedPaths.length) {
-            throw new Error(`Could not find files with "${pattern}"`);
+        const isNotFlatten = isDir && !flatten;
+
+        // matched files and folders
+        const matchedPaths = await glob(
+          pattern,
+          Object.assign({
+            absolute: true,
+            expandDirectories: false,
+            onlyFiles: false
+          }, globOptions, gOptions)
+        );
+        // copy files when 'matchedPaths' is not empty
+        if (!matchedPaths.length) {
+          throw new Error(`Could not find files with "${pattern}"`);
+        }
+
+        return matchedPaths.reduce((arr, matchedPath) => {
+          const stat = statSync(matchedPath);
+          if (stat.isDirectory()) {
+            arr.push(ensureDir(matchedPath));
           }
+          else if (stat.isFile()) {
+            let targetFileName: string;
+            let destDir = dest;
 
-          return matchedPaths.map((matchedPath) => {
-            matchedPath = toAbsolutePath(matchedPath);
+            if (isNotFlatten) {
+              const tmp = parse(relative(pattern, matchedPath));
+              targetFileName = tmp.base;
+              destDir = join(destDir, tmp.dir);
+            }
+            else {
+              targetFileName = parse(matchedPath).base;
+            }
 
-            const outputToDest = notFlatten
-              ? function (matchedPath: string) {
-                const tmp = parse(relative(pattern, matchedPath));
-                return cp(
-                  matchedPath,
-                  join(dest, tmp.dir, transformName(tmp.base, rename))
-                );
-              }
-              : function (matchedPath: string) {
-                return cp(
-                  matchedPath,
-                  join(dest, transformName(parse(matchedPath).base, rename))
-                );
-              };
-            return outputToDest(matchedPath);
-          });
-        });
+            if (typeof rename === 'function') {
+              targetFileName = rename(targetFileName) || targetFileName;
+            }
+            else if (typeof rename === 'string') {
+              targetFileName = rename;
+            }
+
+            arr.push(cpFile(matchedPath, join(destDir, targetFileName)));
+          }
+          return arr;
+        }, [] as Array<Promise<any>>);
       };
 
       if (typeof src === 'string') {
-        return glob(src);
+        return run(src);
       }
       else if (Array.isArray(src)) {
-        return Promise.all(src.map(glob));
+        return Promise.all(src.map(run));
       }
 
       return null;

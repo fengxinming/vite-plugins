@@ -1,141 +1,21 @@
-import { existsSync, writeFileSync, unlinkSync } from "node:fs";
+import { writeFileSync, readdirSync, statSync, existsSync, unlinkSync } from "node:fs";
 import { EOL } from "node:os";
-import { isAbsolute, join, parse, relative, dirname } from "node:path";
+import { parse, join, isAbsolute, relative, dirname } from "node:path";
+import camelCase from "camelcase";
+import replaceAll from "fast-replaceall";
+import { move } from "fs-extra";
 import { globSync } from "tinyglobby";
 import { normalizePath } from "vite";
-const UPPERCASE = /[\p{Lu}]/u;
-const LOWERCASE = /[\p{Ll}]/u;
-const LEADING_CAPITAL = /^[\p{Lu}](?![\p{Lu}])/gu;
-const IDENTIFIER = /([\p{Alpha}\p{N}_]|$)/u;
-const SEPARATORS = /[_.\- ]+/;
-const LEADING_SEPARATORS = new RegExp("^" + SEPARATORS.source);
-const SEPARATORS_AND_IDENTIFIER = new RegExp(SEPARATORS.source + IDENTIFIER.source, "gu");
-const NUMBERS_AND_IDENTIFIER = new RegExp("\\d+" + IDENTIFIER.source, "gu");
-const preserveCamelCase = (string, toLowerCase, toUpperCase, preserveConsecutiveUppercase2) => {
-  let isLastCharLower = false;
-  let isLastCharUpper = false;
-  let isLastLastCharUpper = false;
-  let isLastLastCharPreserved = false;
-  for (let index = 0; index < string.length; index++) {
-    const character = string[index];
-    isLastLastCharPreserved = index > 2 ? string[index - 3] === "-" : true;
-    if (isLastCharLower && UPPERCASE.test(character)) {
-      string = string.slice(0, index) + "-" + string.slice(index);
-      isLastCharLower = false;
-      isLastLastCharUpper = isLastCharUpper;
-      isLastCharUpper = true;
-      index++;
-    } else if (isLastCharUpper && isLastLastCharUpper && LOWERCASE.test(character) && (!isLastLastCharPreserved || preserveConsecutiveUppercase2)) {
-      string = string.slice(0, index - 1) + "-" + string.slice(index - 1);
-      isLastLastCharUpper = isLastCharUpper;
-      isLastCharUpper = false;
-      isLastCharLower = true;
-    } else {
-      isLastCharLower = toLowerCase(character) === character && toUpperCase(character) !== character;
-      isLastLastCharUpper = isLastCharUpper;
-      isLastCharUpper = toUpperCase(character) === character && toLowerCase(character) !== character;
-    }
-  }
-  return string;
-};
-const preserveConsecutiveUppercase = (input, toLowerCase) => {
-  LEADING_CAPITAL.lastIndex = 0;
-  return input.replaceAll(LEADING_CAPITAL, (match) => toLowerCase(match));
-};
-const postProcess = (input, toUpperCase) => {
-  SEPARATORS_AND_IDENTIFIER.lastIndex = 0;
-  NUMBERS_AND_IDENTIFIER.lastIndex = 0;
-  return input.replaceAll(NUMBERS_AND_IDENTIFIER, (match, pattern, offset) => ["_", "-"].includes(input.charAt(offset + match.length)) ? match : toUpperCase(match)).replaceAll(SEPARATORS_AND_IDENTIFIER, (_, identifier) => toUpperCase(identifier));
-};
-function camelCase(input, options) {
-  if (!(typeof input === "string" || Array.isArray(input))) {
-    throw new TypeError("Expected the input to be `string | string[]`");
-  }
-  options = {
-    pascalCase: false,
-    preserveConsecutiveUppercase: false,
-    ...options
-  };
-  if (Array.isArray(input)) {
-    input = input.map((x) => x.trim()).filter((x) => x.length).join("-");
-  } else {
-    input = input.trim();
-  }
-  if (input.length === 0) {
-    return "";
-  }
-  const toLowerCase = options.locale === false ? (string) => string.toLowerCase() : (string) => string.toLocaleLowerCase(options.locale);
-  const toUpperCase = options.locale === false ? (string) => string.toUpperCase() : (string) => string.toLocaleUpperCase(options.locale);
-  if (input.length === 1) {
-    if (SEPARATORS.test(input)) {
-      return "";
-    }
-    return options.pascalCase ? toUpperCase(input) : toLowerCase(input);
-  }
-  const hasUpperCase = input !== toLowerCase(input);
-  if (hasUpperCase) {
-    input = preserveCamelCase(input, toLowerCase, toUpperCase, options.preserveConsecutiveUppercase);
-  }
-  input = input.replace(LEADING_SEPARATORS, "");
-  input = options.preserveConsecutiveUppercase ? preserveConsecutiveUppercase(input, toLowerCase) : toLowerCase(input);
-  if (options.pascalCase) {
-    input = toUpperCase(input.charAt(0)) + input.slice(1);
-  }
-  return postProcess(input, toUpperCase);
-}
-function camelCaseName(name, filePath, nameExport) {
-  if (nameExport) {
-    switch (typeof nameExport) {
-      case "boolean":
-        return camelCase(name);
-      case "function":
-        return nameExport(name, filePath);
-    }
-  }
-  return name;
-}
-function namedExport(files, target, nameExport) {
-  return files.map((file) => {
-    const { name, dir } = parse(file);
-    const exportName = camelCaseName(name, file, nameExport);
-    const relativeDir = relative(dirname(target), dir);
-    return `export { default as ${exportName} } from '${`./${join(relativeDir, name)}`}';`;
-  }).join(EOL).concat(EOL);
-}
-function defaultExport(files, target, nameExport) {
-  const importDeclare = [];
-  const exportDeclare = [];
-  let exportName;
-  for (const file of files) {
-    const { name, dir } = parse(file);
-    exportName = camelCaseName(name, file, nameExport);
-    const relativeDir = relative(dirname(target), dir);
-    importDeclare[importDeclare.length] = `import ${exportName} from '${`./${join(relativeDir, name)}`}';`;
-    exportDeclare[exportDeclare.length] = exportName;
-  }
-  return exportDeclare.length ? `${importDeclare.join(EOL)}${EOL}export default { ${exportDeclare.join(", ")} };${EOL}` : "";
-}
-function noneExport(files, target) {
-  return files.map((file) => {
-    const { name, dir } = parse(file);
-    const relativeDir = relative(dirname(target), dir);
-    return `import '${relativeDir ? join(relativeDir, name) : `./${name}`}';`;
-  }).join(EOL);
-}
-function rebuildInput(input, files) {
-  if (typeof input === "string") {
-    return [input].concat(files);
-  } else if (Array.isArray(input)) {
-    return input.concat(files);
-  } else if (input && typeof input === "object") {
-    return files.reduce((prev, cur) => {
-      const obj = parse(cur);
-      prev[obj.name] = cur;
-      return prev;
-    }, input);
-  }
-  return files;
-}
+import { LogFactory, Level } from "base-log-factory";
+import { ColorfulAppender } from "blf-colorful-appender";
+const PLUGIN_NAME = "vite-plugin-combine";
+const logFactory = new LogFactory({
+  level: Level.WARN,
+  appenders: [
+    new ColorfulAppender()
+  ]
+});
+const logger = logFactory.getLogger(PLUGIN_NAME);
 function onExit(listener) {
   process.on("exit", listener);
   process.on("SIGHUP", listener);
@@ -154,73 +34,159 @@ function offExit(listener) {
   process.off("uncaughtException", listener);
   process.off("unhandledRejection", listener);
 }
-function pluginCombine(opts) {
-  if (!opts) {
-    opts = {};
+function handleExport(name, filePath, nameExport) {
+  if (nameExport) {
+    switch (typeof nameExport) {
+      case "boolean":
+        return camelCase(name);
+      case "function":
+        return nameExport(name, filePath);
+    }
   }
-  const { src, overwrite, nameExport } = opts;
-  const enforce = "enforce" in opts ? opts.enforce : "pre";
+  return name;
+}
+function spliceCode(files, target, exportsType, nameExport) {
+  const importDeclare = [];
+  const exportDeclare = [];
+  for (const file of files) {
+    const { name, dir } = parse(file);
+    const exportName = handleExport(name, file, nameExport);
+    const relativeDir = relative(dirname(target), dir);
+    const relativePath = `./${join(relativeDir, name)}`;
+    importDeclare.push(`import ${exportName} from '${relativePath}';`);
+    exportDeclare.push(exportName);
+  }
+  if (exportDeclare.length === 0) {
+    return "";
+  }
+  let code = importDeclare.join(EOL) + EOL;
+  const exportStr = exportDeclare.join(", ");
+  if (exportsType === "named" || exportsType === "auto") {
+    code += `export { ${exportStr} };${EOL}`;
+  }
+  if (exportsType === "default" || exportsType === "auto") {
+    code += `export default { ${exportDeclare.join(", ")} };${EOL}`;
+  }
+  return code;
+}
+function noneExport(files, target) {
+  return files.map((file) => {
+    const { name, dir } = parse(file);
+    const relativeDir = relative(dirname(target), dir);
+    return `import '${relativeDir ? join(relativeDir, name) : `./${name}`}';`;
+  }).join(EOL);
+}
+function makeESModuleCode(files, absTarget, opts) {
   const exportsType = opts.exports || "named";
-  const target = opts.target || "index.js";
-  const cwd = opts.cwd || process.cwd();
+  const { nameExport, beforeWrite } = opts;
+  let mainCode = "";
+  switch (exportsType) {
+    case "named":
+    case "default":
+    case "auto":
+      mainCode = spliceCode(files, absTarget, exportsType, nameExport);
+      break;
+    default:
+      mainCode = noneExport(files, absTarget);
+  }
+  if (typeof beforeWrite === "function") {
+    const code = beforeWrite(mainCode);
+    if (typeof code === "string") {
+      mainCode = code;
+    }
+  }
+  return mainCode;
+}
+function rebuildInput(input, files) {
+  const whatType = typeof input;
+  if (whatType === "string") {
+    return [input].concat(files);
+  } else if (Array.isArray(input)) {
+    return input.concat(files);
+  } else if (whatType === "object" && input !== null) {
+    return files.reduce((prev, cur) => {
+      const obj = parse(cur);
+      prev[obj.name] = cur;
+      return prev;
+    }, input);
+  }
+  return files;
+}
+function normalizeTarget(cwd, target) {
   let absTarget = target;
   if (!isAbsolute(absTarget)) {
     absTarget = join(cwd, absTarget);
   }
   absTarget = normalizePath(absTarget);
-  if (!overwrite && existsSync(absTarget)) {
-    throw new Error(`'${absTarget}' exists.`);
+  return absTarget;
+}
+function pluginCombine(opts) {
+  if (!opts) {
+    opts = {};
   }
-  const files = globSync(src, { cwd, absolute: true });
+  const { src, logLevel } = opts;
+  if (logLevel) {
+    logFactory.updateLevel(logLevel);
+  }
+  const cwd = opts.cwd || process.cwd();
+  const prefix = `${PLUGIN_NAME}-temp-`;
+  const files = globSync(src, { cwd, absolute: true, ignore: `**/${prefix}**` });
   if (!files.length) {
+    logger.warn(`No files found in "${src}".`);
     return;
   }
-  let mainCode = "";
-  switch (exportsType) {
-    case "named":
-      mainCode = namedExport(files, absTarget, nameExport);
-      break;
-    case "default": {
-      mainCode = defaultExport(files, absTarget, nameExport);
-      break;
+  const target = opts.target || "index.js";
+  const absTarget = normalizeTarget(cwd, target);
+  const virtualName = `${prefix}${Math.random().toString(36).slice(2)}`;
+  const { ext: targetExt, dir: targetDir, name: targetName } = parse(absTarget);
+  const virtualInput = join(targetDir, virtualName + targetExt);
+  writeFileSync(virtualInput, makeESModuleCode(files, absTarget, opts));
+  logger.trace(`Temporary file "${virtualInput}" has been created.`);
+  const clean = (err) => {
+    try {
+      unlinkSync(virtualInput);
+      logger.trace(`Clean up "${virtualInput}".`);
+    } catch (e) {
     }
-    default:
-      mainCode = noneExport(files, absTarget);
-  }
-  const { beforeWrite } = opts;
-  if (typeof beforeWrite === "function") {
-    const str = beforeWrite(mainCode);
-    if (typeof str === "string") {
-      mainCode = str;
+    offExit(clean);
+    if (err != null) {
+      logger.debug("Exit event received:", err);
     }
-  }
-  writeFileSync(absTarget, mainCode);
-  const plugin = {
-    name: "vite-plugin-combine",
-    enforce,
+  };
+  onExit(clean);
+  let outDir;
+  return {
+    name: PLUGIN_NAME,
+    enforce: "enforce" in opts ? opts.enforce : "pre",
     async config(config) {
-      const inputs = files.concat(absTarget);
+      const inputs = files.concat(virtualInput);
       const { build } = config;
       if (build) {
         const { lib, rollupOptions } = build;
+        let entry;
         if (lib && typeof lib === "object") {
+          entry = rebuildInput(lib.entry, inputs);
+          logger.debug("Entry:", entry);
           return {
             build: {
               lib: {
-                entry: rebuildInput(lib.entry, inputs)
+                entry
               }
             }
           };
         } else if (rollupOptions && typeof rollupOptions === "object") {
+          entry = rebuildInput(rollupOptions.input, inputs);
+          logger.debug("Entry:", entry);
           return {
             build: {
               rollupOptions: {
-                input: rebuildInput(rollupOptions.input, inputs)
+                input: entry
               }
             }
           };
         }
       }
+      logger.debug("Entry:", inputs);
       return {
         build: {
           lib: {
@@ -228,24 +194,34 @@ function pluginCombine(opts) {
           }
         }
       };
+    },
+    configResolved({ root, build }) {
+      outDir = join(root, build.outDir);
+    },
+    closeBundle() {
+      const { overwrite } = opts;
+      const list = readdirSync(outDir);
+      const promises = [];
+      for (const file of list) {
+        const state = statSync(join(outDir, file));
+        if (state.isFile()) {
+          if (file.startsWith(virtualName)) {
+            const newPath = join(outDir, replaceAll(file, virtualName, targetName));
+            if (existsSync(newPath) && !overwrite) {
+              logger.warn(`"${newPath}" already exists, please set overwrite to true.`);
+            } else {
+              const oldPath = join(outDir, file);
+              promises.push(move(oldPath, newPath).then(() => {
+                logger.info(`"${newPath}" has been created.`);
+                logger.trace(`"${oldPath}" exists?`, existsSync(oldPath));
+              }));
+            }
+          }
+        }
+      }
+      Promise.allSettled(promises).then(clean);
     }
   };
-  if (!overwrite) {
-    const clean = () => {
-      try {
-        if (existsSync(absTarget)) {
-          unlinkSync(absTarget);
-        }
-        offExit(clean);
-      } catch (e) {
-      }
-    };
-    onExit(clean);
-    plugin.closeBundle = function() {
-      clean();
-    };
-  }
-  return plugin;
 }
 export {
   pluginCombine as default

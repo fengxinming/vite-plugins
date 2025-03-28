@@ -6,6 +6,7 @@ import vitePluginCombine from 'vite-plugin-combine';
 export default defineConfig({
   plugins: [
     vitePluginCombine({
+      logLevel: 'TRACE',
       src: 'src/*.ts',
       target: 'src/index.ts'
     }),
