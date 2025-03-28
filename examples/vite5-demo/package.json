@@ -37,8 +37,7 @@
     "vite-plugin-include-css": "workspace:^",
     "vite-plugin-mock-data": "workspace:^",
     "vite-plugin-reverse-proxy": "workspace:^",
-    "vite-plugin-separate-importer": "workspace:^",
-    "vite-plugin-view": "workspace:^"
+    "vite-plugin-separate-importer": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"
 }
