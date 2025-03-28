@@ -14,8 +14,11 @@
     "docs:build": "npm run typedoc && vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "release:external": "pnpm run --filter=vite-plugin-external release",
+    "release:combine": "pnpm run --filter=vite-plugin-combine release",
     "build:external": "pnpm run --filter=vite-plugin-external build:lib",
-    "test:external": "pnpm run -r --parallel /build:external\\.*/"
+    "build:combine": "pnpm run --filter=vite-plugin-combine build:lib",
+    "test:external": "pnpm run -r --parallel /build:external\\.*/",
+    "test:combine": "pnpm run -r --parallel /build:combine\\.*/"
   },
   "repository": {
     "type": "git",
@@ -28,18 +31,9 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
-    "@rollup/plugin-typescript": "^11.1.5",
-    "@vitejs/plugin-vue": "^5.2.1",
-    "@vue/tsconfig": "^0.7.0",
-    "lerna": "^6.6.2",
     "markdown-it-mathjax3": "^4.3.2",
-    "pug": "^3.0.3",
-    "tinyglobby": "^0.2.12",
-    "vite": "^6.1.0",
     "vitepress": "^1.6.3",
-    "vitepress-plugin-group-icons": "^1.3.8",
-    "vue": "^3.5.13",
-    "vue-tsc": "^2.2.2"
+    "vitepress-plugin-group-icons": "^1.3.8"
   },
   "engines": {
     "node": ">=14.18.0"
@@ -48,7 +42,7 @@
     "@babel/preset-react": "^7.13.13",
     "@commitlint/cli": "^17.6.1",
     "@commitlint/config-conventional": "^17.6.1",
-    "@types/node": "^20.5.1",
+    "@types/node": "^20.17.28",
     "eslint": "^8.48.0",
     "eslint-config-fe": "^2.1.3",
     "eslint-plugin-react": "^7.24.0",

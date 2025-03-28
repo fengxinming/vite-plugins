@@ -1,3 +1,4 @@
+import { LogLevel } from 'base-log-factory';
 export type NameExport = (name: string, filePath: string) => string;
 export interface Options {
     /**
@@ -35,13 +36,19 @@ export interface Options {
      *
      * @default 'named'
      */
-    exports?: 'named' | 'default' | 'none';
+    exports?: 'named' | 'default' | 'auto' | 'none';
     /**
      * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
      *
      * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
      */
     enforce?: 'pre' | 'post';
+    /**
+     * Log level
+     *
+     * 输出日志等级
+     */
+    logLevel?: LogLevel;
     /**
      * Current Working Directory.
      *

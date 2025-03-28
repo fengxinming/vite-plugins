@@ -8,8 +8,10 @@ import vitePluginCombine from 'vite-plugin-combine';
 export default defineConfig({
   plugins: [
     vitePluginCombine({
+      logLevel: 'TRACE',
       src: ['src/*.ts', '!src/index.ts', '!src/typings.ts'],
       target: 'src/combine.ts',
+      exports: 'named',
       nameExport: (name) => `my${name}`,
       beforeWrite(code) {
         return `${code + EOL}export * from './typings';`;
@@ -17,7 +19,7 @@ export default defineConfig({
     }),
     ts({
       compilerOptions: {
-        declarationDir: 'dist/combine'
+        declarationDir: 'dist/combine/1'
       }
     })
   ],
@@ -25,7 +27,7 @@ export default defineConfig({
     preserveSymlinks: true
   },
   build: {
-    outDir: 'dist/combine',
+    outDir: 'dist/combine/1',
     minify: false,
     lib: {
       formats: ['es'],
