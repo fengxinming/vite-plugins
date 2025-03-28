@@ -11,7 +11,7 @@
     "build:examples": "pnpm run -r --parallel build",
     "prepare": "husky install",
     "docs:dev": "vitepress dev docs",
-    "docs:build": "npm run typedoc && vitepress build docs",
+    "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "release:external": "pnpm run --filter=vite-plugin-external release",
     "release:combine": "pnpm run --filter=vite-plugin-combine release",
