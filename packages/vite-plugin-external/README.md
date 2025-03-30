@@ -32,7 +32,7 @@ export default defineConfig({
 
 For detailed usage instructions and API references, please visit the official documentation:
 
-👉 [View Full Documentation https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/introduction](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/introduction)
+👉 [View Full Documentation https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/introduction](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/quick-start)
 
 ## Contributing
 

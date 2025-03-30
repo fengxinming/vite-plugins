@@ -2,8 +2,8 @@
 node_modules
 logs
 dist
-docs
 gh-pages
 coverage
 LICENSE
 README.md
+vite-plugin-view

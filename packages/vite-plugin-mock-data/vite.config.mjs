@@ -1,6 +1,7 @@
-import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
+import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
+
 import pkg from './package.json';
 
 const externalizeDeps = Object.keys(pkg.dependencies)
@@ -8,7 +9,9 @@ const externalizeDeps = Object.keys(pkg.dependencies)
 
 export default defineConfig({
   plugins: [
-    ts(),
+    ts({
+      tsconfig: './tsconfig.build.json'
+    }),
     pluginExternal({
       nodeBuiltins: true,
       externalizeDeps

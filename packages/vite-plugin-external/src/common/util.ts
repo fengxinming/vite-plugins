@@ -1,7 +1,14 @@
+import { SpawnSyncReturns } from 'node:child_process';
 import crypto from 'node:crypto';
 import { resolve as pathResolve } from 'node:path';
 
-import { normalizePath, ResolvedConfig } from 'vite';
+import spawn from 'cross-spawn';
+import figlet from 'figlet';
+import picocolors from 'picocolors';
+import type { ResolvedConfig } from 'vite';
+import { normalizePath, version } from 'vite';
+
+import { logger } from './logger';
 
 function toPath(deepKey: string): string[] {
   const result: string[] = [];
@@ -224,4 +231,47 @@ function getDepsCacheDir(config: ResolvedConfig, ssr: boolean): string {
   return getDepsCacheDirPrefix(config) + getDepsCacheSuffix(config, ssr);
 }
 
-export { escapeRegex, flattenId, getDepsCacheDir, getValue };
+function banner(text: string, opts?: any): void {
+  // eslint-disable-next-line no-console
+  console.log(figlet.textSync(text, opts));
+}
+
+const color = {} as Record<keyof Omit<typeof picocolors, 'createColors'>, (...args: any[]) => void>;
+Object.entries(picocolors).forEach(([key, value]) => {
+  color[key] = (text: string) => {
+    // eslint-disable-next-line no-console
+    console.log(value(text));
+  };
+});
+
+function getRuntimeViteVersion(): string {
+  const { argv } = process;
+  let viteVersion: string;
+  try {
+    const result: SpawnSyncReturns<Buffer> = spawn.sync(argv[0], [argv[1], '-v']);
+    const str = result.stdout.toString().trim();
+    const matched = /.*vite\/([\d.]+)\s+/.exec(str);
+    if (matched) {
+      viteVersion = matched[1];
+    }
+    else {
+      throw new Error(result.stderr.toString().trim() || 'Empty vite version.');
+    }
+  }
+  catch (e) {
+    logger.error('Failed to get vite version.', e);
+    viteVersion = version;
+  }
+
+  return viteVersion;
+}
+
+export {
+  banner,
+  color,
+  escapeRegex,
+  flattenId,
+  getDepsCacheDir,
+  getRuntimeViteVersion,
+  getValue
+};

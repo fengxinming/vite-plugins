@@ -18,7 +18,7 @@ export interface libConfig {
    * 插入导入声明
    * Insert import source
    */
-  insertImport?: (importer: string, libName: string) => string | Array<string | ImportSource>;
+  insertImport?: (importer: string, libName: string) => string | ImportSource | Array<string | ImportSource>;
 }
 
 export interface Options {

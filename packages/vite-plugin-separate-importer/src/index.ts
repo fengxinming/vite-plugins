@@ -1,14 +1,16 @@
 import { EOL } from 'node:os';
+
+import { Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program } from 'acorn';
 import { init, parse } from 'es-module-lexer';
 import {
-  PluginContext,
-  OutputOptions,
   OutputAsset,
-  OutputChunk
+  OutputChunk,
+  OutputOptions,
+  PluginContext
 } from 'rollup';
 import { Plugin } from 'vite';
-import { Program, ImportSpecifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, Identifier } from 'acorn';
-import { ImportSource, Options, libConfig } from './typings';
+
+import { ImportSource, libConfig, Options } from './typings';
 
 export * from './typings';
 
@@ -162,7 +164,6 @@ function processLibs(
  * @returns a vite plugin
  */
 function createPlugin(
-  this: PluginContext,
   { enforce, libs = [] }: Options = {}
 ): Plugin | undefined {
   if (!Array.isArray(libs) || libs.length === 0) {

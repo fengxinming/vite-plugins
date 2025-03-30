@@ -1,71 +1,69 @@
 # Option Reference
 
-## Parameter Definitions
-
-**`interop`**
+## `interop`
 * Type: `'auto'`
 * Required: false
 
-This option controls how Vite handles default values. [Example](/plugins/vite-plugin-external/usage#runtime-detection-of-external-dependencies)
+This option controls how Vite handles default values. [Example](/plugins/vite-plugin-external/usage#adjusting-build-strategies)
 
-**`enforce`**
+## `enforce`
 * Type: `'pre' | 'post'`
 * Required: false
 
 Enforce order. Values: `pre` (before) or `post` (after). Refer to [Vite Plugin Ordering](https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering).
 
-**`nodeBuiltins`**
+## `nodeBuiltins`
 * Type: `boolean`
 * Required: false
 
-Whether to exclude Node.js built-in modules. [Example](/plugins/vite-plugin-external/usage#exclude-dependencies-during-build)
+Whether to exclude Node.js built-in modules. [Example](/plugins/vite-plugin-external/usage#excluding-dependencies-during-build)
 
-**`externalizeDeps`**
+## `externalizeDeps`
 * Type: `Array<string | RegExp>`
 * Required: false
 
-Specify dependencies to exclude from bundling. [Example](/plugins/vite-plugin-external/usage#exclude-dependencies-during-build)
+Specify dependencies to exclude from bundling. [Example](/plugins/vite-plugin-external/usage#excluding-dependencies-during-build)
 
-**`externalGlobals`**
+## `externalGlobals`
 * Type: `(globals: Record<string, any>) => rollup.Plugin`
 * Required: false
 
-Resolve IIFE Packaging Issues [Rollup Issue #3188](https://github.com/rollup/rollup/issues/3188). [Example](/plugins/vite-plugin-external/usage#resolve-iife-packaging-issues)
+Resolve IIFE Packaging Issues [Rollup Issue #3188](https://github.com/rollup/rollup/issues/3188). [Example](/plugins/vite-plugin-external/usage#solving-iife-build-issues)
 
-**`logLevel`**
+## `logLevel`
 * Type: `"TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"`
 * Required: false
 * Default: `"WARN"`
 
 Sets the logging level.
 
-**`rollback`**
+## `rollback`
 * Type: `boolean`
 * Required: false
 
 Whether to revert to the legacy implementation.
 
-**`cwd`**
+## `cwd`
 * Type: `string`
 * Required: false
 * Default: `process.cwd()`
 
 Sets the current directory for resolving `cacheDir` relative paths.
 
-**`cacheDir`**
+## `cacheDir`
 * Type: `string`
 * Required: false
 * Default: `${cwd}/node_modules/.vite_external`
 
 Cache directory path.
 
-**`externals`**
+## `externals`
 * Type: `Record<string, any>`
 * Required: false
 
 Configure external dependencies. [Example](/plugins/vite-plugin-external/usage#basic-usage)
 
-**`[mode: string]`**
+## `[mode: string]`
 * Type: `BasicOptions`
 * Required: false
 

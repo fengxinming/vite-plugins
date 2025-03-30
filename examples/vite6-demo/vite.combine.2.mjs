@@ -12,7 +12,6 @@ export default defineConfig({
       src: ['src/*.ts', '!src/index.ts', '!src/typings.ts'],
       target: 'src/combine.ts',
       exports: 'default',
-      nameExport: (name) => `my${name}`,
       beforeWrite(code) {
         return `${code + EOL}export * from './typings';`;
       }

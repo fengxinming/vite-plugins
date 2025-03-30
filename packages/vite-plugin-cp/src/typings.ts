@@ -1,7 +1,8 @@
+import { LogLevel } from 'base-log-factory';
 import { CopyOptions } from 'fs-extra';
 import { GlobOptions } from 'tinyglobby';
 
-export type transformFile = (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
+export type TransformFile = (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
 
 export interface Target {
   /**
@@ -51,7 +52,7 @@ export interface Target {
    *
    * 复制前转换文件内容。
    */
-  transform?: transformFile;
+  transform?: TransformFile;
 }
 
 export interface Options {
@@ -100,4 +101,18 @@ export interface Options {
    * 复制文件的规则配置。
    */
   targets: Target[];
+
+  /**
+   * Default `'warn'`, The log level to use.
+   *
+   * 默认 `'warn'`，日志等级。
+   *
+   * @default 'WARN'
+   */
+  logLevel?: LogLevel;
+
+  /**
+   * Delay in milliseconds before copying.
+   */
+  delay?: number;
 }

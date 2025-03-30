@@ -7,7 +7,7 @@ import replaceAll from 'fast-replaceall';
 import { move } from 'fs-extra';
 import { InputOption } from 'rollup';
 import { globSync } from 'tinyglobby';
-import { normalizePath, PluginOption } from 'vite';
+import { normalizePath, Plugin } from 'vite';
 
 import { logFactory, logger, PLUGIN_NAME } from './logger';
 import { NameExport, Options } from './typings';
@@ -89,21 +89,17 @@ function spliceCode(
   if (exportsType === 'named' || exportsType === 'auto') {
     code += `export { ${exportStr} };${EOL}`;
   }
-  if (exportsType === 'default' || exportsType === 'auto') {
+  else if (exportsType === 'default' || exportsType === 'auto') {
     code += `export default { ${exportDeclare.join(', ')} };${EOL}`;
+  }
+  else if (exportsType === 'none') {
+    for (const name of exportDeclare) {
+      code = replaceAll(code, ` ${name} from`, '');
+    }
+    code += 'export {};';
   }
 
   return code;
-}
-
-function noneExport(files: string[], target: string): string {
-  return files
-    .map((file) => {
-      const { name, dir } = parse(file);
-      const relativeDir = relative(dirname(target), dir);
-      return `import '${relativeDir ? join(relativeDir, name) : `./${name}`}';`;
-    })
-    .join(EOL);
 }
 
 function makeESModuleCode(
@@ -120,10 +116,9 @@ function makeESModuleCode(
     case 'named':
     case 'default':
     case 'auto':
+    case 'none':
       mainCode = spliceCode(files, absTarget, exportsType, nameExport);
       break;
-    default:
-      mainCode = noneExport(files, absTarget);
   }
 
   if (typeof beforeWrite === 'function') {
@@ -132,6 +127,7 @@ function makeESModuleCode(
       mainCode = code;
     }
   }
+  logger.trace(`Result:${EOL}${mainCode}`);
   return mainCode;
 }
 
@@ -163,7 +159,13 @@ function normalizeTarget(cwd: string, target: string) {
   return absTarget;
 }
 
-export default function pluginCombine(opts: Options): PluginOption {
+function sleep(time: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, time);
+  });
+}
+
+export default function pluginCombine(opts: Options): Plugin {
   if (!opts) {
     opts = {} as Options;
   }
@@ -181,9 +183,10 @@ export default function pluginCombine(opts: Options): PluginOption {
 
   if (!files.length) {
     logger.warn(`No files found in "${src}".`);
-    return;
+    return null as unknown as Plugin;
   }
 
+  logger.debug(`Found ${files.length} files in "${src}":`, files);
 
   // 组合到目标文件中
   const target = opts.target || 'index.js';
@@ -191,17 +194,17 @@ export default function pluginCombine(opts: Options): PluginOption {
   // target 绝对地址
   const absTarget = normalizeTarget(cwd, target);
 
-  const virtualName = `${prefix}${Math.random().toString(36).slice(2)}`;
+  const tempName = `${prefix}${Math.random().toString(36).slice(2)}`;
   const { ext: targetExt, dir: targetDir, name: targetName } = parse(absTarget);
-  const virtualInput = join(targetDir, virtualName + targetExt);
+  const tempInput = join(targetDir, tempName + targetExt);
 
-  writeFileSync(virtualInput, makeESModuleCode(files, absTarget, opts));
-  logger.trace(`Temporary file "${virtualInput}" has been created.`);
+  writeFileSync(tempInput, makeESModuleCode(files, absTarget, opts));
+  logger.trace(`Temporary file "${tempInput}" has been created.`);
 
   const clean = (err?: any) => {
     try {
-      unlinkSync(virtualInput);
-      logger.trace(`Clean up "${virtualInput}".`);
+      unlinkSync(tempInput);
+      logger.trace(`"${tempInput}" exists?`, existsSync(tempInput));
     }
     catch (e) {}
     offExit(clean);
@@ -219,16 +222,20 @@ export default function pluginCombine(opts: Options): PluginOption {
     enforce: ('enforce' in opts) ? opts.enforce : 'pre',
 
     async config(config) {
-      const inputs = files.concat(virtualInput);
+      const inputs = files.concat(tempInput);
       const { build } = config;
+
       if (build) {
         const { lib, rollupOptions } = build;
         let entry: InputOption;
 
         // 库模式
         if (lib && typeof lib === 'object') {
-          entry = rebuildInput(lib.entry, inputs);
-          logger.debug('Entry:', entry);
+          entry = lib.entry;
+          logger.debug('Original `lib.entry`:', entry);
+
+          entry = rebuildInput(entry, inputs);
+          logger.debug('New `lib.entry`:', entry);
 
           return {
             build: {
@@ -240,9 +247,12 @@ export default function pluginCombine(opts: Options): PluginOption {
         }
 
         // 可能配置了 input
-        else if (rollupOptions && typeof rollupOptions === 'object') {
-          entry = rebuildInput(rollupOptions.input, inputs);
-          logger.debug('Entry:', entry);
+        if (rollupOptions && typeof rollupOptions === 'object') {
+          entry = rollupOptions.input as InputOption;
+          logger.debug('Original `rollupOptions.input`:', entry);
+
+          rebuildInput(entry, inputs);
+          logger.debug('New `rollupOptions.input`:', entry);
 
           return {
             build: {
@@ -266,9 +276,12 @@ export default function pluginCombine(opts: Options): PluginOption {
 
     configResolved({ root, build }) {
       outDir = join(root, build.outDir);
+      logger.debug('OutDir:', outDir);
     },
 
-    closeBundle() {
+    async closeBundle() {
+      await sleep(1000);
+
       const { overwrite } = opts;
       const list = readdirSync(outDir);
       const promises: Array<Promise<void>> = [];
@@ -276,8 +289,8 @@ export default function pluginCombine(opts: Options): PluginOption {
       for (const file of list) {
         const state =  statSync(join(outDir, file));
         if (state.isFile()) {
-          if (file.startsWith(virtualName)) {
-            const newPath = join(outDir, replaceAll(file, virtualName, targetName));
+          if (file.startsWith(`${tempName}.`)) {
+            const newPath = join(outDir, replaceAll(file, tempName, targetName));
 
             if (existsSync(newPath) && !overwrite) {
               logger.warn(`"${newPath}" already exists, please set overwrite to true.`);

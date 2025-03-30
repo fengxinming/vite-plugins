@@ -36,6 +36,10 @@
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "vite": "^6.1.0"
+  },
   "files": [
     "dist"
   ]

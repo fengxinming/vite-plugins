@@ -2,10 +2,11 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-combine.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-combine)
 
-> `vite-plugin-combine` 是一个用于 Vite 的插件，能够将多个模块文件合并成一个目标文件。它支持命名导出、默认导出和无导出三种模式，并可以根据配置自动生成相应的导入语句。适用于 Vite 3.1 及以上版本。
-
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
+
+> 将多个模块文件合并成一个目标文件。它支持命名导出、默认导出和无导出三种模式，并可以根据配置自动生成相应的导入语句。
+> 使用范围 Vite >= 3.1。
 
 ## [English](README.md) | 中文
 

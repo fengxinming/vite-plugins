@@ -22,7 +22,23 @@ function createPlugin() {
     "configureServer",
     "configurePreviewServer",
     "transformIndexHtml",
-    "handleHotUpdate"
+    "handleHotUpdate",
+    // rollup 钩子
+    "outputOptions",
+    "renderStart",
+    "resolveFileUrl",
+    "resolveImportMeta",
+    "renderDynamicImport",
+    "banner",
+    "footer",
+    "intro",
+    "outro",
+    "renderChunk",
+    "augmentChunkHash",
+    "generateBundle",
+    "writeBundle",
+    "closeBundle",
+    "renderError"
   ].reduce((prev, hook) => {
     prev[hook] = function() {
       order.set(hook, (order.get(hook) || 0) + 1);

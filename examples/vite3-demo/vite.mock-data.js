@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
-import pluginMockData from 'vite-plugin-mock-data';
 import pluginExternal from 'vite-plugin-external';
+import pluginMockData from 'vite-plugin-mock-data';
 
 // https://vitejs.dev/config/
 export default defineConfig({
