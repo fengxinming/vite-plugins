@@ -3,6 +3,12 @@
   "include": [
     "./node_modules/vite/client.d.ts",
     "packages/**/*.ts",
-    "packages/**/*.mts"
+    "packages/**/*.mts",
+    "examples/**/*.ts",
+    "examples/**/*.mts"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
   ]
 }

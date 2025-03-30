@@ -2,12 +2,6 @@
 
 ## Basic Usage
 
-index.html
-```html
-<script src="//unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-<script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-```
-
 vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
@@ -17,19 +11,56 @@ export default defineConfig({
   plugins: [
     pluginExternal({
       externals: {
+        jquery: '$',
         react: 'React',
-        'react-dom/client': 'ReactDOM'
+        'react-dom/client': 'ReactDOM',
+        vue: 'Vue'
       }
     })
   ]
 });
 ```
 
-## Multi-mode Configuration
+## Dynamic Configuration of Global Variable Names
 
-> Sometimes different CDNs are used in development and production environments. To handle this, configure modes like `development` and `production` for respective external dependencies.
+```js
+import { defineConfig } from 'vite';
+import vitePluginExternal from 'vite-plugin-external';
 
-index.html
+export default defineConfig({
+  plugins: [
+    vitePluginExternal({
+      externals(libName) {
+        if (libName === 'react') {
+          return 'React';
+        }
+        if (libName === 'react-dom/client') {
+          return 'ReactDOM';
+        }
+      }
+    })
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife'
+      }
+    }
+  }
+});
+```
+
+## Multi-Environment Configuration
+
+> Sometimes development and production environments use different CDNs. You can configure `development` and `production` modes for respective external dependencies.
+
+production `index.html`
+```html
+<script src="//unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="//unpkg.com/react-dom@18.3.1/umd/react.development.js"></script>
+```
+
+development `index.html`
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
@@ -55,27 +86,32 @@ export default defineConfig({
 });
 ```
 
-## Runtime Detection of External Dependencies
+## Adjusting Build Strategies
 
-> Set `interop` to `'auto'` to inject helper functions for runtime detection of external dependencies.
+> The plugin uses two strategies during development runtime and build time.  
+> During development runtime, it maps dependencies to `module.exports = ${globalName};`.  
+> During build time, it configures Rollup's `external` and `output` options.  
+> The `interop` option controls whether to use the first strategy.
 
-vite.config.mjs
+Example configuration:
+
+`vite.config.mjs`
 ```js
 import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
+import vitePluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    pluginExternal({
-      interop: 'auto',
+    vitePluginExternal({
+      logLevel: 'TRACE',
       externals: {
-        react: 'React',
-        'react-dom/client': 'ReactDOM'
+        react: '$linkdesign.React',
+        'react-dom': '$linkdesign.ReactDOM',
+        'prop-types': '$linkdesign.PropTypes'
       }
     })
   ],
   build: {
-    outDir: 'dist/external',
     minify: false,
     rollupOptions: {
       output: {
@@ -86,9 +122,16 @@ export default defineConfig({
 });
 ```
 
-### Test Code
+`index.html`
+```html
+<script src="//g.alicdn.com/linkdesign/lib/1.0.1/??babel-polyfill.js,~react.js"></script>
+```
 
-```js
+`src/index.jsx`
+
+**Before Build**
+
+```jsx
 import { useState, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 function App() {
@@ -100,7 +143,6 @@ function App() {
     </div>
   );
 }
-
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
@@ -108,59 +150,100 @@ createRoot(document.getElementById('root')).render(
 );
 ```
 
-### Output Comparison
+### Setting `interop` to `'auto'`
 
-**When `interop` is set to `'auto'` (Vite 6.x):**
+**After Build**
 
-```js
+::: code-group
+
+```js [Vite 6.x]
 (function() {
-  "use strict";
-  var react;
-  var hasRequiredReact;
-  function requireReact() {
-    if (hasRequiredReact) return react;
-    hasRequiredReact = 1;
-    react = React;
-    return react;
-  }
-  var reactExports = requireReact();
-  var reactDom_client;
-  var hasRequiredReactDom_client;
-  function requireReactDom_client() {
-    if (hasRequiredReactDom_client) return reactDom_client;
-    hasRequiredReactDom_client = 1;
-    reactDom_client = ReactDOM;
-    return reactDom_client;
-  }
-  var reactDom_clientExports = requireReactDom_client();
-  function App() {
-    const [count, setCount] = reactExports.useState(0);
-    return /* @__PURE__ */ React.createElement("div", { className: "box" }, /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  reactDom_clientExports.createRoot(document.getElementById("root")).render(
-    /* @__PURE__ */ React.createElement(reactExports.StrictMode, null, /* @__PURE__ */ React.createElement(App, null))
-  );
-})();
+  // ... (code remains unchanged)
+});
 ```
 
-**Without `interop` Configuration:**
+```js [Vite 5.x]
+(function() {
+  // ... (code remains unchanged)
+});
+```
 
+```js [Vite 4.x]
+(function() {
+  // ... (code remains unchanged)
+});
+```
+
+```js [Vite 3.x]
+(function() {
+  // ... (code remains unchanged)
+});
+```
+
+:::
+
+### Without Setting `interop`
+
+**After Build**
+
+::: code-group
+```js [Vite 6.x]
+(function(React, ReactDOM) {
+  // ... (code remains unchanged)
+})($linkdesign.React, $linkdesign.ReactDOM);
+```
+
+```js [Vite 5.x]
+(function(React, ReactDOM) {
+  // ... (code remains unchanged)
+})($linkdesign.React, $linkdesign.ReactDOM);
+```
+
+```js [Vite 4.x]
+(function(React, ReactDOM) {
+  // ... (code remains unchanged)
+})($linkdesign.React, $linkdesign.ReactDOM);
+```
+
+```js [Vite 3.x]
+(function(React, ReactDOM) {
+  // ... (code remains unchanged)
+})($linkdesign.React, $linkdesign.ReactDOM);
+```
+:::
+
+## Solving IIFE Build Issues
+
+> For Vite versions below 6.x, use `rollup-plugin-external-globals` to resolve incomplete mapping.  
+> See https://github.com/rollup/rollup/issues/3188.
+
+vite.config.mjs
 ```js
-(function(react, client) {
-  "use strict";
-  function App() {
-    const [count, setCount] = react.useState(0);
-    return /* @__PURE__ */ React.createElement("div", { className: "box" }, /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+import externalGlobals from 'rollup-plugin-external-globals';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      externalGlobals,
+      externals: {
+        react: 'React',
+        'react-dom/client': 'ReactDOM'
+      }
+    })
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife'
+      }
+    }
   }
-  client.createRoot(document.getElementById("root")).render(
-    /* @__PURE__ */ React.createElement(react.StrictMode, null, /* @__PURE__ */ React.createElement(App, null))
-  );
-})(React, ReactDOM);
+});
 ```
 
-## Exclude Dependencies During Build
-
-> To exclude dependencies from `node_modules`, use `externalizeDeps`. Or use `nodeBuiltins` to exclude Node.js built-in modules.
+## Excluding Dependencies During Build
 
 vite.config.mjs
 ```js
@@ -188,32 +271,3 @@ export default defineConfig({
   }
 });
 ```
-
-## Resolve IIFE Packaging Issues
-
-> Use plugin `rollup-plugin-external-globals` to fix issues like [Rollup#3188](https://github.com/rollup/rollup/issues/3188).
-
-vite.config.mjs
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-import externalGlobals from 'rollup-plugin-external-globals';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      externalGlobals,
-      externals: {
-        react: 'React',
-        'react-dom/client': 'ReactDOM'
-      }
-    })
-  ],
-  build: {
-    rollupOptions: {
-      output: {
-        format: 'iife'
-      }
-    }
-  }
-});

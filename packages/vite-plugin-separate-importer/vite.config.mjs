@@ -1,15 +1,22 @@
-import { defineConfig } from 'vite';
 import ts from '@rollup/plugin-typescript';
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
 import pkg from './package.json';
 
-const externals = Object.keys(pkg.dependencies)
-  .map((n) => new RegExp(`^${n}/?`))
-  .concat(/^node:/);
+const externalizeDeps = Object.keys(pkg.dependencies)
+  .concat('vite');
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    ts()
+    pluginExternal({
+      nodeBuiltins: true,
+      externalizeDeps
+    }),
+    ts({
+      tsconfig: './tsconfig.build.json'
+    })
   ],
   build: {
     lib: {
@@ -17,9 +24,6 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       fileName: 'index'
     },
-    minify: false,
-    rollupOptions: {
-      external: externals
-    }
+    minify: false
   }
 });

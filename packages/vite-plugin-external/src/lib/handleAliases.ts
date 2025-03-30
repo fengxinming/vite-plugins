@@ -1,4 +1,3 @@
-import { emptyDirSync } from 'fs-extra';
 import { Alias, UserConfig } from 'vite';
 
 import { logger } from '../common/logger';
@@ -29,9 +28,9 @@ export async function setAliases(
 
   const { cacheDir } = opts;
 
-  // cleanup cache dir
-  emptyDirSync(cacheDir);
-  logger.debug('Cleanup stash dir.');
+  // // cleanup cache dir
+  // emptyDirSync(cacheDir);
+  // logger.debug('Cleanup stash dir.');
 
   let alias = getValue(config, 'resolve.alias', []);
 

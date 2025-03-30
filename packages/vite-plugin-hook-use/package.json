@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-hook-use",
-  "version": "4.0.8",
+  "version": "6.0.0",
   "description": "Displays the sequence and frequency of vite calling its hook functions.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -40,6 +40,10 @@
     "@clack/prompts": "^0.7.0",
     "fs-extra": "^11.1.1",
     "picocolors": "^1.0.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "vite": "^6.1.0"
   },
   "files": [
     "dist"

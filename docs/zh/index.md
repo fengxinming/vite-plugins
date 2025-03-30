@@ -8,7 +8,7 @@ hero:
   tagline: 快来试试吧！
   actions:
     - theme: brand
-      text: 介绍
+      text: 引言
       link: /zh/guide/introduction
     # - theme: alt
     #   text: API Examples

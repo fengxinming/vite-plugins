@@ -4,18 +4,13 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build:combine": "vite build --config=vite.combine.mjs",
     "build:cp": "vite build --config=vite.cp.mjs",
-    "build:external.1": "vite build --config=vite.external.1.mjs",
-    "build:external.2": "vite build --config=vite.external.2.mjs",
-    "build:external.3": "vite build --config=vite.external.3.mjs",
     "build:view.1": "vite build --config=vite.view.1.mjs",
     "build:hook-use": "vite build --config=vite.hook-use.mjs",
     "build:include-css": "vite build --config=vite.include-css.mjs",
     "build:mock-data": "vite build --config=vite.mock-data.mjs",
     "build:reverse-proxy": "vite build --config=vite.reverse-proxy.mjs",
     "build:separate-importer": "vite build --config=vite.separate-importer.mjs",
-    "dev:external.1": "vite dev --config=vite.external.1.mjs",
     "dev:mock-data": "vite dev --config=vite.mock-data.mjs",
     "build": "pnpm run /^build:.*/"
   },
@@ -26,13 +21,12 @@
     "vue-tsc": "^2.2.2"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^11.1.6",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@types/node": "^18.0.0",
     "tinyglobby": "^0.2.12",
     "vite": "^5.0.2",
     "vite-plugin-combine": "workspace:^",
     "vite-plugin-cp": "workspace:^",
-    "vite-plugin-external": "workspace:^",
     "vite-plugin-hook-use": "workspace:^",
     "vite-plugin-include-css": "workspace:^",
     "vite-plugin-mock-data": "workspace:^",

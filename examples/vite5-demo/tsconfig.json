@@ -11,6 +11,7 @@
     "src/vue/*.ts",
     "src/vue/*.vue",
     "src/*.ts",
+    "src/*.mts",
     "src/*.tsx",
     "vite-env.d.ts",
     "custom-modules.d.ts"

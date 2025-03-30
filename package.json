@@ -15,10 +15,14 @@
     "docs:preview": "vitepress preview docs",
     "release:external": "pnpm run --filter=vite-plugin-external release",
     "release:combine": "pnpm run --filter=vite-plugin-combine release",
-    "build:external": "pnpm run --filter=vite-plugin-external build:lib",
     "build:combine": "pnpm run --filter=vite-plugin-combine build:lib",
+    "build:cp": "pnpm run --filter=vite-plugin-cp build:lib",
+    "build:external": "pnpm run --filter=vite-plugin-external build:lib",
+    "build:hook-use": "pnpm run --filter=vite-plugin-hook-use build:lib",
+    "test:combine": "npm run build:external && npm run build:combine && pnpm run -r --parallel /build:combine\\.*/",
+    "test:cp": "npm run build:external && npm run build:cp && pnpm run -r --parallel /build:cp\\.*/",
     "test:external": "npm run build:external && pnpm run -r --parallel /build:external\\.*/",
-    "test:combine": "npm run build:external && npm run build:combine && pnpm run -r --parallel /build:combine\\.*/"
+    "test:hook-use": "pnpm run -r --parallel /build:hook-use\\.*/"
   },
   "repository": {
     "type": "git",

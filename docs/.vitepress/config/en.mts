@@ -47,7 +47,7 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
     { 
       text: 'vite-plugin-external',
       activeMatch: '/plugins/vite-plugin-external/',
-      link: '/plugins/vite-plugin-external/introduction'
+      link: '/plugins/vite-plugin-external/quick-start'
      },
     // { text: 'vite-plugin-hook-use', link: '/plugins/vite-plugin-hook-use' },
     // { text: 'vite-plugin-include-css', link: '/plugins/vite-plugin-include-css' },
@@ -63,7 +63,7 @@ function sidebarPlugins(): DefaultTheme.SidebarItem[] {
       text: 'vite-plugin-external',
       base: '/plugins/vite-plugin-external/',
       items: [
-        { text: 'Introduction', link: 'introduction' },
+        { text: 'Quick start', link: 'quick-start' },
         { text: 'Options', link: 'options' },
         { text: 'Usage Examples', link: 'usage' }
       ]

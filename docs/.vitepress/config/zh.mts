@@ -23,7 +23,7 @@ export const zh = defineConfig({
       '/zh/guide/': {
         base: '/zh/guide/',
         items: [
-          { text: '介绍', link: 'introduction' },
+          { text: '引言', link: 'introduction' },
           { text: '本地调试', link: 'local-debugging' },
           { text: '贡献指南', link: 'contribution' }
         ]
@@ -47,7 +47,7 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
     { 
       text: 'vite-plugin-external',
       activeMatch: '/zh/plugins/vite-plugin-external/',
-      link: '/zh/plugins/vite-plugin-external/introduction'
+      link: '/zh/plugins/vite-plugin-external/quick-start'
      },
     // { text: 'vite-plugin-hook-use', link: '/zh/plugins/vite-plugin-hook-use' },
     // { text: 'vite-plugin-include-css', link: '/zh/plugins/vite-plugin-include-css' },
@@ -63,7 +63,7 @@ function sidebarPlugins(): DefaultTheme.SidebarItem[] {
       text: 'vite-plugin-external',
       base: '/zh/plugins/vite-plugin-external/',
       items: [
-        { text: '介绍', link: 'introduction' },
+        { text: '快速入门', link: 'quick-start' },
         { text: '配置项', link: 'options' },
         { text: '使用示例', link: 'usage' }
       ]
