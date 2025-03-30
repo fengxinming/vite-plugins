@@ -2,16 +2,17 @@ import { existsSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'no
 import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
-import camelCase from 'camelcase';
+import { camelCase } from 'es-toolkit';
 import replaceAll from 'fast-replaceall';
 import { move } from 'fs-extra';
 import { InputOption } from 'rollup';
 import { globSync } from 'tinyglobby';
 import { normalizePath, Plugin } from 'vite';
 
+import pkg from '../package.json';
 import { logFactory, logger, PLUGIN_NAME } from './logger';
 import { NameExport, Options } from './typings';
-
+import { banner } from './util';
 export * from './typings';
 
 
@@ -166,6 +167,8 @@ function sleep(time: number): Promise<void> {
 }
 
 export default function pluginCombine(opts: Options): Plugin {
+  banner(pkg.name);
+
   if (!opts) {
     opts = {} as Options;
   }

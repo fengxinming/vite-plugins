@@ -8,7 +8,8 @@ export default defineConfig({
     vitePluginCombine({
       logLevel: 'TRACE',
       src: ['src/util/*.ts', '!src/util/typings.ts'],
-      target: 'src/combine.ts'
+      target: 'src/combine.ts',
+      nameExport: true
     }),
     ts({
       tsconfig: './tsconfig.build.json',

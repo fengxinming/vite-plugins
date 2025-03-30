@@ -11,7 +11,7 @@ const externalizeDeps = Object.keys(pkg.dependencies)
 export default defineConfig({
   plugins: [
     pluginExternal({
-      nodeModules: true,
+      nodeBuiltins: true,
       externalizeDeps
     }),
     ts({
@@ -22,7 +22,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       formats: ['es', 'cjs'],
-      fileName: 'index'
+      fileName: '[name]'
     },
     minify: false
   }

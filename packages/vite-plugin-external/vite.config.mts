@@ -21,7 +21,7 @@ export default defineConfig({
     lib: {
       entry: 'src/index.ts',
       formats: ['es', 'cjs'],
-      fileName: 'index'
+      fileName: '[name]'
     },
     minify: false,
     rollupOptions: {
