@@ -27,7 +27,7 @@ const s = spinner();
  *
  * @returns a vite plugin
  */
-export default function createPlugin(): Plugin {
+export default function pluginHookUse(): Plugin {
   const order = new Map<string, number>();
 
   const plugin: Plugin = [

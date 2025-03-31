@@ -1,15 +1,19 @@
 import { statSync } from 'node:fs';
 import { join, parse, relative } from 'node:path';
 
-import { glob, GlobOptions } from 'tinyglobby';
-import { Plugin } from 'vite';
+import type { CopyOptions } from 'fs-extra';
+import { isObject } from 'is-what-type';
+import type { GlobOptions } from 'tinyglobby';
+import { glob } from 'tinyglobby';
+import type { Plugin } from 'vite';
+import { sleep, toAbsolutePath } from 'vp-runtime-helper';
 
 import { logger, PLUGIN_NAME } from './logger';
-import { Options, Target } from './typings';
-import { changeName, isObject, makeCopy, sleep, stringify, toAbsolutePath } from './util';
+import type { Options, Target } from './typings';
+import { changeName, makeCopy, stringify } from './util';
 
-function doCopy(config: Target, cwd: string, globOptions?: GlobOptions) {
-  const { src, rename, flatten, globOptions: gOptions, transform } = config;
+async function doCopy(config: Target, cwd: string, globOptions: GlobOptions, copyOptions: CopyOptions) {
+  const { src, rename, flatten, transform } = config;
   let { dest } = config;
 
   if (!src || !dest) {
@@ -19,29 +23,21 @@ function doCopy(config: Target, cwd: string, globOptions?: GlobOptions) {
   // dest become absolute path
   dest = toAbsolutePath(dest, cwd);
   const cpFile = makeCopy(transform);
-
   const run = async (source: string) => {
-    // source become absolute path
+  // source become absolute path
     const absSource = toAbsolutePath(source, cwd);
 
     let isNotFlatten = false;
     try {
-      // check if 'source' is directory
+    // check if 'source' is directory
       isNotFlatten = statSync(absSource).isDirectory() && flatten === false;
     }
     catch (e) {
-      // 'source' is not a file or directory
+    // 'source' is not a file or directory
     }
 
     // matched files and folders
-    const matchedPaths = await glob(
-      absSource,
-      Object.assign({}, globOptions, gOptions, {
-        absolute: true,
-        expandDirectories: true,
-        onlyFiles: true
-      })
-    );
+    const matchedPaths = await glob(absSource, globOptions);
 
     // copy files when 'matchedPaths' is not empty
     if (!matchedPaths.length) {
@@ -49,7 +45,7 @@ function doCopy(config: Target, cwd: string, globOptions?: GlobOptions) {
       return null;
     }
 
-    return matchedPaths.map((matchedPath: string) => {
+    await Promise.all(matchedPaths.map((matchedPath: string) => {
       let targetFileName: string;
       let destDir = dest;
 
@@ -64,22 +60,20 @@ function doCopy(config: Target, cwd: string, globOptions?: GlobOptions) {
 
       const destPath = join(destDir, changeName(targetFileName, rename));
 
-      return cpFile(matchedPath, destPath).then(() => {
+      return cpFile(matchedPath, destPath, copyOptions).then(() => {
         logger.trace(`Copied "${matchedPath}" to "${destPath}".`);
       }, () => {
         logger.warn(`Could not copy "${matchedPath}" to "${destPath}".`);
       });
-    });
+    }));
   };
 
   if (typeof src === 'string') {
-    return run(src);
+    await run(src);
   }
   else if (Array.isArray(src)) {
-    return Promise.all(src.map(run));
+    await Promise.all(src.map(run));
   }
-
-  return null;
 }
 
 /**
@@ -119,6 +113,7 @@ export default function pluginCp(opts: Options) {
     targets,
     cwd = process.cwd(),
     globOptions,
+    copyOptions,
     logLevel,
     delay
   } = opts || {};
@@ -160,7 +155,16 @@ export default function pluginCp(opts: Options) {
         throw new Error(`${stringify(target)} target must be an object`);
       }
 
-      return doCopy(target, cwd, globOptions);
+      return doCopy(
+        target,
+        cwd,
+        Object.assign({}, globOptions, target.globOptions, {
+          absolute: true,
+          expandDirectories: true,
+          onlyFiles: true
+        }),
+        Object.assign({}, copyOptions, target.copyOptions)
+      );
     }));
 
     logger.info(`Done in ${Number((Date.now() - startTime) / 1000).toFixed(1)}s`);

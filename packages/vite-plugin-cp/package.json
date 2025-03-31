@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-cp",
-  "version": "6.0.0",
-  "description": "Copies files to a specified directory.",
+  "version": "6.0.0-rc.1",
+  "description": "A powerful Vite plugin for copying files/directories with advanced transformation and renaming capabilities.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "build:lib": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build:lib",
-    "release": "npm publish"
+    "release": "pnpm publish --publish-branch=dev --tag=rc"
   },
   "repository": {
     "type": "git",
@@ -36,11 +36,12 @@
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-cp/quick-start",
   "dependencies": {
     "base-log-factory": "^2.0.9",
     "blf-colorful-appender": "^1.0.2",
     "fs-extra": "^11.3.0",
+    "is-what-type": "^1.0.0",
     "tinyglobby": "^0.2.12",
     "vp-runtime-helper": "workspace:^"
   },

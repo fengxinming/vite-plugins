@@ -1,11 +1,43 @@
-import { defineConfig, Plugin } from 'vite';
-import vitePluginCp from 'vite-plugin-cp';
+# vite-plugin-cp
 
-// https://vitejs.dev/config/
+[![npm package](https://nodei.co/npm/vite-plugin-cp.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-cp)
+
+[![NPM version](https://img.shields.io/npm/v/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
+[![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
+
+## Installation
+
+::: code-group
+
+```bash [npm]
+npm add vite-plugin-cp
+```
+```bash [pnpm]
+pnpm add vite-plugin-cp
+```
+```bash [yarn]
+yarn add vite-plugin-cp
+```
+
+:::
+
+## Features
+- 📁 Supports copying files/directories using glob patterns
+- 🔄 Flexible file transformation before copying
+- 📦 Preserves or flattens directory structures
+- 🛠️ Customizable file renaming
+- 🔄 Works with both JavaScript and TypeScript projects
+- ⚡ Runs during Vite's build lifecycle
+
+## Usage
+
+```js
+import { defineConfig } from 'vite';
+import cp from 'vite-plugin-cp';
+
 export default defineConfig({
   plugins: [
-    vitePluginCp({
-      logLevel: 'TRACE',
+    cp({
       targets: [
         // Copy all files from 'node_modules/vite/dist' to 'dist/cp/test'
         { src: './node_modules/vite/dist', dest: 'dist/cp/test' },
@@ -40,14 +72,7 @@ export default defineConfig({
           }
         }
       ]
-    }) as Plugin
-  ],
-  build: {
-    outDir: 'dist/cp',
-    lib: {
-      entry: 'src/util/noop.ts',
-      formats: ['es'],
-      fileName: '[name]'
-    }
-  }
+    })
+  ]
 });
+```
