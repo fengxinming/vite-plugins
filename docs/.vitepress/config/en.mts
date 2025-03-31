@@ -39,6 +39,16 @@ export const en = defineConfig({
           ]
         }]
       },
+      '/plugins/vite-plugin-cp/': {
+        base: '/plugins/vite-plugin-cp/',
+        items: [{
+          text: 'vite-plugin-cp',
+          items: [
+            { text: 'Quick start', link: 'quick-start' },
+            { text: 'Options', link: 'options' },
+          ]
+        }]
+      },
       '/plugins/vite-plugin-external/': {
         base: '/plugins/vite-plugin-external/',
         items: [{
@@ -65,7 +75,11 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
       activeMatch: '/plugins/vite-plugin-combine/', 
       link: '/plugins/vite-plugin-combine/quick-start' 
     },
-    // { text: 'vite-plugin-cp', link: '/plugins/vite-plugin-cp' },
+    { 
+      text: 'vite-plugin-cp',
+      activeMatch: '/plugins/vite-plugin-cp/',
+      link: '/plugins/vite-plugin-cp/quick-start'
+    },
     { 
       text: 'vite-plugin-external',
       activeMatch: '/plugins/vite-plugin-external/',

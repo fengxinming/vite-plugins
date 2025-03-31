@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-external",
-  "version": "6.1.0-rc.2",
+  "version": "6.1.0-rc.3",
   "description": "Excludes specified module dependencies from runtime code and built bundles.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -16,7 +16,7 @@
     "build:lib": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build:lib",
-    "release": "npm publish --tag=rc"
+    "release": "pnpm publish --publish-branch=dev --tag=rc"
   },
   "engines": {
     "node": ">=14.18.0",

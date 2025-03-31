@@ -21,6 +21,12 @@ export function toAbsolutePath(pth: string, cwd: string): string {
   return normalizePath(pth);
 }
 
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export * from './colorful';
 export * from './flattenId';
 export * from './getDepsCacheDir';

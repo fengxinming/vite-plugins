@@ -39,6 +39,16 @@ export const zh = defineConfig({
           ]
         }]
       },
+      '/zh/plugins/vite-plugin-cp/': {
+        base: '/zh/plugins/vite-plugin-cp/',
+        items: [{
+          text: 'vite-plugin-cp',
+          items: [
+            { text: '快速入门', link: 'quick-start' },
+            { text: '配置项', link: 'options' },
+          ]
+        }]
+      },
       '/zh/plugins/vite-plugin-external/':{
         base: '/zh/plugins/vite-plugin-external/',
         items: [{
@@ -63,9 +73,13 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
     { 
       text: 'vite-plugin-combine', 
       activeMatch: '/zh/plugins/vite-plugin-combine/', 
-      link: '/zh/plugins/vite-plugin-combine/quick-start' 
+      link: '/zh/plugins/vite-plugin-combine/quick-start'
     },
-    // { text: 'vite-plugin-cp', link: '/zh/plugins/vite-plugin-cp' },
+    { 
+      text: 'vite-plugin-cp', 
+      activeMatch: '/zh/plugins/vite-plugin-cp/',
+      link: '/zh/plugins/vite-plugin-cp/quick-start'
+    },
     { 
       text: 'vite-plugin-external',
       activeMatch: '/zh/plugins/vite-plugin-external/',

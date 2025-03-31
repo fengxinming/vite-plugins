@@ -71,7 +71,7 @@
 
 ---
 
-## Typescript定义
+## Typescript 定义
 
 ```ts
 import type { LogLevel } from 'base-log-factory';

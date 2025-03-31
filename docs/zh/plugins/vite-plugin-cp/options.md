@@ -1,9 +1,6 @@
-import type { LogLevel } from 'base-log-factory';
-import type { CopyOptions } from 'fs-extra';
-import type { GlobOptions } from 'tinyglobby';
+# 配置项
 
-export type TransformFile = (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
-
+```ts
 export interface Target {
   /**
    * Path or glob of what to copy.
@@ -118,3 +115,4 @@ export interface Options {
    */
   delay?: number;
 }
+```

@@ -19,9 +19,6 @@ export default defineConfig({
       exports: 'named', // 导出类型：'named' | 'default' | 'both' | 'none'
     })
   ],
-  resolve: {
-    preserveSymlinks: true
-  },
   build: {
     minify: false,
     lib: {
@@ -36,7 +33,7 @@ export default defineConfig({
 
 For detailed usage instructions and API references, please visit the official documentation:
 
-👉 [View Full Documentation https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-combine/introduction](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-combine/quick-start)
+👉 [View Full Documentation](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-combine/quick-start)
 
 ## Contributing
 
