@@ -1,8 +1,7 @@
-import { EOL } from 'node:os';
 
-import ts from '@rollup/plugin-typescript';
 import { defineConfig, Plugin } from 'vite';
 import vitePluginCombine from 'vite-plugin-combine';
+import ts from 'vite-plugin-dts';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,15 +11,16 @@ export default defineConfig({
       src: ['src/util/*.ts', '!src/util/typings.ts'],
       target: 'src/combine.ts',
       beforeWrite(code) {
-        return `${code + EOL}export * from './util/typings';`;
+        return `${code}export * from './util/typings';`;
       }
     }) as Plugin,
     ts({
-      tsconfig: './tsconfig.build.json',
+      tsconfigPath: './tsconfig.build.json',
+      rollupTypes: true,
       compilerOptions: {
         declarationDir: 'dist/combine/5'
       }
-    }) as Plugin
+    })
   ],
   build: {
     outDir: 'dist/combine/5',

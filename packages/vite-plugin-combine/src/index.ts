@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, statSync, unlink, writeFileSync } from 'node:fs';
 import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
@@ -175,7 +175,7 @@ export default function pluginCombine(opts: Options): Plugin {
   const cwd = opts.cwd || process.cwd();
 
   const prefix = `${PLUGIN_NAME}-temp-`;
-  const files = globSync(src, { cwd, absolute: true, ignore: `**/${prefix}**` });
+  const files = globSync(src, { cwd, absolute: true, ignore: `**${prefix}**` });
 
   if (!files.length) {
     logger.warn(`No files found in "${src}".`);
@@ -199,15 +199,18 @@ export default function pluginCombine(opts: Options): Plugin {
 
   const clearTemp = (err?: any) => {
     try {
-      unlinkSync(tempInput);
-      logger.trace(`"${tempInput}" exists?`, existsSync(tempInput));
+      unlink(tempInput, (e) => {
+        if (e) {
+          logger.error(`Failed to delete "${tempInput}":`, e);
+          return;
+        }
+        logger.trace(`"${tempInput}" has been deleted.`);
+      });
     }
     catch (e) {}
     offExit(clearTemp);
 
-    if (err != null) {
-      logger.debug('Exit event received:', err);
-    }
+    logger.debug('Exit event received:', err);
   };
   onExit(clearTemp);
 
@@ -275,33 +278,35 @@ export default function pluginCombine(opts: Options): Plugin {
       logger.debug('OutDir:', outDir);
     },
 
-    closeBundle() {
-      const clearup = () => {
-        const { overwrite } = opts;
-        const list = readdirSync(outDir);
+    async closeBundle() {
+      const { overwrite } = opts;
+      const list = readdirSync(outDir);
 
-        for (const file of list) {
-          const state =  statSync(join(outDir, file));
-          if (state.isFile() && file.startsWith(`${tempName}.`)) {
-            const newPath = join(outDir, replaceAll(file, tempName, targetName));
+      const promises: Array<Promise<void>> = [];
+      for (const file of list) {
+        const state =  statSync(join(outDir, file));
+        if (state.isFile() && file.startsWith(`${tempName}.`)) {
+          const newPath = join(outDir, replaceAll(file, tempName, targetName));
 
-            if (existsSync(newPath) && !overwrite) {
-              logger.warn(`"${newPath}" already exists, please set overwrite to true.`);
-            }
-            else {
-              const oldPath = join(outDir, file);
-              move(oldPath, newPath).then(() => {
+          if (existsSync(newPath) && !overwrite) {
+            logger.warn(`"${newPath}" already exists, please set overwrite to true.`);
+          }
+          else {
+            const oldPath = join(outDir, file);
+            promises.push(move(oldPath, newPath).then(
+              () => {
                 logger.info(`"${newPath}" has been created.`);
                 logger.trace(`"${oldPath}" exists?`, existsSync(oldPath));
-              });
-            }
+              },
+              (err) => {
+                logger.warn(`Could not create "${newPath}".`, err);
+              })
+            );
           }
         }
+      }
 
-        clearTemp();
-      };
-
-      setTimeout(clearup, opts.delayToClear || 2000);
+      await Promise.all(promises).then(clearTemp);
     }
   };
 }

@@ -35,6 +35,7 @@
     "@rollup/plugin-typescript": "^12.1.2",
     "@vitejs/plugin-react": "^4.3.4",
     "vite": "^6.0.0",
+    "vite-plugin-dts": "^4.5.3",
     "vite-plugin-external": "workspace:^"
   },
   "repository": "https://github.com/fengxinming/vite-plugins.git"

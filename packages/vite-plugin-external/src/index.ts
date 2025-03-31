@@ -1,7 +1,7 @@
 import { EOL } from 'node:os';
 
 import { Plugin } from 'vite';
-import { banner, colorsole, getRuntimeVersion } from 'vp-runtime-helper';
+import { banner, colorful, getRuntimeVersion } from 'vp-runtime-helper';
 
 import pkg from '../package.json';
 import { PLUGIN_NAME } from './common/constants';
@@ -41,7 +41,7 @@ export default function pluginExternal(opts: Options): Plugin {
   banner(pkg.name);
 
   const version = getRuntimeVersion();
-  colorsole.green(`${EOL}Vite@${version} ${pkg.name}@${pkg.version}`);
+  colorful.green(`${EOL}Vite@${version} ${pkg.name}@${pkg.version}`);
 
   const plugin: Plugin = {
     name: PLUGIN_NAME,

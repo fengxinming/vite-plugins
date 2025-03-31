@@ -1,6 +1,7 @@
 import { isAbsolute, join } from 'node:path';
 
 import figlet from 'figlet';
+import { normalizePath } from 'vite';
 
 const escapeRegexRE = /[-/\\^$*+?.()|[\]{}]/g;
 export function escapeRegex(str: string): string {
@@ -17,10 +18,10 @@ export function toAbsolutePath(pth: string, cwd: string): string {
   if (!isAbsolute(pth)) {
     pth = join(cwd, pth);
   }
-  return pth;
+  return normalizePath(pth);
 }
 
-export * from './colorsole';
+export * from './colorful';
 export * from './flattenId';
 export * from './getDepsCacheDir';
 export * from './getHash';
