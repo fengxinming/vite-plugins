@@ -73,11 +73,4 @@ export interface Options {
    * 写入文件前处理代码字符串
    */
   beforeWrite?: (code: string) => string | NullValue;
-
-  /**
-   * Delay to clear the target file.
-   *
-   * 延迟清除目标文件。
-   */
-  delayToClear?: number;
 }
