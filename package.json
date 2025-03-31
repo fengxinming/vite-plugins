@@ -13,7 +13,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "release:combine": "build:combine && pnpm run --filter=vite-plugin-combine release",
+    "release:combine": "npm run build:combine && pnpm run --filter=vite-plugin-combine release",
     "release:external": "npm run build:runtime-helper && pnpm run --filter=vite-plugin-external release",
     "release:runtime-helper": "pnpm run --filter=vp-runtime-helper release",
     "build:combine": "npm run build:runtime-helper && npm run build:external && pnpm run --filter=vite-plugin-combine build:lib",

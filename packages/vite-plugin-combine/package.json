@@ -20,7 +20,7 @@
     "build:lib": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build:lib",
-    "release": "pnpm publish --tag=rc"
+    "release": "pnpm publish --publish-branch=dev --tag=rc"
   },
   "repository": {
     "type": "git",

@@ -198,17 +198,14 @@ export default function pluginCombine(opts: Options): Plugin {
   logger.trace(`Temporary file "${tempInput}" has been created.`);
 
   const clearTemp = (err?: any) => {
-    try {
-      unlink(tempInput, (e) => {
-        if (e) {
-          logger.error(`Failed to delete "${tempInput}":`, e);
-          return;
-        }
-        logger.trace(`"${tempInput}" has been deleted.`);
-      });
-    }
-    catch (e) {}
     offExit(clearTemp);
+
+    unlink(tempInput, (e) => {
+      if (e) {
+        return;
+      }
+      logger.trace(`"${tempInput}" has been deleted.`);
+    });
 
     logger.debug('Exit event received:', err);
   };
