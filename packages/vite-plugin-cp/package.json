@@ -41,7 +41,8 @@
     "base-log-factory": "^2.0.9",
     "blf-colorful-appender": "^1.0.2",
     "fs-extra": "^11.3.0",
-    "tinyglobby": "^0.2.12"
+    "tinyglobby": "^0.2.12",
+    "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
