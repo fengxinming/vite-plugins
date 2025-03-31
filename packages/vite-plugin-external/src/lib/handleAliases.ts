@@ -1,8 +1,8 @@
 import { Alias, UserConfig } from 'vite';
+import { getValue } from 'vp-runtime-helper';
 
 import { logger } from '../common/logger';
 import { eachExternal, stash } from '../common/Resolver';
-import { getValue } from '../common/util';
 import { ResolvedOptions } from '../typings';
 export async function setAliases(
   opts: ResolvedOptions,

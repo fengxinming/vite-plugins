@@ -2,11 +2,8 @@ import { isAbsolute, join } from 'node:path';
 
 import type { ConfigEnv } from 'vite';
 
-import { PLUGIN_NAME } from '../common/constants';
-import { logFactory } from '../common/logger';
+import { logger } from '../common/logger';
 import type { Options, ResolvedOptions } from '../typings';
-
-const logger = logFactory.getLogger(PLUGIN_NAME);
 
 export function buildOptions(
   opts: Options,
@@ -52,7 +49,7 @@ export function buildOptions(
   }
 
   if (logLevel != null) {
-    logFactory.updateLevel(logLevel);
+    logger.level = logLevel;
   }
 
   logger.debug('Options:', opts);

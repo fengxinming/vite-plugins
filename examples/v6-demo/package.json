@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
+    "@vitejs/plugin-react": "^4.3.4",
     "vite": "^6.0.0",
     "vite-plugin-external": "workspace:^"
   },

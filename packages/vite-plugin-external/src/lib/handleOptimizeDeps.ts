@@ -1,9 +1,9 @@
 import type { UserConfig } from 'vite';
+import { getValue } from 'vp-runtime-helper';
 
 import { ESBUILD_PLUGIN_NAME } from '../common/constants';
 import { logger } from '../common/logger';
 import { Resolver } from '../common/Resolver';
-import { getValue } from '../common/util';
 import type { ExternalFn, ResolvedOptions } from '../typings';
 import { checkLibName, collectExternals } from './handleExternals';
 

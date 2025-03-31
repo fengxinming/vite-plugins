@@ -1,7 +1,7 @@
 import { InputPluginOption, OutputOptions, RollupOptions } from 'rollup';
+import { getValue } from 'vp-runtime-helper';
 
 import { logger } from '../common/logger';
-import { getValue } from '../common/util';
 import { Options } from '../typings';
 
 function rollupOutputGlobals(
