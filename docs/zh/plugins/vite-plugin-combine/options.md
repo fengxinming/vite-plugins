@@ -1,148 +1,100 @@
 # 配置项
 
-## `externals`
-* Type: `Record<string, any>`
-* Require: false
+## `src`
 
-配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#基础使用)
+- **类型**: `string | string[]`
+- **描述**: 需要合并的文件路径，支持 glob 模式。
 
-## `logLevel`
-* Type: `"TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"`
-* Required: false
-* Default: `"WARN"`
+## `target`
 
-输出日志等级
+- **类型**: `string`
+- **默认值**: `'index.js'`
+- **描述**: 合并后的目标文件路径。
 
-## `externalGlobals`
-* Type: `(globals: Record<string, any>) => rollup.Plugin`
-* Required: false
+## `exports`
 
-解决 IIFE 格式的打包问题 https://github.com/rollup/rollup/issues/3188 [示例](/zh/plugins/vite-plugin-external/usage#解决-iife-格式的打包问题)
+- **类型**: `'named' | 'default' | 'both' | 'none'`
+- **默认值**: `'named'`
+- **描述**: 导出类型，可选值为 `'named'`（命名导出）、`'default'`（默认导出）、`'none'`（无导出）。
 
-## `rollback`
-* Type: `boolean`
-* Required: false
+## `overwrite`
 
-是否回退到历史方案
+- **类型**: `boolean`
+- **描述**: 如果目标文件已存在，是否覆盖原文件。
 
-## `nodeBuiltins`
-* Type: `boolean`
-* Required: false
+## `nameExport`
 
-是否排除 nodejs 内置模块。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
-
-## `externalizeDeps`
-* Type: `Array<string | RegExp>`
-* Required: false
-
-排除不需要打包的依赖。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
-
-## `interop`
-* Type: `'auto'`
-* Required: false
-
-该选项用于控制 Vite 如何处理默认值。[示例](/zh/plugins/vite-plugin-external/usage#运行时检测外部依赖)
+- **类型**: `boolean | function`
+- **描述**: 是否启用驼峰命名转换，或提供自定义函数生成导出名称。
 
 ## `enforce`
-* Type: `'pre' | 'post'`
-* Required: false
 
-强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering 。
+- **类型**: `'pre' | 'post'`
+- **描述**: 插件执行顺序，`pre` 表示在其他插件之前执行，`post` 表示在其他插件之后执行。
 
 ## `cwd`
-* Type: `string`
-* Required: false
-* Default: `process.cwd()`
 
-设置当前目录，用于拼接 `cacheDir` 的相对路径。
+- **类型**: `string`
+- **默认值**: `process.cwd()`
+- **描述**: 当前工作目录，默认为项目根目录。
 
-## `cacheDir`
-* Type: `string`
-* Required: false
-* Default: `${cwd}/node_modules/.vite_external`
+## `logLevel`
 
-缓存文件夹。
+- **类型**: `"TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"`
+- **默认值**: `"WARN"`
+- **描述**: 输出日志等级。
 
-## `[mode: string]`
-* Type: `BasicOptions`
-* Require: false
-
-针对指定的模式配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#多模式场景配置)
+## `beforeWrite`
+- **类型**: `(code: string) => string | void | undefined | null`
+- **描述**: 处理代码字符串的函数，在写入文件之前调用。
 
 ---
 
-## Typescript定义
+## TypeScript Definitions
 
 ```ts
-import type { LogLevel } from 'base-log-factory';
-import type { NullValue, Plugin as RollupPlugin } from 'rollup';
-import { ConfigEnv } from 'vite';
+export type NameExport = (name: string, filePath: string) => string;
 
-export type ExternalFn = (
-  source: string,
-  importer: string | undefined,
-  isResolved: boolean
-) => string | boolean | NullValue;
-
-export type ModuleNameMap = Record<string, string> | ((id: string) => string);
-
-export type { LogLevel } from 'base-log-factory';
-
-export interface BasicOptions {
+export interface Options {
   /**
-   * The current working directory in which to join `cacheDir`.
+   * Path to the files to be combined, supports glob patterns.
    *
-   * 设置当前目录，用于拼接 `cacheDir` 的相对路径。
-   *
-   * @default `process.cwd()`
+   * 需要合并的文件路径，支持 glob 模式。
    */
-  cwd?: string;
+  src: string | string[];
+  /**
+   * Path to the target file after combination.
+   *
+   * 合并后的目标文件路径。
+   *
+   * @default 'index.js'
+   */
+  target: string;
 
   /**
-   * Cache folder
+   * Whether to overwrite the existing target file。
    *
-   * 缓存文件夹
+   * 是否覆盖已存在的目标文件。
    *
-   * @default `${cwd}/node_modules/.vite_external`
+   * @default false
    */
-  cacheDir?: string;
+  overwrite?: boolean;
 
   /**
-   * External dependencies
+   * Custom function or boolean value for controlling the generation of export names.
    *
-   * 配置外部依赖
+   * 自定义导出名称的函数或布尔值，用于控制导出名称的生成方式。
    */
-  externals?: Record<string, string> | ExternalFn;
+  nameExport?: NameExport | boolean;
 
   /**
-   * Log level
+   * Exported module types.
    *
-   * 输出日志等级
-   */
-  logLevel?: LogLevel;
-}
-
-export interface Options extends BasicOptions {
-  /**
-   * External dependencies for specific mode
+   * 导出的模块类型
    *
-   * 针对指定的模式配置外部依赖
+   * @default 'named'
    */
-  [mode: string]: BasicOptions | any;
-
-  /**
-   * Roll back to the old logic
-   *
-   * 回退到历史方案
-   */
-  rollback?: boolean;
-
-  /**
-   * Controls how Vite handles default.
-   *
-   * 该选项用于控制 Vite 如何处理默认值。
-   */
-  interop?: 'auto';
+  exports?: 'named' | 'default' | 'both' | 'none';
 
   /**
    * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
@@ -152,27 +104,24 @@ export interface Options extends BasicOptions {
   enforce?: 'pre' | 'post';
 
   /**
-   * Whether to exclude nodejs built-in modules in the bundle
+   * Log level
    *
-   * 是否排除 nodejs 内置模块。
+   * 输出日志等级
    */
-  nodeBuiltins?: boolean;
+  logLevel?: LogLevel;
 
   /**
-   * Specify dependencies to not be included in the bundle
+   * Current Working Directory.
    *
-   * 排除不需要打包的依赖。
+   * 当前工作目录
    */
-  externalizeDeps?: Array<string | RegExp>;
+  cwd?: string;
 
   /**
-   * Fix https://github.com/rollup/rollup/issues/3188
+   * Handle code before writing to the file.
+   *
+   * 写入文件前处理代码字符串
    */
-  externalGlobals?: (globals: ModuleNameMap) => RollupPlugin;
-}
-
-export interface ResolvedOptions extends Options, ConfigEnv {
-  cwd: string;
-  cacheDir: string;
+  beforeWrite?: (code: string) => string | void | undefined | null;
 }
 ```

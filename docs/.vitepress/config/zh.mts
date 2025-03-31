@@ -28,9 +28,27 @@ export const zh = defineConfig({
           { text: '贡献指南', link: 'contribution' }
         ]
       },
-      '/zh/plugins/': {
-        base: '/zh/plugins/',
-        items: sidebarPlugins()
+      '/zh/plugins/vite-plugin-combine/': {
+        base: '/zh/plugins/vite-plugin-combine/',
+        items: [{
+          text: 'vite-plugin-combine',
+          items: [
+            { text: '快速入门', link: 'quick-start' },
+            { text: '配置项', link: 'options' },
+            { text: '使用示例', link: 'usage' }
+          ]
+        }]
+      },
+      '/zh/plugins/vite-plugin-external/':{
+        base: '/zh/plugins/vite-plugin-external/',
+        items: [{
+          text: 'vite-plugin-external',
+          items: [
+            { text: '快速入门', link: 'quick-start' },
+            { text: '配置项', link: 'options' },
+            { text: '使用示例', link: 'usage' }
+          ]
+        }]
       }
     },
 
@@ -42,7 +60,11 @@ export const zh = defineConfig({
 
 function navPlugins(): DefaultTheme.NavItemWithLink[] {
   return [
-    // { text: 'vite-plugin-combine', link: '/zh/plugins/vite-plugin-combine/introduction' },
+    { 
+      text: 'vite-plugin-combine', 
+      activeMatch: '/zh/plugins/vite-plugin-combine/', 
+      link: '/zh/plugins/vite-plugin-combine/quick-start' 
+    },
     // { text: 'vite-plugin-cp', link: '/zh/plugins/vite-plugin-cp' },
     { 
       text: 'vite-plugin-external',
@@ -54,19 +76,5 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
     // { text: 'vite-plugin-mock-data', link: '/zh/plugins/vite-plugin-mock-data' },
     // { text: 'vite-plugin-reverse-proxy', link: '/zh/plugins/vite-plugin-reverse-proxy' },
     // { text: 'vite-plugin-separate-importer', link: '/zh/plugins/vite-plugin-separate-importer' }
-  ];
-}
-
-function sidebarPlugins(): DefaultTheme.SidebarItem[] {
-  return [
-    {
-      text: 'vite-plugin-external',
-      base: '/zh/plugins/vite-plugin-external/',
-      items: [
-        { text: '快速入门', link: 'quick-start' },
-        { text: '配置项', link: 'options' },
-        { text: '使用示例', link: 'usage' }
-      ]
-    }
   ];
 }

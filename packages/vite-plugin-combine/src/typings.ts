@@ -1,4 +1,7 @@
-import { LogLevel } from 'base-log-factory';
+import type { LogLevel } from 'base-log-factory';
+import type { NullValue } from 'rollup';
+
+export type { LogLevel };
 
 export type NameExport = (name: string, filePath: string) => string;
 
@@ -41,7 +44,7 @@ export interface Options {
    *
    * @default 'named'
    */
-  exports?: 'named' | 'default' | 'auto' | 'none';
+  exports?: 'named' | 'default' | 'both' | 'none';
 
   /**
    * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
@@ -51,13 +54,6 @@ export interface Options {
   enforce?: 'pre' | 'post';
 
   /**
-   * Log level
-   *
-   * 输出日志等级
-   */
-  logLevel?: LogLevel;
-
-  /**
    * Current Working Directory.
    *
    * 当前工作目录
@@ -65,9 +61,16 @@ export interface Options {
   cwd?: string;
 
   /**
+   * Log level
+   *
+   * 输出日志等级
+   */
+  logLevel?: LogLevel;
+
+  /**
    * Handle code before writing to the file.
    *
    * 写入文件前处理代码字符串
    */
-  beforeWrite?: (code: string) => string | void | undefined | null;
+  beforeWrite?: (code: string) => string | NullValue;
 }

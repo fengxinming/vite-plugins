@@ -5,17 +5,16 @@ import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 import { camelCase } from 'es-toolkit';
 import replaceAll from 'fast-replaceall';
 import { move } from 'fs-extra';
-import { InputOption } from 'rollup';
+import type { InputOption } from 'rollup';
 import { globSync } from 'tinyglobby';
-import { normalizePath, Plugin } from 'vite';
+import type { Plugin } from 'vite';
+import { normalizePath } from 'vite';
+import { banner } from 'vp-runtime-helper';
 
 import pkg from '../package.json';
-import { logFactory, logger, PLUGIN_NAME } from './logger';
+import { logger, PLUGIN_NAME } from './logger';
 import { NameExport, Options } from './typings';
-import { banner } from './util';
 export * from './typings';
-
-
 function onExit(listener: (...args: any[]) => any): void {
   process.on('exit', listener);
   process.on('SIGHUP', listener);
@@ -87,17 +86,17 @@ function spliceCode(
   let code = importDeclare.join(EOL) + EOL;
   const exportStr = exportDeclare.join(', ');
 
-  if (exportsType === 'named' || exportsType === 'auto') {
+  if (exportsType === 'named' || exportsType === 'both') {
     code += `export { ${exportStr} };${EOL}`;
   }
-  else if (exportsType === 'default' || exportsType === 'auto') {
+  else if (exportsType === 'default' || exportsType === 'both') {
     code += `export default { ${exportDeclare.join(', ')} };${EOL}`;
   }
   else if (exportsType === 'none') {
     for (const name of exportDeclare) {
       code = replaceAll(code, ` ${name} from`, '');
     }
-    code += 'export {};';
+    code += `export {};${EOL}`;
   }
 
   return code;
@@ -116,7 +115,7 @@ function makeESModuleCode(
   switch (exportsType) {
     case 'named':
     case 'default':
-    case 'auto':
+    case 'both':
     case 'none':
       mainCode = spliceCode(files, absTarget, exportsType, nameExport);
       break;
@@ -175,7 +174,7 @@ export default function pluginCombine(opts: Options): Plugin {
 
   const { src, logLevel } = opts;
   if (logLevel) {
-    logFactory.updateLevel(logLevel);
+    logger.level = logLevel;
   }
 
   // 当前工作目录

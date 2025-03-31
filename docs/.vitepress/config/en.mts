@@ -28,9 +28,27 @@ export const en = defineConfig({
           { text: 'Contribution', link: 'contribution' }
         ]
       },
-      '/plugins/': {
-        base: '/plugins/',
-        items: sidebarPlugins()
+      '/plugins/vite-plugin-combine/': {
+        base: '/plugins/vite-plugin-combine/',
+        items: [{
+          text: 'vite-plugin-combine',
+          items: [
+            { text: 'Quick start', link: 'quick-start' },
+            { text: 'Options', link: 'options' },
+            { text: 'Usage Examples', link: 'usage' }
+          ]
+        }]
+      },
+      '/plugins/vite-plugin-external/': {
+        base: '/plugins/vite-plugin-external/',
+        items: [{
+          text: 'vite-plugin-external',
+          items: [
+            { text: 'Quick start', link: 'quick-start' },
+            { text: 'Options', link: 'options' },
+            { text: 'Usage Examples', link: 'usage' }
+          ]
+        }]
       }
     },
 
@@ -42,7 +60,11 @@ export const en = defineConfig({
 
 function navPlugins(): DefaultTheme.NavItemWithLink[] {
   return [
-    // { text: 'vite-plugin-combine', link: '/plugins/vite-plugin-combine/introduction' },
+    { 
+      text: 'vite-plugin-combine', 
+      activeMatch: '/plugins/vite-plugin-combine/', 
+      link: '/plugins/vite-plugin-combine/quick-start' 
+    },
     // { text: 'vite-plugin-cp', link: '/plugins/vite-plugin-cp' },
     { 
       text: 'vite-plugin-external',

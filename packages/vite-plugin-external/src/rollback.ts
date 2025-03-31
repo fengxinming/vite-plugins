@@ -2,10 +2,10 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { ConfigEnv, Plugin, ResolvedConfig, UserConfig } from 'vite';
+import { getDepsCacheDir } from 'vp-runtime-helper';
 
 import { PLUGIN_NAME } from './common/constants';
 import { logger } from './common/logger';
-import { getDepsCacheDir } from './common/util';
 import { setAliases } from './lib/handleAliases';
 import { setExternals } from './lib/handleExternals';
 import { buildOptions, isRuntime } from './lib/handleOptions';

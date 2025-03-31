@@ -12,7 +12,7 @@
 
 **功能**: 复制文件到指定目录。 -->
 
-### [vite-plugin-external](/zh/plugins/vite-plugin-external/introduction)
+### [vite-plugin-external](/zh/plugins/vite-plugin-external/quick-start)
 
 **功能**: 从运行时代码和构建后的 bundles 中排除指定的模块依赖项。
 

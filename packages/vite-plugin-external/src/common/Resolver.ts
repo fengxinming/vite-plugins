@@ -1,10 +1,10 @@
 import { join } from 'node:path';
 
 import { outputFile } from 'fs-extra';
+import { flattenId } from 'vp-runtime-helper';
 
 import { ExternalFn } from '../typings';
 import { logger } from './logger';
-import { flattenId } from './util';
 
 function makeStashFilePath(cacheDir: string, libName: string): string {
   return join(cacheDir, `${flattenId(libName)}.js`);

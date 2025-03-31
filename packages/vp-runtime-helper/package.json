@@ -1,7 +1,7 @@
 {
-  "name": "vite-plugin-external",
-  "version": "6.1.0-rc.2",
-  "description": "Excludes specified module dependencies from runtime code and built bundles.",
+  "name": "vp-runtime-helper",
+  "version": "1.0.0",
+  "description": "Vite plugin runtime helper.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
   "main": "./dist/index.js",
@@ -12,40 +12,37 @@
       "require": "./dist/index.js"
     }
   },
-  "scripts": {
-    "build:lib": "vite build",
-    "watch": "vite build --watch",
-    "prepublishOnly": "npm run build:lib",
-    "release": "npm publish --tag=rc"
-  },
   "engines": {
     "node": ">=14.18.0",
     "vite": ">=3.1.0"
   },
+  "scripts": {
+    "build:lib": "vite build",
+    "watch": "vite build --watch",
+    "prepublishOnly": "npm run build:lib",
+    "release": "npm publish"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fengxinming/vite-plugins.git",
-    "directory": "packages/vite-plugin-external"
+    "directory": "packages/vp-runtime-helper"
   },
   "keywords": [
     "vite-plugin",
-    "vite-plugin-external"
+    "vp-runtime-helper"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://fengxinming.github.io/vite-plugins/vite-plugin-external/quick-start",
+  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
-    "base-log-factory": "^2.0.9",
-    "blf-colorful-appender": "^1.0.2",
-    "fs-extra": "^11.1.1",
-    "vp-runtime-helper": "workspace:^"
+    "figlet": "^1.8.0",
+    "picocolors": "^1.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/fs-extra": "^11.0.4",
     "vite": "^6.1.0"
   },
   "files": [

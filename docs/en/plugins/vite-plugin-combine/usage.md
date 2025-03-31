@@ -1,6 +1,6 @@
-# 使用示例
+# Usage Examples
 
-假设你有以下文件结构：
+Assuming the following file structure:
 
 ```
 src/
@@ -10,7 +10,7 @@ src/
   |     |- Select.ts
 ```
 
-配置如下：
+Configure the plugin as:
 
 ```typescript
 pluginCombine({
@@ -21,7 +21,7 @@ pluginCombine({
 })
 ```
 
-将会生成如下的 `src/index.ts` 文件：
+This will generate the following `src/index.ts` file:
 
 ```typescript
 export { default as myButton } from './components/Button';

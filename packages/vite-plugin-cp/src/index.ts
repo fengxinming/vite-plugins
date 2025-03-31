@@ -4,7 +4,7 @@ import { join, parse, relative } from 'node:path';
 import { glob, GlobOptions } from 'tinyglobby';
 import { Plugin } from 'vite';
 
-import { logFactory, logger, PLUGIN_NAME } from './logger';
+import { logger, PLUGIN_NAME } from './logger';
 import { Options, Target } from './typings';
 import { changeName, isObject, makeCopy, sleep, stringify, toAbsolutePath } from './util';
 
@@ -128,7 +128,7 @@ export default function pluginCp(opts: Options) {
   }
 
   if (logLevel) {
-    logFactory.updateLevel(logLevel);
+    logger.level = logLevel;
   }
 
   const plugin: Plugin = {
