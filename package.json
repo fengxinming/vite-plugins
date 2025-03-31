@@ -16,6 +16,7 @@
     "release:external": "pnpm run --filter=vite-plugin-external release",
     "release:combine": "npm run build:external && pnpm run --filter=vite-plugin-combine release",
     "build:combine": "npm run build:external && pnpm run --filter=vite-plugin-combine build:lib",
+    "release:runtime-helper": "npm run build:external && pnpm run --filter=vp-runtime-helper release",
     "build:cp": "pnpm run --filter=vite-plugin-cp build:lib",
     "build:external": "pnpm run --filter=vite-plugin-external build:lib",
     "build:hook-use": "pnpm run --filter=vite-plugin-hook-use build:lib",

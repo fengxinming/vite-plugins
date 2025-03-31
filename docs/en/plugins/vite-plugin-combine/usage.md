@@ -13,12 +13,26 @@ src/
 Configure the plugin as:
 
 ```typescript
-pluginCombine({
-  src: 'src/components/**/*.ts',
-  target: 'src/index.ts',
-  exports: 'named',
-  nameExport: (name, filePath) => `my${name}`
-})
+import { defineConfig } from 'vite';
+import pluginCombine from 'vite-plugin-combine';
+
+export default defineConfig({
+  plugins: [
+    pluginCombine({
+      src: 'src/components/**/*.ts',
+      target: 'src/index.ts',
+      exports: 'named',
+      nameExport: (name, filePath) => `my${name}`
+    })
+  ],
+  build: {
+    minify: false,
+    lib: {
+      formats: ['es', 'cjs'],
+      fileName: '[name]'
+    }
+  }
+});
 ```
 
 This will generate the following `src/index.ts` file:
