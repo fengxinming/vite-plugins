@@ -159,12 +159,6 @@ function normalizeTarget(cwd: string, target: string) {
   return absTarget;
 }
 
-function sleep(time: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, time);
-  });
-}
-
 export default function pluginCombine(opts: Options): Plugin {
   banner(pkg.name);
 
@@ -203,25 +197,25 @@ export default function pluginCombine(opts: Options): Plugin {
   writeFileSync(tempInput, makeESModuleCode(files, absTarget, opts));
   logger.trace(`Temporary file "${tempInput}" has been created.`);
 
-  const clean = (err?: any) => {
+  const clearTemp = (err?: any) => {
     try {
       unlinkSync(tempInput);
       logger.trace(`"${tempInput}" exists?`, existsSync(tempInput));
     }
     catch (e) {}
-    offExit(clean);
+    offExit(clearTemp);
 
     if (err != null) {
       logger.debug('Exit event received:', err);
     }
   };
-  onExit(clean);
+  onExit(clearTemp);
 
   let outDir;
 
   return {
     name: PLUGIN_NAME,
-    enforce: ('enforce' in opts) ? opts.enforce : 'pre',
+    enforce: ('enforce' in opts) ? opts.enforce : 'post',
 
     async config(config) {
       const inputs = files.concat(tempInput);
@@ -281,17 +275,14 @@ export default function pluginCombine(opts: Options): Plugin {
       logger.debug('OutDir:', outDir);
     },
 
-    async closeBundle() {
-      await sleep(1000);
+    closeBundle() {
+      const clearup = () => {
+        const { overwrite } = opts;
+        const list = readdirSync(outDir);
 
-      const { overwrite } = opts;
-      const list = readdirSync(outDir);
-      const promises: Array<Promise<void>> = [];
-
-      for (const file of list) {
-        const state =  statSync(join(outDir, file));
-        if (state.isFile()) {
-          if (file.startsWith(`${tempName}.`)) {
+        for (const file of list) {
+          const state =  statSync(join(outDir, file));
+          if (state.isFile() && file.startsWith(`${tempName}.`)) {
             const newPath = join(outDir, replaceAll(file, tempName, targetName));
 
             if (existsSync(newPath) && !overwrite) {
@@ -299,15 +290,18 @@ export default function pluginCombine(opts: Options): Plugin {
             }
             else {
               const oldPath = join(outDir, file);
-              promises.push(move(oldPath, newPath).then(() => {
+              move(oldPath, newPath).then(() => {
                 logger.info(`"${newPath}" has been created.`);
                 logger.trace(`"${oldPath}" exists?`, existsSync(oldPath));
-              }));
+              });
             }
           }
         }
-      }
-      Promise.allSettled(promises).then(clean);
+
+        clearTemp();
+      };
+
+      setTimeout(clearup, opts.delayToClear || 2000);
     }
   };
 }

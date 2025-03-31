@@ -13,12 +13,26 @@ src/
 配置如下：
 
 ```typescript
-pluginCombine({
-  src: 'src/components/**/*.ts',
-  target: 'src/index.ts',
-  exports: 'named',
-  nameExport: (name, filePath) => `my${name}`
-})
+import { defineConfig } from 'vite';
+import pluginCombine from 'vite-plugin-combine';
+
+export default defineConfig({
+  plugins: [
+    pluginCombine({
+      src: 'src/components/**/*.ts',
+      target: 'src/index.ts',
+      exports: 'named',
+      nameExport: (name, filePath) => `my${name}`
+    })
+  ],
+  build: {
+    minify: false,
+    lib: {
+      formats: ['es', 'cjs'],
+      fileName: '[name]'
+    }
+  }
+});
 ```
 
 将会生成如下的 `src/index.ts` 文件：
