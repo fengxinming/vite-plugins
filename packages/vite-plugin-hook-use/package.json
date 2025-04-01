@@ -19,7 +19,8 @@
   "scripts": {
     "build:lib": "vite build",
     "watch": "vite build --watch",
-    "release": "npm publish"
+    "prepublishOnly": "npm run build:lib",
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",

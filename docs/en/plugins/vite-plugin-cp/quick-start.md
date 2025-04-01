@@ -5,6 +5,8 @@
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
 
+> A powerful Vite plugin for copying files/directories with advanced transformation and renaming capabilities.
+
 ## Installation
 
 ::: code-group

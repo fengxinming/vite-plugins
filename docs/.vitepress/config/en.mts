@@ -59,7 +59,26 @@ export const en = defineConfig({
             { text: 'Usage Examples', link: 'usage' }
           ]
         }]
-      }
+      },
+      '/plugins/vite-plugin-hook-use/': {
+        base: '/plugins/vite-plugin-hook-use/',
+        items: [{
+          text: 'vite-plugin-hook-use',
+          items: [
+            { text: 'Quick start', link: 'quick-start' },
+            { text: 'Usage Examples', link: 'usage' }
+          ]
+        }]
+      },
+      '/plugins/vite-plugin-include-css/': {
+        base: '/plugins/vite-plugin-include-css/',
+        items: [{
+          text: 'vite-plugin-include-css',
+          items: [
+            { text: 'Quick start', link: 'quick-start' },
+          ]
+        }]
+      },
     },
 
     socialLinks: [
@@ -84,25 +103,19 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
       text: 'vite-plugin-external',
       activeMatch: '/plugins/vite-plugin-external/',
       link: '/plugins/vite-plugin-external/quick-start'
-     },
-    // { text: 'vite-plugin-hook-use', link: '/plugins/vite-plugin-hook-use' },
-    // { text: 'vite-plugin-include-css', link: '/plugins/vite-plugin-include-css' },
+    },
+    { 
+      text: 'vite-plugin-hook-use',
+      activeMatch: '/plugins/vite-plugin-hook-use/',
+      link: '/plugins/vite-plugin-hook-use/quick-start'
+    },
+    { 
+      text: 'vite-plugin-include-css', 
+      activeMatch: '/plugins/vite-plugin-include-css/',
+      link: '/plugins/vite-plugin-include-css/quick-start'
+    },
     // { text: 'vite-plugin-mock-data', link: '/plugins/vite-plugin-mock-data' },
     // { text: 'vite-plugin-reverse-proxy', link: '/plugins/vite-plugin-reverse-proxy' },
     // { text: 'vite-plugin-separate-importer', link: '/plugins/vite-plugin-separate-importer' }
-  ];
-}
-
-function sidebarPlugins(): DefaultTheme.SidebarItem[] {
-  return [
-    {
-      text: 'vite-plugin-external',
-      base: '/plugins/vite-plugin-external/',
-      items: [
-        { text: 'Quick start', link: 'quick-start' },
-        { text: 'Options', link: 'options' },
-        { text: 'Usage Examples', link: 'usage' }
-      ]
-    }
   ];
 }

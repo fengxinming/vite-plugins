@@ -4,7 +4,7 @@ import pluginExternal from 'vite-plugin-external';
 
 import pkg from './package.json';
 
-const externalizeDeps = Object.keys(pkg.devDependencies);
+const externalizeDeps = Object.keys(pkg.dependencies).concat('vite');
 
 // https://vitejs.dev/config/
 export default defineConfig({

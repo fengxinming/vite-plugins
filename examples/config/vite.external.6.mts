@@ -22,7 +22,7 @@ export default defineConfig({
     rollupOptions: {
       input: 'index2.html',
       output: {
-        format: 'iife'
+        format: 'es'
       }
     }
   }

@@ -59,7 +59,26 @@ export const zh = defineConfig({
             { text: '使用示例', link: 'usage' }
           ]
         }]
-      }
+      },
+      '/zh/plugins/vite-plugin-hook-use/': {
+        base: '/zh/plugins/vite-plugin-hook-use/',
+        items: [{
+          text: 'vite-plugin-hook-use',
+          items: [
+            { text: '快速入门', link: 'quick-start' },
+            { text: '使用示例', link: 'usage' },
+          ]
+        }]
+      },
+      '/zh/plugins/vite-plugin-include-css/': {
+        base: '/zh/plugins/vite-plugin-include-css/',
+        items: [{
+          text: 'vite-plugin-include-css',
+          items: [
+            { text: '快速入门', link: 'quick-start' },
+          ]
+        }]
+      },
     },
 
     socialLinks: [
@@ -85,8 +104,16 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
       activeMatch: '/zh/plugins/vite-plugin-external/',
       link: '/zh/plugins/vite-plugin-external/quick-start'
      },
-    // { text: 'vite-plugin-hook-use', link: '/zh/plugins/vite-plugin-hook-use' },
-    // { text: 'vite-plugin-include-css', link: '/zh/plugins/vite-plugin-include-css' },
+    { 
+      text: 'vite-plugin-hook-use', 
+      activeMatch: '/zh/plugins/vite-plugin-hook-use/',
+      link: '/zh/plugins/vite-plugin-hook-use/quick-start' 
+    },
+    { 
+      text: 'vite-plugin-include-css', 
+      activeMatch: '/zh/plugins/vite-plugin-include-css/',
+      link: '/zh/plugins/vite-plugin-include-css/quick-start'
+    },
     // { text: 'vite-plugin-mock-data', link: '/zh/plugins/vite-plugin-mock-data' },
     // { text: 'vite-plugin-reverse-proxy', link: '/zh/plugins/vite-plugin-reverse-proxy' },
     // { text: 'vite-plugin-separate-importer', link: '/zh/plugins/vite-plugin-separate-importer' }

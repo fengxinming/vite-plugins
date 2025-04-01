@@ -2,16 +2,26 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-include-css.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-include-css)
 
-> build css into individual js files instead of using css links. Vite >= 3.1
+> 当启用 `cssCodeSplit: false` 时，将所有CSS打包到单个JavaScript文件中。
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-include-css.svg?style=flat)](https://npmjs.org/package/vite-plugin-include-css)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-include-css.svg?style=flat)](https://npmjs.org/package/vite-plugin-include-css)
 
 ## Installation
 
-```bash
-npm install vite-plugin-include-css --save-dev
+::: code-group
+
+```bash [npm]
+npm add vite-plugin-include-css
 ```
+```bash [pnpm]
+pnpm add vite-plugin-include-css
+```
+```bash [yarn]
+yarn add vite-plugin-include-css
+```
+
+:::
 
 ## Usage
 
@@ -36,23 +46,3 @@ export default defineConfig({
   }
 });
 ```
-
-
-## Documentation
-
-For detailed usage instructions and API references, please visit the official documentation:
-
-👉 [View Full Documentation](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-include-css/quick-start)
-
-## Contributing
-
-We welcome contributions from the community! If you find a bug or want to suggest an improvement, feel free to open an issue or submit a pull request.
-
-### How to Contribute
-1. Fork the repository.
-2. Create a new branch for your changes.
-3. Submit a pull request with a clear description of your changes.
-
-## License
-
-This project is licensed under the [MIT License](../../LICENSE).

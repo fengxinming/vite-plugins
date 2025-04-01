@@ -20,7 +20,7 @@ export default defineConfig({
   build: {
     outDir: 'dist/include-css',
     cssCodeSplit: false,
-    minify: false,
+    // minify: false,
     rollupOptions: {
       output: {
         format: 'iife'

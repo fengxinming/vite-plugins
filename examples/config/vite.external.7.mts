@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -14,7 +14,7 @@ export default defineConfig({
           return 'ReactDOM';
         }
       }
-    })
+    }) as Plugin
   ],
   server: {
     open: true
