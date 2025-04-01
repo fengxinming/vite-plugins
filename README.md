@@ -6,7 +6,7 @@
 
 For detailed usage instructions and API references, please visit the official documentation:
 
-👉 [View Full Documentation https://fengxinming.github.io/vite-plugins/](https://fengxinming.github.io/vite-plugins/)
+👉 [View Full Documentation](https://fengxinming.github.io/vite-plugins/)
 
 ## Contributing
 

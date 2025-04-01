@@ -4,13 +4,13 @@
 
 ## Plugin List
 
-<!-- ### [vite-plugin-combine](packages/vite-plugin-combine)
+### [vite-plugin-combine](/zh/plugins/vite-plugin-combine/quick-start)
 
-**Functionality**: Combines multiple files into a main file and exports their contents based on configuration. Supports three modes: named exports, default export, and no exports.
+**Functionality**: Combines multiple module files into a single target file. It supports four modes: named exports, default exports, automatic exports, and no exports, and can auto-generate corresponding import statements based on configuration.
 
-### [vite-plugin-cp](packages/vite-plugin-cp)
+### [vite-plugin-cp](/zh/plugins/vite-plugin-cp/quick-start)
 
-**Functionality**: Copies files to a specified directory. -->
+**Functionality**: A powerful Vite plugin for copying files/directories with advanced transformation and renaming capabilities.
 
 ### [vite-plugin-external](/zh/plugins/vite-plugin-external/quick-start)
 

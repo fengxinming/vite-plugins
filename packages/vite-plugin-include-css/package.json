@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-include-css",
-  "version": "4.0.4",
-  "description": "build css into individual js files instead of using css links.",
+  "version": "6.0.0",
+  "description": "When `cssCodeSplit: false` is enabled, all CSS will be bundled into a single JavaScript file.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -13,9 +13,10 @@
     }
   },
   "scripts": {
-    "release": "npm publish",
     "build:lib": "vite build",
-    "watch": "vite build --watch"
+    "watch": "vite build --watch",
+    "prepublishOnly": "npm run build:lib",
+    "release": "pnpm publish --no-git-checks"
   },
   "engines": {
     "node": ">=14.18.0",
@@ -42,5 +43,10 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "fast-replaceall": "^2.0.1",
+    "magic-string": "^0.30.17",
+    "terser": "^5.39.0"
+  }
 }

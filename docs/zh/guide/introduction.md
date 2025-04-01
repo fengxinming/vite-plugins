@@ -4,11 +4,11 @@
 
 ## 插件列表
 
-### [vite-plugin-combine](packages/vite-plugin-combine/quick-start)
+### [vite-plugin-combine](/zh/plugins/vite-plugin-combine/quick-start)
 
 **功能**: 将多个模块文件合并成一个目标文件。它支持命名导出、默认导出、自动导出和无导出四种模式，并可以根据配置自动生成相应的导入语句。
 
-### [vite-plugin-cp](packages/vite-plugin-cp/quick-start)
+### [vite-plugin-cp](/zh/plugins/vite-plugin-cp/quick-start)
 
 **功能**: 复制文件到指定目录。
 

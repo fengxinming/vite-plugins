@@ -1,5 +1,5 @@
 import externalGlobals from 'rollup-plugin-external-globals';
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -13,7 +13,7 @@ export default defineConfig({
         'react-dom': '$linkdesign.ReactDOM',
         'prop-types': '$linkdesign.PropTypes'
       }
-    })
+    }) as Plugin
   ],
   server: {
     open: true
