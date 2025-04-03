@@ -1,79 +1,79 @@
-# 配置项
+# 配置选项参考
 
 ## `externals`
-* Type: `Record<string, any>`
-* Require: false
+* 类型：`Record<string, any>`
+* 必填：`false`
 
-配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#基础使用)
+配置外部依赖项。[示例](/zh/plugins/vite-plugin-external/usage#基础使用)
 
 ## `logLevel`
-* Type: `"TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"`
-* Required: false
-* Default: `"WARN"`
+* 类型：`"TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"`
+* 必填：`false`
+* 默认值：`"WARN"`
 
-输出日志等级
-
-## `externalGlobals`
-* Type: `(globals: Record<string, any>) => rollup.Plugin`
-* Required: false
-
-解决 IIFE 格式的打包问题 https://github.com/rollup/rollup/issues/3188 [示例](/zh/plugins/vite-plugin-external/usage#解决-iife-格式的打包问题)
-
-## `rollback`
-* Type: `boolean`
-* Required: false
-
-是否回退到历史方案
+设置日志级别。
 
 ## `nodeBuiltins`
-* Type: `boolean`
-* Required: false
+* 类型：`boolean`
+* 必填：`false`
 
-是否排除 nodejs 内置模块。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
+是否排除 Node.js 内置模块。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
 
 ## `externalizeDeps`
-* Type: `Array<string | RegExp>`
-* Required: false
+* 类型：`Array<string | RegExp>`
+* 必填：`false`
 
-排除不需要打包的依赖。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
+指定需要排除的打包依赖项。[示例](/zh/plugins/vite-plugin-external/usage#构建时仅排除依赖)
+
+## `externalGlobals`
+* 类型：`(globals: Record<string, any>) => rollup.Plugin`
+* 必填：`false`
+
+解决 IIFE 打包问题（[Rollup Issue #3188](https://github.com/rollup/rollup/issues/3188)）。[示例](/zh/plugins/vite-plugin-external/usage#解决-iife-格式的打包问题)
+
+## `rollback`
+* 类型：`boolean`
+* 必填：`false`
+
+是否回退到旧版实现。
 
 ## `interop`
-* Type: `'auto'`
-* Required: false
+* 类型：`"auto" | undefined`
+* 必填：`false`
 
-该选项用于控制 Vite 如何处理默认值。[示例](/zh/plugins/vite-plugin-external/usage#调整打包策略)
+控制 Vite 的默认构建策略调整。[示例](/zh/plugins/vite-plugin-external/usage#调整打包策略)
 
 ## `enforce`
-* Type: `'pre' | 'post'`
-* Required: false
+* 类型：`'pre' | 'post'`
+* 必填：`false`
 
-强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering 。
+设置插件执行顺序。可选值：`pre`（前置）或 `post`（后置）。参考 [Vite 插件顺序](https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering)。
 
 ## `cwd`
-* Type: `string`
-* Required: false
-* Default: `process.cwd()`
+* 类型：`string`
+* 必填：`false`
+* 默认值：`process.cwd()`
 
-设置当前目录，用于拼接 `cacheDir` 的相对路径。
+设置解析 `cacheDir` 相对路径时的当前工作目录。
 
 ## `cacheDir`
-* Type: `string`
-* Required: false
-* Default: `${cwd}/node_modules/.vite_external`
+* 类型：`string`
+* 必填：`false`
+* 默认值：`${cwd}/node_modules/.vite_external`
 
-缓存文件夹。
+缓存目录路径。
 
 ## `[mode: string]`
-* Type: `BasicOptions`
-* Require: false
+* 类型：`BasicOptions`
+* 必填：`false`
 
-针对指定的模式配置外部依赖。[示例](/zh/plugins/vite-plugin-external/usage#多模式场景配置)
+为特定模式配置外部依赖项。[示例](/zh/plugins/vite-plugin-external/usage#多模式场景配置)
 
 ---
 
-## Typescript 定义
+# TypeScript 类型定义
 
-```ts
+```typescript
 import type { LogLevel } from 'base-log-factory';
 import type { NullValue, Plugin as RollupPlugin } from 'rollup';
 import { ConfigEnv } from 'vite';
@@ -90,83 +90,61 @@ export type { LogLevel } from 'base-log-factory';
 
 export interface BasicOptions {
   /**
-   * The current working directory in which to join `cacheDir`.
-   *
-   * 设置当前目录，用于拼接 `cacheDir` 的相对路径。
-   *
+   * 解析 `cacheDir` 路径时的当前工作目录。
    * @default `process.cwd()`
    */
   cwd?: string;
 
   /**
-   * Cache folder
-   *
-   * 缓存文件夹
-   *
+   * 缓存目录路径
    * @default `${cwd}/node_modules/.vite_external`
    */
   cacheDir?: string;
 
   /**
-   * External dependencies
-   *
-   * 配置外部依赖
+   * 外部依赖项配置
    */
   externals?: Record<string, string> | ExternalFn;
 
   /**
-   * Log level
-   *
-   * 输出日志等级
+   * 日志级别配置
    */
   logLevel?: LogLevel;
 }
 
 export interface Options extends BasicOptions {
   /**
-   * External dependencies for specific mode
-   *
-   * 针对指定的模式配置外部依赖
+   * 按模式配置的外部依赖项
    */
   [mode: string]: BasicOptions | any;
 
   /**
-   * Roll back to the old logic
-   *
-   * 回退到历史方案
+   * 回退到旧版实现
    */
   rollback?: boolean;
 
   /**
-   * Controls how Vite handles default.
-   *
-   * 该选项用于控制 Vite 如何处理默认值。
+   * 控制 Vite 的默认行为
    */
   interop?: 'auto';
 
   /**
-   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-   *
-   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
+   * 插件执行顺序（"pre" 或 "post"）
    */
   enforce?: 'pre' | 'post';
 
   /**
-   * Whether to exclude nodejs built-in modules in the bundle
-   *
-   * 是否排除 nodejs 内置模块。
+   * 是否排除 Node.js 内置模块
    */
   nodeBuiltins?: boolean;
 
   /**
-   * Specify dependencies to not be included in the bundle
-   *
-   * 排除不需要打包的依赖。
+   * 需要排除的打包依赖项
    */
   externalizeDeps?: Array<string | RegExp>;
 
   /**
-   * Fix https://github.com/rollup/rollup/issues/3188
+   * 解决 Rollup#3188 问题（https://github.com/rollup/rollup/issues/3188）
    */
   externalGlobals?: (globals: ModuleNameMap) => RollupPlugin;
 }

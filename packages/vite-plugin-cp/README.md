@@ -1,6 +1,7 @@
 # vite-plugin-cp
 
 [![npm package](https://nodei.co/npm/vite-plugin-cp.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-cp)
+
 [![npm version](https://img.shields.io/npm/v/vite-plugin-cp.svg)](https://npmjs.org/package/vite-plugin-cp)
 [![npm downloads](https://img.shields.io/npm/dm/vite-plugin-cp.svg)](https://npmjs.org/package/vite-plugin-cp)
 [![MIT License](https://img.shields.io/npm/l/vite-plugin-cp.svg)](https://opensource.org/licenses/MIT)

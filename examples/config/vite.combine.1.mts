@@ -10,14 +10,14 @@ export default defineConfig({
       src: ['src/util/*.ts', '!src/util/typings.ts'],
       target: 'src/combine.ts',
       nameExport: true
-    }) as Plugin,
+    }),
     ts({
       tsconfigPath: './tsconfig.build.json',
       rollupTypes: true,
       compilerOptions: {
         declarationDir: 'dist/combine/1'
       }
-    })
+    }) as Plugin
   ],
   build: {
     outDir: 'dist/combine/1',

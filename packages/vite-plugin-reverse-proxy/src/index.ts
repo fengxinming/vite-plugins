@@ -6,15 +6,14 @@ function moduleScript(base: string, url: string, preambleCode?: string) {
   let preScript = '';
 
   const clientCodeScript = `
-  
-    if (!document.getElementById('clientCode')) {
-      const clientCode = document.createElement('script');
-      clientCode.id = 'clientCode';
-      clientCode.type = 'module';
-      clientCode.src = '${path.posix.join(base, CLIENT_PUBLIC_PATH)}';
-      document.head.insertBefore(clientCode, document.head.firstChild);
-    }
-    `;
+if (!document.getElementById('clientCode')) {
+  const clientCode = document.createElement('script');
+  clientCode.id = 'clientCode';
+  clientCode.type = 'module';
+  clientCode.src = '${path.posix.join(base, CLIENT_PUBLIC_PATH)}';
+  document.head.insertBefore(clientCode, document.head.firstChild);
+}
+`;
 
   preScript += clientCodeScript;
 
@@ -27,7 +26,7 @@ if (!document.getElementById('preambleCode')) {
   preambleCode.appendChild(document.createTextNode(${JSON.stringify(preambleCode.replace('__BASE__', base))}));
   document.head.insertBefore(preambleCode, document.getElementById('clientCode'));
 }
-    `;
+`;
 
     preScript += preambleCodeScript;
   }

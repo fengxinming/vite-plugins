@@ -1,2 +1,4 @@
-export const PLUGIN_NAME = 'vite-plugin-external';
+import pkg from '../../package.json';
+
+export const PLUGIN_NAME = pkg.name;
 export const ESBUILD_PLUGIN_NAME = `${PLUGIN_NAME}-resolve`;

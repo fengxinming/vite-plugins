@@ -12,10 +12,13 @@ export default defineConfig({
     }),
     pluginExternal({
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.dependencies).concat('vite')
+      externalizeDeps: Object.keys(pkg.dependencies)
     })
   ],
   build: {
+    rollupOptions: {
+      external: ['vite']
+    },
     lib: {
       entry: 'src/index.ts',
       formats: ['es', 'cjs'],

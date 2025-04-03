@@ -1,3 +1,5 @@
+import './index.css';
+
 import React, { useState, version } from 'react';
 import ReactDOM from 'react-dom';
 

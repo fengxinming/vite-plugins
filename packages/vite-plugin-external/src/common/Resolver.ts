@@ -71,7 +71,10 @@ export class Resolver {
   async stashObject(
     obj: Record<string, string> | Array<[string, string]>
   ): Promise<string[]> {
-    return eachExternal(obj, this.cacheDir, (libName, globalName) => this.stash(libName, globalName));
+    return eachExternal(
+      obj,
+      this.cacheDir,
+      (libName, globalName) => this.stash(libName, globalName));
   }
 
   async resolve(

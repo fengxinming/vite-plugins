@@ -19,7 +19,8 @@
   "scripts": {
     "build:lib": "vite build",
     "watch": "vite build --watch",
-    "release": "npm publish"
+    "prepublishOnly": "npm run build:lib",
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",
@@ -35,9 +36,12 @@
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "homepage": "https://fengxinming.github.io/vite-plugins/vite-plugin-separate-importer/quick-start",
   "dependencies": {
-    "es-module-lexer": "^1.5.0"
+    "base-log-factory": "^2.0.9",
+    "blf-colorful-appender": "^1.0.2",
+    "es-module-lexer": "^1.5.0",
+    "vp-runtime-helper": "workspace:^"
   },
   "files": [
     "dist"

@@ -8,7 +8,7 @@ export default defineConfig({
   plugins: [
     react({
       jsxRuntime: 'classic'
-    }),
+    }) as unknown as Plugin,
     vitePluginExternal({
       logLevel: 'TRACE',
       externals: {
@@ -16,7 +16,7 @@ export default defineConfig({
         'react-dom': '$linkdesign.ReactDOM',
         'prop-types': '$linkdesign.PropTypes'
       }
-    }) as Plugin
+    })
   ],
   server: {
     open: true

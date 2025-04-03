@@ -1,3 +1,4 @@
+import { isFunction } from 'is-what-type';
 import { Alias, UserConfig } from 'vite';
 import { getValue } from 'vp-runtime-helper';
 
@@ -9,7 +10,7 @@ export async function setAliases(
   config: UserConfig,
 ): Promise<void> {
   const { externals } = opts;
-  if (typeof externals === 'function') {
+  if (isFunction(externals)) {
     throw new TypeError('`options.externals` function is not supported.');
   }
 

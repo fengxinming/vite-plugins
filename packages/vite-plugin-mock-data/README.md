@@ -13,196 +13,21 @@
 npm install vite-plugin-mock-data --save-dev
 ```
 
-## Options
+## Documentation
 
-```ts
-import { Config as SirvConfig, HTTPVersion, RouteOptions, Handler } from 'find-my-way';
+For detailed usage instructions and API references, please visit the official documentation:
 
-export interface HandleRoute {
-  file?: string;
-  handler?: any | Handler<HTTPVersion.V1>;
-  options?: RouteOptions;
-  store?: any;
-}
+👉 [View Full Documentation](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-mock-data/quick-start)
 
-export interface RouteConfig {
-  [route: string]: string | Handler<HTTPVersion.V1> | HandleRoute;
-}
+## Contributing
 
-export interface Options {
-  /**
-   * The directory to serve files from.
-   * @default `process.cwd()`
-   */
-  cwd?: string;
+We welcome contributions from the community! If you find a bug or want to suggest an improvement, feel free to open an issue or submit a pull request.
 
-  /**
-   * If `true`, these mock routes is matched after internal middlewares are installed.
-   * @default `false`
-   */
-  isAfter?: boolean;
+### How to Contribute
+1. Fork the repository.
+2. Create a new branch for your changes.
+3. Submit a pull request with a clear description of your changes.
 
-  /**
-   * Specify the directory to define mock assets.
-   */
-  assets?: string;
+## License
 
-  /**
-   * Initial options of `find-my-way`. see more at https://github.com/delvedor/find-my-way#findmywayoptions
-   */
-  routerOptions?: SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2>;
-
-  /**
-   * Initial list of mock routes that should be added to the dev server
-   * or specify the directory to define mock routes that should be added to the dev server.
-   */
-  routes?: RouteConfig | Array<RouteConfig | string> | string;
-}
-```
-
-* `cwd` - Default: `process.cwd()`.
-* `isAfter` - If `true`, these mock routes is matched after internal middlewares are installed.
-* `assets` - Specify the directory to define mock assets.
-* `routerOptions` - [Initial options of `find-my-way`](https://github.com/delvedor/find-my-way#findmywayoptions)
-* `routes`
-  * `RouteConfig | Array<RouteConfig | string>` - Initial list of mock routes that should be added to the dev server.
-  * `string` - Specify the directory to define mock routes that should be added to the dev server.
-
-## Usage
-
-### Specify the directory to define mock assets
-
-```js
-import { defineConfig } from 'vite';
-import mockData from 'vite-plugin-mock-data';
-
-export default defineConfig({
-  plugins: [
-    mockData({
-      assets: './mockAssets'
-    })
-  ]
-});
-```
-
-```txt
-.
-├── mockAssets
-│   ├── test.zip
-│   └── test.json
-```
-
-```js
-fetch('/test.json')
-  .then(res => res.json())
-  .then((json) => {
-    console.log(json);
-  });
-```
-
-```html
-<a class="download" href="./test.zip">Download</a>
-```
-
-### add mock routes to the dev server
-
-```js
-import { defineConfig } from 'vite';
-import mockData from 'vite-plugin-mock-data';
-
-export default defineConfig({
-  plugins: [
-    mockData({
-      routes: {
-        '/hello': 'hello',
-        '/hello2'(req, res) {
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'text/html');
-          res.end('hello2');
-        },
-        '/hello3': {
-          handler(req, res) {
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'text/html');
-            res.end('hello3');
-          }
-        },
-        '/json': {
-          handler: { hello: 1 }
-        },
-        '/package.json': {
-          file: './package.json'
-        }
-      }
-    })
-  ]
-});
-```
-
-```js
-fetch('/package.json')
-  .then(res => res.json())
-  .then((json) => {
-    console.log(json);
-  });
-```
-
-### Specify the directory to add mock routes to the dev server
-
-```js
-import { defineConfig } from 'vite';
-import mockData from 'vite-plugin-mock-data';
-
-export default defineConfig({
-  plugins: [
-    mockData({
-      routes: './mock'
-    })
-  ]
-});
-```
-
-```txt
-.
-├── mock
-│   └── test.js
-```
-
-```js
-module.exports = {
-  '/hello': 'hello',
-  '/hello2'(req, res) {
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'text/html');
-    res.end('hello2');
-  },
-  '/hello3': {
-    handler(req, res) {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'text/html');
-      res.end('hello3');
-    }
-  },
-  '/json': {
-    handler: { hello: 1 }
-  },
-  '/package.json': {
-    file: './package.json'
-  }
-};
-```
-
-```js
-fetch('/package.json')
-  .then(res => res.json())
-  .then((json) => {
-    console.log(json);
-  });
-```
-
-## Examples
-
-* [See vite3 demo](../../examples/vite3-demo)
-* [See vite4 demo](../../examples/vite4-demo)
-* [See vite5 demo](../../examples/vite5-demo)
-* [See vite6 demo](../../examples/vite6-demo)
+This project is licensed under the [MIT License](../../LICENSE).

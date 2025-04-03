@@ -1,4 +1,5 @@
-import { Config as SirvConfig, HTTPVersion, RouteOptions, Handler } from 'find-my-way';
+import { LogLevel } from 'base-log-factory';
+import { Config as SirvConfig, Handler, HTTPVersion, RouteOptions } from 'find-my-way';
 
 export interface HandleRoute {
   file?: string;
@@ -19,15 +20,26 @@ export interface Options {
   cwd?: string;
 
   /**
+   * Cache directory for compiled files.
+   *
+   * 用于存放 ts 被编译后存放的文件目录。
+   *
+   * @default `${cwd}/node_modules/.vite_mock_data`
+   */
+  cacheDir?: string;
+
+  /**
+   * Log level
+   *
+   * 输出日志等级
+   */
+  logLevel?: LogLevel;
+
+  /**
    * If `true`, these mock routes is matched after internal middlewares are installed.
    * @default `false`
    */
   isAfter?: boolean;
-
-  /**
-   * Specify the directory to define mock assets.
-   */
-  assets?: string;
 
   /**
    * Initial options of `find-my-way`. see more at https://github.com/delvedor/find-my-way#findmywayoptions

@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 import vitePluginIncludeCss from 'vite-plugin-include-css';
 
@@ -11,8 +11,8 @@ export default defineConfig({
         'react-dom': '$linkdesign.ReactDOM',
         'prop-types': '$linkdesign.PropTypes'
       }
-    }) as Plugin,
-    vitePluginIncludeCss() as Plugin
+    }),
+    vitePluginIncludeCss()
   ],
   server: {
     open: true

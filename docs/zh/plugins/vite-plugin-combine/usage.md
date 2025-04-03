@@ -28,6 +28,7 @@ export default defineConfig({
   build: {
     minify: false,
     lib: {
+      entry: [],
       formats: ['es', 'cjs'],
       fileName: '[name]'
     }
@@ -35,10 +36,29 @@ export default defineConfig({
 });
 ```
 
-将会生成如下的 `src/index.ts` 文件：
+输出的文件内容：
 
-```typescript
-export { default as myButton } from './components/Button';
-export { default as myInput } from './components/Input';
-export { default as mySelect } from './components/Select';
+`dist/index.mjs`
+```mjs
+export { default as default2 } from './Button';
+export { default as default3 } from './Input';
+export { default as default4 } from './Select';
+
+export {
+  default2 as myButton,
+  default3 as myInput,
+  default4 as mySelect
+};
+```
+
+`dist/index.js`
+```js
+"use strict";
+Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+const Button = require("./Button.js");
+const Input = require("./Input.js");
+const Select = require("./Select.js");
+exports.Button = Button;
+exports.Input = Input;
+exports.Select = Select;
 ```

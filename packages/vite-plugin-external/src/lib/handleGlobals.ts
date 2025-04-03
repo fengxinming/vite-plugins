@@ -1,3 +1,4 @@
+import { isFunction, isObject } from 'is-what-type';
 import { InputPluginOption, OutputOptions, RollupOptions } from 'rollup';
 import { getValue } from 'vp-runtime-helper';
 
@@ -15,12 +16,11 @@ function rollupOutputGlobals(
     logger.trace(`Got the global name "${globalName}".`, 'external:', libName);
 
     if (!globalName) {
-      const whatType = typeof originalGlobals;
-      if (whatType === 'function') {
-        globalName = (originalGlobals as (name: string) => string)(libName);
+      if (isFunction<(name: string) => string>(originalGlobals)) {
+        globalName = originalGlobals(libName);
       }
-      else if (whatType === 'object' && originalGlobals !== null) {
-        globalName = (originalGlobals as Record<string, string>)[libName];
+      else if (isObject<Record<string, string>>(originalGlobals)) {
+        globalName = originalGlobals[libName];
       }
     }
 
@@ -35,7 +35,7 @@ export function setOutputGlobals(
   opts: Options
 ): void {
   const { externalGlobals } = opts;
-  if (typeof externalGlobals === 'function') {
+  if (isFunction(externalGlobals)) {
     rollupOptions.plugins = [
       externalGlobals((id: string) => {
         return globalObject[id];

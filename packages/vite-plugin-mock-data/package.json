@@ -17,9 +17,10 @@
     "vite": ">=3.1.0"
   },
   "scripts": {
-    "release": "npm publish",
     "build:lib": "vite build",
-    "watch": "vite build --watch"
+    "watch": "vite build --watch",
+    "prepublishOnly": "npm run build:lib",
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",
@@ -35,11 +36,15 @@
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-mock-data/quick-start",
   "dependencies": {
+    "base-log-factory": "^2.0.9",
+    "blf-colorful-appender": "^1.0.2",
     "find-my-way": "^9.2.0",
+    "is-what-type": "^1.0.0",
     "sirv": "^3.0.1",
-    "tinyglobby": "^0.2.12"
+    "tinyglobby": "^0.2.12",
+    "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",

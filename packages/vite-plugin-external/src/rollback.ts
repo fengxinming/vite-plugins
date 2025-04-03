@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { isFunction } from 'is-what-type';
 import { ConfigEnv, Plugin, ResolvedConfig, UserConfig } from 'vite';
 import { getDepsCacheDir } from 'vp-runtime-helper';
 
@@ -15,7 +16,7 @@ export async function cleanupCache(
   externals: Record<string, string> | ExternalFn | undefined,
   config: ResolvedConfig
 ) {
-  if (!externals || typeof externals === 'function') {
+  if (!externals || isFunction(externals)) {
     return;
   }
 

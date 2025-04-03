@@ -1,5 +1,6 @@
 import { isAbsolute, join } from 'node:path';
 
+import { isFunction, isObject } from 'is-what-type';
 import type { ConfigEnv } from 'vite';
 
 import { logger } from '../common/logger';
@@ -34,10 +35,10 @@ export function buildOptions(
             logLevel = value;
             break;
           case 'externals':
-            if (typeof value === 'object') {
+            if (isObject(value)) {
               externals = Object.assign({}, externals, value);
             }
-            else {
+            else if (isFunction(value)) {
               externals = value;
             }
             break;
