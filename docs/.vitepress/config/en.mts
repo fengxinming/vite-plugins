@@ -145,7 +145,7 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
     { 
       text: 'vite-plugin-separate-importer', 
       activeMatch: '/plugins/vite-plugin-separate-importer/',
-      link: '/plugins/vite-plugin-separate-importer' 
+      link: '/plugins/vite-plugin-separate-importer/quick-start' 
     }
   ];
 }
