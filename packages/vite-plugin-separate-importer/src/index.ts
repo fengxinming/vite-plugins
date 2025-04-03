@@ -2,12 +2,6 @@ import { EOL } from 'node:os';
 
 import type { Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program } from 'acorn';
 import { init, parse } from 'es-module-lexer';
-import {
-  OutputAsset,
-  OutputChunk,
-  OutputOptions,
-  PluginContext
-} from 'rollup';
 import { Plugin } from 'vite';
 import { banner } from 'vp-runtime-helper';
 
@@ -207,7 +201,6 @@ function pluginSeparateImporter(
     enforce,
 
     async transform(
-      this: PluginContext,
       code: string,
       // id: string
     ) {
@@ -266,11 +259,7 @@ function pluginSeparateImporter(
       return dest;
     },
 
-    generateBundle(
-      this: PluginContext,
-      outputOptions: OutputOptions,
-      bundle: Record<string, OutputAsset | OutputChunk>
-    ) {
+    generateBundle(outputOptions, bundle) {
       // 在生成 bundle 时处理 cjs 格式源码
       if (outputOptions.format === 'cjs') {
         Object.entries(bundle).forEach(([, chunk]) => {
