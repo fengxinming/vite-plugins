@@ -1,3 +1,4 @@
+import { isFunction, isObject } from 'is-what-type';
 import type { UserConfig } from 'vite';
 import { getValue } from 'vp-runtime-helper';
 
@@ -15,19 +16,18 @@ export async function setOptimizeDeps(
   let externalFn: ExternalFn | undefined;
 
   const { externals } = opts;
-  const whatType = typeof externals;
 
   const resolver = new Resolver(opts.cacheDir);
 
-  if (whatType === 'function') {
-    externalFn = externals as ExternalFn;
+  if (isFunction<ExternalFn>(externals)) {
+    externalFn = externals;
 
     logger.debug('`options.externals` is a function.');
 
     resolver.addHook(externalFn);
   }
-  else if (whatType === 'object' && externals !== null) {
-    externalEntries = Object.entries(externals as Record<string, string>);
+  else if (isObject<Record<string, string>>(externals)) {
+    externalEntries = Object.entries(externals);
 
     if (!externalEntries.length) {
       logger.warn('`options.externals` is empty.');
@@ -36,7 +36,7 @@ export async function setOptimizeDeps(
 
     logger.debug('`options.externals` is an object.');
 
-    await resolver.stashObject(externals as Record<string, string>);
+    await resolver.stashObject(externals);
     resolver.stashed = true;
   }
 

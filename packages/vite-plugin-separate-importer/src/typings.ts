@@ -1,3 +1,4 @@
+import type { LogLevel } from 'base-log-factory';
 export interface ImportSource {
   es: string;
   cjs?: string;
@@ -13,12 +14,12 @@ export interface libConfig {
    * 模块的新路径
    * New path for the module
    */
-  importerSource?: (importer: string, libName: string) => string | ImportSource;
+  importFrom?: (importer: string, libName: string) => string | ImportSource;
   /**
    * 插入导入声明
    * Insert import source
    */
-  insertImport?: (importer: string, libName: string) => string | ImportSource | Array<string | ImportSource>;
+  insertFrom?: (importer: string, libName: string) => string | ImportSource | Array<string | ImportSource>;
 }
 
 export interface Options {
@@ -34,4 +35,11 @@ export interface Options {
   * Interface for plugin configuration to define the library names and processing logic
   */
   libs?: libConfig[];
+
+
+  /**
+   * 输出日志等级
+   * Output log level
+   */
+  logLevel?: LogLevel;
 }

@@ -1,6 +1,6 @@
 import { EOL } from 'node:os';
 
-import { Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program } from 'acorn';
+import type { Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program } from 'acorn';
 import { init, parse } from 'es-module-lexer';
 import {
   OutputAsset,
@@ -9,7 +9,9 @@ import {
   PluginContext
 } from 'rollup';
 import { Plugin } from 'vite';
+import { banner } from 'vp-runtime-helper';
 
+import { logger, PLUGIN_NAME } from './logger';
 import { ImportSource, libConfig, Options } from './typings';
 
 export * from './typings';
@@ -25,7 +27,7 @@ interface LibInfo extends libConfig {
    * 替换新的模块路径
    * Replace with new module path
    */
-  importerSourceForCJS: Array<(code: string) => string>;
+  cjsTransformers: Array<(code: string) => string>;
  }
 
 /**
@@ -37,17 +39,17 @@ function processLibs(
   specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>,
   lib: LibInfo
 ): string {
-  const { importerSource, insertImport, importerSourceForCJS } = lib;
+  const { importFrom, insertFrom, cjsTransformers } = lib;
 
   let newImportDeclarationStr = '';
   const insertSourceFn = (importer: string, libName: string) => {
-    if (typeof insertImport === 'function') {
-      let source = insertImport(importer, libName);
-      if (typeof source === 'string') {
-        source = [{ es: source }];
+    if (typeof insertFrom === 'function') {
+      let importSources = insertFrom(importer, libName);
+      if (typeof importSources === 'string') {
+        importSources = [{ es: importSources }];
       }
-      else if (Array.isArray(source)) {
-        source = source.map((n) => {
+      else if (Array.isArray(importSources)) {
+        importSources = importSources.map((n) => {
           if (typeof n === 'string') {
             return { es: n };
           }
@@ -55,14 +57,14 @@ function processLibs(
         });
       }
       else {
-        source = [source];
+        importSources = [importSources];
       }
-      if (source) {
-        newImportDeclarationStr += (source as ImportSource[]).reduce((prev, { es, cjs } = { es: '' }) => {
+      if (importSources) {
+        newImportDeclarationStr += (importSources as ImportSource[]).reduce((prev, { es, cjs } = { es: '' }) => {
           if (es) {
             prev += `import "${es}";${EOL}`;
             if (cjs) {
-              importerSourceForCJS.push((code) => {
+              cjsTransformers.push((code) => {
                 return code.replace(es, cjs);
               });
             }
@@ -72,6 +74,7 @@ function processLibs(
       }
     }
   };
+
   for (const specifier of specifiers) {
     switch (specifier.type) {
       case 'ImportDefaultSpecifier':
@@ -79,10 +82,10 @@ function processLibs(
         break;
 
       case 'ImportSpecifier': {
-        const importer = (specifier.imported as Identifier).name;
+        const { name: importer } = specifier.imported as Identifier;
         if (importer) {
-          if (typeof importerSource === 'function') {
-            let source = importerSource(importer, libName);
+          if (typeof importFrom === 'function') {
+            let source = importFrom(importer, libName);
             if (typeof source === 'string') {
               source = { es: source };
             }
@@ -90,7 +93,7 @@ function processLibs(
             if (es) {
               newImportDeclarationStr += `import ${importer} from "${es}";${EOL}`;
               if (cjs) {
-                importerSourceForCJS.push((code) => {
+                cjsTransformers.push((code) => {
                   return code.replace(es, cjs);
                 });
               }
@@ -163,26 +166,33 @@ function processLibs(
  * @param opts options
  * @returns a vite plugin
  */
-function createPlugin(
-  { enforce, libs = [] }: Options = {}
+function pluginSeparateImporter(
+  { enforce, libs = [], logLevel }: Options = {}
 ): Plugin | undefined {
   if (!Array.isArray(libs) || libs.length === 0) {
+    logger.warn('No libs specified.');
     return;
   }
 
+  if (logLevel) {
+    logger.level = logLevel;
+  }
+
+  banner(PLUGIN_NAME);
+
   const libMap: Record<string, LibInfo> = {};
   for (const lib of libs) {
-    const { name, importerSource } = lib;
+    const { name, importFrom } = lib;
 
     const makeLibInfo = (n: string) => {
       libMap[n] = {
         ...lib,
         name: n,
-        importerSourceForCJS: []
+        cjsTransformers: []
       };
     };
 
-    if (importerSource) {
+    if (importFrom) {
       if (Array.isArray(name)) {
         name.forEach(makeLibInfo);
       }
@@ -193,7 +203,7 @@ function createPlugin(
   }
 
   return {
-    name: 'vite-plugin-separate-importer',
+    name: PLUGIN_NAME,
     enforce,
 
     async transform(
@@ -243,10 +253,13 @@ function createPlugin(
           continue;
         }
 
+        logger.trace('Matched lib name:', libName);
+
         // 处理模块 Process modules if it is valid
         const newImportStr = processLibs(libName, specifiers, currentLibInfo);
 
         if (newImportStr) {
+          logger.trace('New import statement:', newImportStr);
           dest = dest.replace(importStr, newImportStr);
         }
       }
@@ -263,7 +276,7 @@ function createPlugin(
         Object.entries(bundle).forEach(([, chunk]) => {
           if (chunk.type === 'chunk') {
             Object.entries(libMap).forEach(([, libInfo]) => {
-              libInfo.importerSourceForCJS.forEach((fn) => {
+              libInfo.cjsTransformers.forEach((fn) => {
                 chunk.code = fn(chunk.code);
               });
             });
@@ -274,4 +287,4 @@ function createPlugin(
   } as Plugin;
 }
 
-export default createPlugin;
+export default pluginSeparateImporter;

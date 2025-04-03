@@ -4,8 +4,11 @@ import replaceAll from 'fast-replaceall';
 import MagicString from 'magic-string';
 import { minify } from 'terser';
 import type { Plugin, ResolvedConfig } from 'vite';
+import { banner } from 'vp-runtime-helper';
 
-const PLUGIN_NAME = 'vite-plugin-include-css';
+import pkg from '../package.json';
+
+const PLUGIN_NAME = pkg.name;
 
 function closure(code: string): string {
   return `!(function(){${code}})();`;
@@ -65,7 +68,10 @@ document.head.appendChild(__vite_style__);${EOL}`;
  * @returns a vite plugin
  */
 export default function pluginIncludeCSS(): Plugin {
+  banner(pkg.name);
+
   let resolvedConfig: ResolvedConfig;
+
   return {
     name: PLUGIN_NAME,
     apply: 'build',

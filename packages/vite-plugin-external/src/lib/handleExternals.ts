@@ -1,6 +1,7 @@
 import { builtinModules } from 'node:module';
 import { types } from 'node:util';
 
+import { isFunction, isObject } from 'is-what-type';
 import type { ExternalOption, NullValue, RollupOptions } from 'rollup';
 import type { UserConfig } from 'vite';
 import { getValue } from 'vp-runtime-helper';
@@ -62,7 +63,7 @@ function mergeExternals(
   }
 
   // function
-  if (typeof originalExternal === 'function') {
+  if (isFunction(originalExternal)) {
     return function (
       source: string,
       importer: string | undefined,
@@ -84,14 +85,13 @@ export function setExternals(
   let globalObject: Record<string, string> = {};
   let externalFn: ExternalFn | undefined;
   const { externals } = opts;
-  const whatType = typeof externals;
 
-  if (whatType === 'function') {
-    externalFn = externals as ExternalFn;
+  if (isFunction<ExternalFn>(externals)) {
+    externalFn = externals;
     logger.debug('`options.externals` is a function.');
   }
-  else if (whatType === 'object' && externals !== null) {
-    globalObject = externals as Record<string, string>;
+  else if (isObject<Record<string, string>>(externals)) {
+    globalObject = externals;
     logger.debug('`options.externals` is an object.');
   }
   else {
@@ -114,7 +114,7 @@ export function setExternals(
       );
 
       if (!val) {
-        if (typeof newExternals === 'function') {
+        if (isFunction(newExternals)) {
           val = newExternals(source, importer, isResolved);
         }
         else if (externalArray.length > 0) {

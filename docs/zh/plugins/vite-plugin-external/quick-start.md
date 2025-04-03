@@ -48,13 +48,48 @@ export default defineConfig({
       externals: {
         jquery: '$',
 
-        react: 'React',
-        'react-dom/client': 'ReactDOM',
+        vue: 'Vue',
 
-        vue: 'Vue'
+        react: 'React',
+        'react-dom/client': 'ReactDOM'
       }
     })
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife',
+      },
+    },
+  }
+});
+```
+
+```js
+import { defineConfig } from 'vite';
+import vitePluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    vitePluginExternal({
+      externals(libName) {
+        if (libName === 'react') {
+          return 'React';
+        }
+        
+        if (libName === 'react-dom/client') {
+          return 'ReactDOM';
+        }
+      }
+    })
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife',
+      },
+    },
+  }
 });
 ```
 

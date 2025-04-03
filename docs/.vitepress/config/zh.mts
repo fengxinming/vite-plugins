@@ -70,12 +70,34 @@ export const zh = defineConfig({
           ]
         }]
       },
-      '/zh/plugins/vite-plugin-include-css/': {
-        base: '/zh/plugins/vite-plugin-include-css/',
+      // '/zh/plugins/vite-plugin-include-css/': {
+      //   base: '/zh/plugins/vite-plugin-include-css/',
+      //   items: [{
+      //     text: 'vite-plugin-include-css',
+      //     items: [
+      //       { text: '快速入门', link: 'quick-start' },
+      //     ]
+      //   }]
+      // },
+      '/zh/plugins/vite-plugin-mock-data/': {
+        base: '/zh/plugins/vite-plugin-mock-data/',
         items: [{
-          text: 'vite-plugin-include-css',
+          text: 'vite-plugin-mock-data',
           items: [
             { text: '快速入门', link: 'quick-start' },
+            { text: '配置项', link: 'options' },
+            { text: '使用示例', link: 'usage' }
+          ]
+        }]
+      },
+      '/zh/plugins/vite-plugin-separate-importer/': {
+        base: '/zh/plugins/vite-plugin-separate-importer/',
+        items: [{
+          text: 'vite-plugin-separate-importer',
+          items: [
+            { text: '快速入门', link: 'quick-start' },
+            { text: '配置项', link: 'options' },
+            { text: '使用示例', link: 'usage' }
           ]
         }]
       },
@@ -114,8 +136,16 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
       activeMatch: '/zh/plugins/vite-plugin-include-css/',
       link: '/zh/plugins/vite-plugin-include-css/quick-start'
     },
-    // { text: 'vite-plugin-mock-data', link: '/zh/plugins/vite-plugin-mock-data' },
+    { 
+      text: 'vite-plugin-mock-data', 
+      activeMatch: '/zh/plugins/vite-plugin-mock-data/',
+      link: '/zh/plugins/vite-plugin-mock-data/quick-start' 
+    },
     // { text: 'vite-plugin-reverse-proxy', link: '/zh/plugins/vite-plugin-reverse-proxy' },
-    // { text: 'vite-plugin-separate-importer', link: '/zh/plugins/vite-plugin-separate-importer' }
+    { 
+      text: 'vite-plugin-separate-importer', 
+      activeMatch: '/zh/plugins/vite-plugin-separate-importer/',
+      link: '/zh/plugins/vite-plugin-separate-importer/quick-start' 
+    }
   ];
 }

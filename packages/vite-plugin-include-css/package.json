@@ -36,7 +36,7 @@
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-include-css/quick-start",
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
     "vite": "^6.1.0"
@@ -47,6 +47,7 @@
   "dependencies": {
     "fast-replaceall": "^2.0.1",
     "magic-string": "^0.30.17",
-    "terser": "^5.39.0"
+    "terser": "^5.39.0",
+    "vp-runtime-helper": "workspace:^"
   }
 }

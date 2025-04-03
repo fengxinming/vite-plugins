@@ -11,7 +11,6 @@ import type { Plugin } from 'vite';
 import { normalizePath } from 'vite';
 import { banner } from 'vp-runtime-helper';
 
-import pkg from '../package.json';
 import { logger, PLUGIN_NAME } from './logger';
 import { NameExport, Options } from './typings';
 export * from './typings';
@@ -160,7 +159,7 @@ function normalizeTarget(cwd: string, target: string) {
 }
 
 export default function pluginCombine(opts: Options): Plugin {
-  banner(pkg.name);
+  banner(PLUGIN_NAME);
 
   if (!opts) {
     opts = {} as Options;

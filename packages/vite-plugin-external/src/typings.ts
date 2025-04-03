@@ -8,7 +8,15 @@ export type ExternalFn = (
   isResolved: boolean
 ) => string | boolean | NullValue;
 
-export type ModuleNameMap = Record<string, string> | ((id: string) => string);
+export type ModuleNameFn = ((id: string) => string);
+
+export type ModuleNameMap = Record<string, string> | ModuleNameFn;
+
+export interface ExternalInfo {
+  name?: string | boolean;
+  resolvedId?: string;
+  cdn?: string;
+}
 
 export type { LogLevel } from 'base-log-factory';
 

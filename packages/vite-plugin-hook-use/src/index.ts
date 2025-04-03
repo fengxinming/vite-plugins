@@ -7,6 +7,11 @@ import {
 } from '@clack/prompts';
 import color from 'picocolors';
 import { Plugin } from 'vite';
+import { banner } from 'vp-runtime-helper';
+
+import pkg from '../package.json';
+
+const PLUGIN_NAME = pkg.name;
 
 const s = spinner();
 
@@ -28,6 +33,8 @@ const s = spinner();
  * @returns a vite plugin
  */
 export default function pluginHookUse(): Plugin {
+  banner(PLUGIN_NAME);
+
   const order = new Map<string, number>();
 
   const plugin: Plugin = [
@@ -72,7 +79,7 @@ export default function pluginHookUse(): Plugin {
       order.set(hook, (order.get(hook) || 0) + 1);
     };
     return prev;
-  }, { name: 'vite-plugin-hook-use' });
+  }, { name: PLUGIN_NAME });
 
   const lastConfig = plugin.config as () => void;
   plugin.config = function (userConfig, env) {

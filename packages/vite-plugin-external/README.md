@@ -8,6 +8,8 @@
 > Excludes specified module dependencies from runtime code and built bundles.
 > Vite >= 3.1
 
+**Build iife format bundle**
+
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -18,14 +20,93 @@ export default defineConfig({
       externals: {
         jquery: '$',
 
-        react: 'React',
-        'react-dom/client': 'ReactDOM',
+        vue: 'Vue',
 
-        vue: 'Vue'
+        react: 'React',
+        'react-dom/client': 'ReactDOM'
       }
     })
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife',
+      },
+    },
+  }
+});
+```
+
+**Dynamic set externals**
+```js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import vitePluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    vitePluginExternal({
+      react({
+        jsxRuntime: 'classic',
+      }),
+      externals(libName) {
+        if (libName === 'react') {
+          return 'React';
+        }
+        
+        if (libName === 'react-dom/client') {
+          return 'ReactDOM';
+        }
+      }
+    })
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife',
+      },
+    },
+  }
+});
+```
+
+**Build esm format bundle**
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import createExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    react({
+      jsxRuntime: 'classic',
+    }),
+    createExternal({
+      externals(libName) {
+        if (libName === 'react') {
+          return 'React';
+        }
+        if (libName === 'react-dom/client') {
+          return 'ReactDOM';
+        }
+      },
+    }),
   ]
 });
+```
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1"
+    }
+  }
+</script>
+<link rel="modulepreload" href="https://esm.sh/react@18.3.1" />
+<link rel="modulepreload" href="https://esm.sh/react-dom@18.3.1" />
 ```
 
 ## Documentation

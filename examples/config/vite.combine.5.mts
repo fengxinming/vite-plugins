@@ -13,14 +13,14 @@ export default defineConfig({
       beforeWrite(code) {
         return `${code}export * from './util/typings';`;
       }
-    }) as Plugin,
+    }),
     ts({
       tsconfigPath: './tsconfig.build.json',
       rollupTypes: true,
       compilerOptions: {
         declarationDir: 'dist/combine/5'
       }
-    })
+    }) as Plugin
   ],
   build: {
     outDir: 'dist/combine/5',

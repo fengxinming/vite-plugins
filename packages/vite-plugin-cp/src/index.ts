@@ -6,7 +6,7 @@ import { isObject } from 'is-what-type';
 import type { GlobOptions } from 'tinyglobby';
 import { glob } from 'tinyglobby';
 import type { Plugin } from 'vite';
-import { sleep, toAbsolutePath } from 'vp-runtime-helper';
+import { banner, sleep, toAbsolutePath } from 'vp-runtime-helper';
 
 import { logger, PLUGIN_NAME } from './logger';
 import type { Options, Target } from './typings';
@@ -119,8 +119,11 @@ export default function pluginCp(opts: Options) {
   } = opts || {};
 
   if (!Array.isArray(targets) || !targets.length) {
+    logger.warn('No targets specified.');
     return;
   }
+
+  banner(PLUGIN_NAME);
 
   if (logLevel) {
     logger.level = logLevel;

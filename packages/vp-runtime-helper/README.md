@@ -10,5 +10,5 @@
 ## Installation
 
 ```bash
-npm install vp-runtime-helper --save-dev
+npm install vp-runtime-helper --save
 ```
