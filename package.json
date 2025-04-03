@@ -14,7 +14,7 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "release:combine": "npm run build:combine && pnpm run --filter=vite-plugin-combine release",
-    "release:cp": "npm run build:cp && pnpm run --filter=vite-plugin-combine release",
+    "release:cp": "npm run build:cp && pnpm run --filter=vite-plugin-cp release",
     "release:external": "npm run build:external && pnpm run --filter=vite-plugin-external release",
     "release:hook-use": "npm run build:hook-use && pnpm run --filter=vite-plugin-hook-use release",
     "release:mock-data": "npm run build:mock-data && pnpm run --filter=vite-plugin-mock-data release",
@@ -35,7 +35,7 @@
     "test:hook-use": "npm run build:hook-use && pnpm run -r --parallel /build:hook-use\\.*/",
     "test:include-css": "npm run build:include-css && pnpm run -r --parallel /build:include-css\\.*/",
     "test:mock-data": "npm run build:mock-data && pnpm run -r --parallel /build:mock-data\\.*/",
-    "test:separate-importer": "npm run build:separate-importer && pnpm run -r --parallel /build:mock-data\\.*/"
+    "test:separate-importer": "npm run build:separate-importer && pnpm run -r --parallel /build:separate-importer\\.*/"
   },
   "repository": {
     "type": "git",
