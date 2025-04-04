@@ -13,7 +13,7 @@ function rollupOutputGlobals(
 
   output.globals = (libName: string) => {
     let globalName = globalObject[libName];
-    logger.trace(`Got the global name "${globalName}".`, 'external:', libName);
+    logger.trace(`Output global: "${libName}" -> "${globalName}".`);
 
     if (!globalName) {
       if (isFunction<(name: string) => string>(originalGlobals)) {
@@ -31,14 +31,16 @@ function rollupOutputGlobals(
 
 export function setOutputGlobals(
   rollupOptions: RollupOptions,
-  globalObject: Record<string, any>,
+  globalObject: Record<string, string>,
   opts: Options
 ): void {
   const { externalGlobals } = opts;
   if (isFunction(externalGlobals)) {
     rollupOptions.plugins = [
       externalGlobals((id: string) => {
-        return globalObject[id];
+        const globalName =  globalObject[id];
+        logger.trace(`External globals: "${id}" -> "${globalName}".`);
+        return globalName;
       }),
       ...((rollupOptions.plugins as InputPluginOption[]) || [])
     ];

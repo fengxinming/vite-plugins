@@ -1,5 +1,4 @@
-import externalGlobals from 'rollup-plugin-external-globals';
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -7,7 +6,6 @@ export default defineConfig({
   plugins: [
     vitePluginExternal({
       logLevel: 'TRACE',
-      externalGlobals,
       externals(libName) {
         if (libName === 'react') {
           return 'React';
@@ -16,11 +14,8 @@ export default defineConfig({
           return 'ReactDOM';
         }
       }
-    })
+    }) as Plugin
   ],
-  server: {
-    open: true
-  },
   build: {
     minify: false,
     outDir: 'dist/external/7',

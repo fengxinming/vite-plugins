@@ -5,18 +5,17 @@ import vitePluginExternal from 'vite-plugin-external';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react() as unknown as Plugin,
+    react({
+      jsxRuntime: 'classic'
+    }) as unknown as Plugin,
     vitePluginExternal({
       logLevel: 'TRACE',
       externals: {
         react: 'React',
         'react-dom/client': 'ReactDOM'
       }
-    })
+    }) as Plugin
   ],
-  server: {
-    open: true
-  },
   build: {
     minify: false,
     outDir: 'dist/external/5',

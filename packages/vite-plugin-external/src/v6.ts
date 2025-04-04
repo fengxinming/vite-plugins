@@ -46,18 +46,20 @@ export default function v6(opts: Options): Plugin {
         return;
       }
 
-      const resolvedId = await resolver.resolve(id, importer, isEntry);
+      const info = await resolver.resolve(id, importer, isEntry);
 
-      if (resolvedId === true) {
-        logger.trace(`'${id}' is marked as external`);
-        return { id, external: true };
-      }
 
-      if (!resolvedId) {
-        logger.trace(`'${id}' is not resolved`);
+      if (!info) {
+        logger.trace(`'${id}' is not external.`);
         return;
       }
 
+      if (info === true) {
+        logger.trace(`'${id}' is marked as external.`);
+        return { id, external: true };
+      }
+
+      const { resolvedId } = info;
       const { mode } = this.environment;
 
       if (mode === 'build') {
