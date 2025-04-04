@@ -10,28 +10,24 @@
 
 ### [vite-plugin-cp](/zh/plugins/vite-plugin-cp/quick-start)
 
-**功能**: 复制文件到指定目录。
+**功能**: 一个用于复制文件/目录，并支持灵活转换文件内容、保留或扁平化目录结构、自定义文件重命名等的Vite插件。
 
 ### [vite-plugin-external](/zh/plugins/vite-plugin-external/quick-start)
 
 **功能**: 从运行时代码和构建后的 bundles 中排除指定的模块依赖项。
 
-<!-- ### [vite-plugin-hook-use](packages/vite-plugin-hook-use)
+### [vite-plugin-hook-use](/zh/plugins/vite-plugin-hook-use/quick-start)
 
-**功能**: 显示 `vite` 调用 hook 函数的顺序和次数。
+**功能**: 显示 `vite` 调用其钩子函数的序列和频率
 
-### [vite-plugin-include-css](packages/vite-plugin-include-css)
+### [vite-plugin-include-css](/zh/plugins/vite-plugin-include-css/quick-start)
 
-**功能**: 打包 CSS 代码到一个 JS 文件中。
+**功能**: 当启用 `cssCodeSplit: false` 时，将所有CSS打包到单个JavaScript文件中。
 
-### [vite-plugin-mock-data](packages/vite-plugin-mock-data)
+### [vite-plugin-mock-data](/zh/plugins/vite-plugin-mock-data/quick-start)
 
-**功能**: 配置本地 mock 数据。
+**功能**: 提供了一种简单的方式来模拟数据。
 
-### [vite-plugin-reverse-proxy](packages/vite-plugin-reverse-proxy)
+### [vite-plugin-separate-importer](/zh/plugins/vite-plugin-separate-importer/quick-start)
 
-**功能**: 配合 Chrome 插件 [XSwitch](https://chrome.google.com/webstore/detail/xswitch/idkjhjggpffolpidfkikidcokdkdaogg) 将线上资源代理到本地调试。
-
-### [vite-plugin-separate-importer](packages/vite-plugin-separate-importer)
-
-**功能**: 将原来从一个源模块批量导入内容变成分批从源模块下导入单个文件。 -->
+**功能**: 将原来从一个源模块批量导入内容变成分批从源模块下导入单个文件。

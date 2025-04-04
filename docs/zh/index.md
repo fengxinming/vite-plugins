@@ -5,7 +5,7 @@ layout: home
 hero:
   name: vite-plugins
   text: 一个包含多个自定义插件的集合，用于增强 Vite 构建工具的功能。
-  tagline: 快来试试吧！
+  tagline: 快来尝试一下吧！
   actions:
     - theme: brand
       text: 引言

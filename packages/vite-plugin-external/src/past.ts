@@ -71,16 +71,19 @@ export default function past(opts: Options): Plugin {
         return;
       }
 
-      const resolvedId = await resolver.resolve(id, importer, isEntry);
+      const info = await resolver.resolve(id, importer, isEntry);
 
-      if (resolvedId === true) {
-        return { id, external: true };
-      }
-
-      if (!resolvedId) {
+      if (!info) {
         logger.trace(`'${id}' is not resolved`);
         return;
       }
+
+      if (info === true) {
+        logger.trace(`'${id}' is marked as external`);
+        return { id, external: true };
+      }
+
+      const { resolvedId } = info;
 
       if (resolvedOptions.command === 'build') {
         return resolvedId;

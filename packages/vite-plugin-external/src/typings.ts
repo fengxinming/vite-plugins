@@ -12,9 +12,10 @@ export type ModuleNameFn = ((id: string) => string);
 
 export type ModuleNameMap = Record<string, string> | ModuleNameFn;
 
-export interface ExternalInfo {
-  name?: string | boolean;
-  resolvedId?: string;
+export interface ExternalIIFE {
+  name: string;
+  external: string;
+  resolvedId: string;
   cdn?: string;
 }
 

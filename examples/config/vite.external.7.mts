@@ -16,9 +16,6 @@ export default defineConfig({
       }
     }) as Plugin
   ],
-  server: {
-    open: true
-  },
   build: {
     minify: false,
     outDir: 'dist/external/7',

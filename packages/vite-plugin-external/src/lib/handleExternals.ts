@@ -4,7 +4,7 @@ import { types } from 'node:util';
 import { isFunction, isObject } from 'is-what-type';
 import type { ExternalOption, NullValue, RollupOptions } from 'rollup';
 import type { UserConfig } from 'vite';
-import { getValue } from 'vp-runtime-helper';
+import { escapeRegex, getValue } from 'vp-runtime-helper';
 
 import { logger } from '../common/logger';
 import { ExternalFn, ResolvedOptions } from '../typings';
@@ -31,7 +31,7 @@ export function collectExternals(
   // handle nodejs built-in modules
   if (nodeBuiltins) {
     builtinModuleArray = builtinModules.map((builtinModule) => {
-      return new RegExp(`^(?:node:)?${builtinModule}(?:/.+)*$`);
+      return new RegExp(`^(?:node:)?${escapeRegex(builtinModule)}(?:/.+)*$`);
     });
 
     logger.debug('Externalize nodejs built-in modules:', builtinModuleArray);
@@ -40,7 +40,7 @@ export function collectExternals(
   // externalize given dependencies
   if (externalizeDeps) {
     deps = externalizeDeps.map((dep) => {
-      return types.isRegExp(dep) ? dep : new RegExp(`^${dep}(?:/.+)*$`);
+      return types.isRegExp(dep) ? dep : new RegExp(`^${escapeRegex(dep)}(?:/.+)*$`);
     });
 
     logger.debug('Externalize given dependencies:', deps);
@@ -104,25 +104,22 @@ export function setExternals(
 
   if (externalFn) {
     rollupOptions.external = function (
-      source: string,
+      id: string,
       importer: string | undefined,
       isResolved: boolean
     ): boolean | NullValue {
-      let val = externalFn(source, importer, isResolved);
-      logger.trace(
-        `Got the global name "${val}". source: "${source}", importer: "${importer}", isResolved: ${isResolved}`
-      );
+      let val = externalFn(id, importer, isResolved);
 
       if (!val) {
         if (isFunction(newExternals)) {
-          val = newExternals(source, importer, isResolved);
+          val = newExternals(id, importer, isResolved);
         }
         else if (externalArray.length > 0) {
           val = externalArray.some((n) => {
-            const isMatched = types.isRegExp(n) ? n.test(source) : n === source;
+            const isMatched = types.isRegExp(n) ? n.test(id) : n === id;
 
             if (isMatched) {
-              logger.trace(`The module "${source}" will be externalized due to the match "${n}".`);
+              logger.trace(`The module "${id}" will be externalized due to the match "${n}".`);
             }
 
             return isMatched;
@@ -130,12 +127,18 @@ export function setExternals(
         }
       }
       else if (typeof val === 'string') {
-        globalObject[source] = val;
+        globalObject[id] = val;
+      }
+      else {
+        logger.trace(`The module "${id}" will be externalized.`);
       }
 
-      if (val) {
-        logger.trace(`The module "${source}" will be externalized.`);
-      }
+      logger.trace('External function:', {
+        name: val,
+        id,
+        importer,
+        isResolved
+      });
 
       return !!val;
     };

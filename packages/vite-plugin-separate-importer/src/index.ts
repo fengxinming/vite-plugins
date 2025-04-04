@@ -117,7 +117,7 @@ function processLibs(
   export default defineConfig({
     plugins: [
       createExternal({
-        externalizeDeps: ['antd']
+        externalizeDeps: ['react', 'antd']
       }),
       ts({
         compilerOptions: {
@@ -128,13 +128,13 @@ function processLibs(
         libs: [
           {
             name: 'antd',
-            importerSource(importer, libName) {
+            importFrom(importer, libName) {
               return {
                 es: `${libName}/es/${decamelize(importer)}`,
                 cjs: `${libName}/lib/${decamelize(importer)}`
               };
             },
-            insertImport(importer, libName) {
+            insertFrom(importer, libName) {
               return {
                 es: `${libName}/es/${decamelize(importer)}/style`,
                 cjs: `${libName}/lib/${decamelize(importer)}/style`

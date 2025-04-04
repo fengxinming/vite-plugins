@@ -1,5 +1,5 @@
 import vue from '@vitejs/plugin-vue';
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -10,17 +10,14 @@ export default defineConfig({
       externals: {
         vue: 'Vue'
       }
-    }),
-    vue()
+    }) as Plugin,
+    vue() as Plugin
   ],
-  server: {
-    open: true
-  },
   build: {
     minify: false,
-    outDir: 'dist/external/10',
+    outDir: 'dist/external/20',
     rollupOptions: {
-      input: 'index3.html',
+      input: 'index4.html',
       output: {
         format: 'iife'
       }

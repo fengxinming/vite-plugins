@@ -1,3 +1,4 @@
+import externalGlobals from 'rollup-plugin-external-globals';
 import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
@@ -5,6 +6,7 @@ import vitePluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     vitePluginExternal({
+      externalGlobals,
       logLevel: 'TRACE',
       externals: {
         react: 'React',
@@ -12,9 +14,6 @@ export default defineConfig({
       }
     }) as Plugin
   ],
-  server: {
-    open: true
-  },
   build: {
     minify: false,
     outDir: 'dist/external/8',

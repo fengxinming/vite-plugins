@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { outputFile } from 'fs-extra';
 import { flattenId } from 'vp-runtime-helper';
 
-import { ExternalFn } from '../typings';
+import { ExternalFn, ExternalIIFE } from '../typings';
 import { logger } from './logger';
 
 function makeStashFilePath(cacheDir: string, libName: string): string {
@@ -30,11 +30,10 @@ export async function stash(libName: string, globalName: string, cacheDir: strin
 
 export function eachExternal(
   obj: Record<string, string> | Array<[string, string]>,
-  cacheDir: string,
-  cb: (libName: string, globalName: string) => Promise<string>
-): Promise<string[]> {
+  cb: (libName: string, globalName: string) => Promise<ExternalIIFE>
+): Promise<ExternalIIFE[]> {
   if (Array.isArray(obj)) {
-    const promises: Array<Promise<string>> = [];
+    const promises: Array<Promise<ExternalIIFE>> = [];
 
     for (const [libName, globalName] of obj) {
       promises.push(cb(libName, globalName));
@@ -43,37 +42,42 @@ export function eachExternal(
     return Promise.all(promises);
   }
 
-  return eachExternal(Object.entries(obj), cacheDir, cb);
+  return eachExternal(Object.entries(obj), cb);
 }
 
 export class Resolver {
   stashed = false;
-  readonly stashMap = new Map<string, string>();
+  readonly stashMap = new Map<string, ExternalIIFE>();
   private resolveHook?: ExternalFn;
   constructor(
     private readonly cacheDir: string
   ) {
   }
 
-  async stash(libName: string, globalName: string): Promise<string> {
+  async stash(libName: string, globalName: string): Promise<ExternalIIFE> {
     const { stashMap } = this;
-    let stashPath = stashMap.get(libName);
-    if (stashPath) {
+    let info = stashMap.get(libName);
+    if (info) {
       logger.trace(`"${libName}" has already been stashed, skipping.`);
+      return info;
     }
-    else {
-      stashPath = await stash(libName, globalName, this.cacheDir);
-      this.stashMap.set(libName, stashPath);
-    }
-    return stashPath;
+
+    info = {
+      name: globalName,
+      external: libName,
+      resolvedId: await stash(libName, globalName, this.cacheDir)
+    };
+
+    this.stashMap.set(libName, info);
+
+    return info;
   }
 
   async stashObject(
     obj: Record<string, string> | Array<[string, string]>
-  ): Promise<string[]> {
+  ): Promise<ExternalIIFE[]> {
     return eachExternal(
       obj,
-      this.cacheDir,
       (libName, globalName) => this.stash(libName, globalName));
   }
 
@@ -81,7 +85,7 @@ export class Resolver {
     source: string,
     importer: string | undefined,
     isResolved: boolean
-  ): Promise<string | boolean | undefined> {
+  ): Promise<ExternalIIFE | true | undefined> {
     if (this.stashed) {
       return this.stashMap.get(source);
     }
@@ -90,11 +94,13 @@ export class Resolver {
     if (resolveHook) {
       const globalName = resolveHook(source, importer, isResolved);
 
-      if (globalName && typeof globalName === 'string') {
-        return this.stash(source, globalName);
+      if (globalName === true) {
+        return true;
       }
 
-      return !!globalName;
+      if (typeof globalName === 'string') {
+        return this.stash(source, globalName);
+      }
     }
   }
 

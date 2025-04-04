@@ -10,12 +10,14 @@ export async function setAliases(
   config: UserConfig,
 ): Promise<void> {
   const { externals } = opts;
-  if (isFunction(externals)) {
-    throw new TypeError('`options.externals` function is not supported.');
-  }
 
   if (!externals) {
     logger.debug('`options.externals` is not specified.');
+    return;
+  }
+
+  if (isFunction(externals)) {
+    logger.warn('`options.externals` as function is not supported.');
     return;
   }
 
@@ -43,12 +45,17 @@ export async function setAliases(
     config.resolve!.alias = alias;
   }
 
-  await eachExternal(globalObject, cacheDir, async (libName, globalName) => {
+  await eachExternal(globalObject, async (libName, globalName) => {
     const libPath = await stash(libName, globalName, cacheDir);
     (alias as Alias[]).push({
       find: new RegExp(`^${libName}$`),
       replacement: libPath
     });
-    return libPath;
+
+    return {
+      name: globalName,
+      external: libName,
+      resolvedId: libPath
+    };
   });
 }
