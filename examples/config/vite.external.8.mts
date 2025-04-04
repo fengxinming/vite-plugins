@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -10,7 +10,7 @@ export default defineConfig({
         react: 'React',
         'react-dom/client': 'ReactDOM'
       }
-    }) as Plugin
+    })
   ],
   server: {
     open: true
@@ -19,10 +19,7 @@ export default defineConfig({
     minify: false,
     outDir: 'dist/external/8',
     rollupOptions: {
-      input: 'index2.html',
-      output: {
-        format: 'iife'
-      }
+      input: 'index3.html'
     }
   }
 });

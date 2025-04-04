@@ -20,7 +20,7 @@ export default defineConfig({
     minify: false,
     outDir: 'dist/external/10',
     rollupOptions: {
-      input: 'index3.html',
+      input: 'index4.html',
       output: {
         format: 'iife'
       }

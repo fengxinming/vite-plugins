@@ -1,38 +1,33 @@
 # vite-plugins
 
-> `vite-plugins` is a collection of multiple custom plugins designed to enhance the functionality of the Vite build tool.
+> `vite-plugins` is a collection of custom plugins designed to enhance the functionality of the Vite build tool.
 
 ## Plugin List
 
-### [vite-plugin-combine](/zh/plugins/vite-plugin-combine/quick-start)
+### [vite-plugin-combine](/plugins/vite-plugin-combine/quick-start)
 
-**Functionality**: Combines multiple module files into a single target file. It supports four modes: named exports, default exports, automatic exports, and no exports, and can auto-generate corresponding import statements based on configuration.
+**Functionality**: Combines multiple module files into a single target file. It supports four modes: named exports, default exports, auto exports, and no exports, and automatically generates corresponding import statements based on configuration.
 
-### [vite-plugin-cp](/zh/plugins/vite-plugin-cp/quick-start)
+### [vite-plugin-cp](/plugins/vite-plugin-cp/quick-start)
 
-**Functionality**: A powerful Vite plugin for copying files/directories with advanced transformation and renaming capabilities.
+**Functionality**: A Vite plugin for copying files/directories, supporting flexible content transformations, directory structure preservation or flattening, and custom file renaming.
 
-### [vite-plugin-external](/zh/plugins/vite-plugin-external/quick-start)
+### [vite-plugin-external](/plugins/vite-plugin-external/quick-start)
 
-**Functionality**: Excludes specified module dependencies from runtime code and built bundles.
+**Functionality**: Excludes specified module dependencies from runtime code and bundled outputs.
 
-<!-- ### [vite-plugin-hook-use](packages/vite-plugin-hook-use)
+### [vite-plugin-hook-use](/plugins/vite-plugin-hook-use/quick-start)
 
-**Functionality**: Displays the order and frequency of Vite's hook function invocations.
+**Functionality**: Displays the sequence and frequency of Vite's hook function invocations.
 
-### [vite-plugin-include-css](packages/vite-plugin-include-css)
+### [vite-plugin-include-css](/plugins/vite-plugin-include-css/quick-start)
 
-**Functionality**: Bundles CSS code into a single JS file.
+**Functionality**: Bundles all CSS into a single JavaScript file when `cssCodeSplit: false` is enabled.
 
-### [vite-plugin-mock-data](packages/vite-plugin-mock-data)
+### [vite-plugin-mock-data](/plugins/vite-plugin-mock-data/quick-start)
 
-**Functionality**: Configures local mock data.
+**Functionality**: Provides a simple way to mock data.
 
-### [vite-plugin-reverse-proxy](packages/vite-plugin-reverse-proxy)
+### [vite-plugin-separate-importer](/plugins/vite-plugin-separate-importer/quick-start)
 
-**Functionality**: Works with the Chrome extension [XSwitch](https://chrome.google.com/webstore/detail/xswitch/idkjhjggpffolpidfkikidcokdkdaogg) to proxy online resources for local debugging.
-
-### [vite-plugin-separate-importer](packages/vite-plugin-separate-importer)
-
-**Functionality**: Transforms batch imports from a source module into individual imports from sub-files. -->
-```
+**Functionality**: Converts batch imports from a source module into individual file imports from subdirectories of the source module.

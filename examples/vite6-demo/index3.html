@@ -3,12 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + Vue</title>
+    <title>Vite + React</title>
     <link rel="stylesheet" href="./index.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.3.1",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1"
+        }
+      }
+    </script>
+    <link rel="modulepreload" href="https://esm.sh/react@18.3.1" />
+    <link rel="modulepreload" href="https://esm.sh/react-dom@18.3.1" />
   </head>
   <body>
     <div id="root"></div>
-    <script src="//unpkg.com/vue@3.5.13/dist/vue.runtime.global.js"></script>
-    <script type="module" src="./v/main.ts"></script>
+    <script type="module" src="./r/index2.jsx"></script>
   </body>
 </html>
