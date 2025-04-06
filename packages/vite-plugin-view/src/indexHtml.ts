@@ -4,21 +4,28 @@ import type { Connect, PreviewServer, ViteDevServer } from 'vite';
 import { send } from 'vite';
 import { cleanUrl, FS_PREFIX, fsPathFromId, isDevServer } from 'vp-runtime-helper';
 
+import Engine from './Engine';
 import { logger } from './logger';
-import View from './view';
 export function indexHtmlMiddleware(
-  view: View,
+  engine: Engine,
   root: string,
   server: ViteDevServer | PreviewServer,
 ): Connect.NextHandleFunction {
   const isDev = isDevServer(server);
   if (isDev) {
     server.watcher.on('change', (file) => {
-      if (file.endsWith(view.extension) && server.ws) {
-        server.ws.send({
+      if (file.endsWith(engine.extension)) {
+        const broadcaster = server.hot || server.ws;
+
+        if (!broadcaster) {
+          return;
+        }
+
+        broadcaster.send({
           type: 'full-reload',
           path: '*'
         });
+
         logger.info(`"${file}" has changed, reloading page...`);
       }
     });
@@ -41,13 +48,13 @@ export function indexHtmlMiddleware(
         filePath = join(root, decodeURIComponent(url));
       }
 
-      const templatePath = view.getTemplate(filePath);
+      const templatePath = engine.getTemplate(filePath);
 
       if (templatePath) {
         logger.debug(`${(req.method || 'GET').toUpperCase()} "${url}" -> "${templatePath}" (template)`);
 
         try {
-          let html = await view.render(templatePath, server.config);
+          let html = await engine.render(templatePath);
           if (html) {
             if (isDev) {
               server.watcher.add(templatePath);

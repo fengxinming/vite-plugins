@@ -5,15 +5,14 @@ import prettyHTML from 'pretty';
 import { ResolvedConfig } from 'vite';
 
 import { logger } from './logger';
-import { Options } from './typings';
+import { EngineOptions, Options } from './typings';
 
-export default class View {
+export default class Engine {
   engine: string;
   extension: string;
-  engineOptions?: Record<string, any>;
+  engineOptions?: EngineOptions;
   pretty?: boolean;
-  // cwd: string;
-  // cacheDir: string;
+  config!: ResolvedConfig;
   constructor(
     { engine, engineOptions, extension, pretty }: Options
   ) {
@@ -33,7 +32,7 @@ export default class View {
     }
   }
 
-  async render(filePath: string, config: ResolvedConfig): Promise<string> {
+  async render(filePath: string): Promise<string> {
     const { engine } = this;
     const engineRender = engineSource[engine];
 
@@ -43,10 +42,13 @@ export default class View {
 
     logger.debug(`Current engine is "${engine}".`);
 
+    let { engineOptions } = this;
+    if (typeof engineOptions === 'function') {
+      engineOptions = engineOptions(this.config);
+    }
     let html = await engineRender(filePath, Object.assign(
-      { cache: false, filename: filePath },
-      this.engineOptions,
-      config
+      { cache: false, filename: filePath, ResolvedConfig: this.config },
+      engineOptions
     ));
 
     // pug模板准备移除这个"pretty"属性，官方不建议使用它，

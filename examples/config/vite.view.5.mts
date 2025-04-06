@@ -1,14 +1,11 @@
 import react from '@vitejs/plugin-react';
 import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
-import vitePluginView from 'vite-plugin-view';
+import { view } from 'vite-plugin-view';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react({
-      jsxRuntime: 'classic'
-    }) as unknown as Plugin,
     vitePluginExternal({
       logLevel: 'TRACE',
       externals: {
@@ -16,10 +13,16 @@ export default defineConfig({
         'react-dom/client': 'ReactDOM'
       }
     }) as Plugin,
-    vitePluginView({
+    react({
+      jsxRuntime: 'classic'
+    }) as unknown as Plugin,
+    view({
       entry: 'index.ejs',
       engine: 'ejs',
-      logLevel: 'TRACE'
+      logLevel: 'TRACE',
+      engineOptions: {
+        title: 'Vite + React'
+      }
     }) as Plugin
   ],
   server: {

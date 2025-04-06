@@ -1,7 +1,7 @@
 import vue from '@vitejs/plugin-vue';
 import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
-import vitePluginView from 'vite-plugin-view';
+import { view } from 'vite-plugin-view';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,10 +13,12 @@ export default defineConfig({
       }
     }) as Plugin,
     vue() as Plugin,
-    vitePluginView({
-      entry: 'index.pug',
+    view({
       engine: 'pug',
-      logLevel: 'TRACE'
+      logLevel: 'TRACE',
+      engineOptions: {
+        title: 'Vite + Vue'
+      }
     }) as Plugin
   ],
   server: {

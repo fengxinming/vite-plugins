@@ -1,5 +1,6 @@
-import { LogLevel } from 'base-log-factory';
-import type { InputOption } from 'rollup';
+import type { LogLevel } from 'base-log-factory';
+import type { InputOption, NullValue } from 'rollup';
+import type { ResolvedConfig } from 'vite';
 
 export type SupportedTemplateEngines =
   | 'arc-templates'
@@ -46,6 +47,10 @@ export type SupportedTemplateEngines =
   | 'walrus'
   | 'whiskers';
 
+export type EngineOptions =
+  | Record<string, any>
+  | ((config: ResolvedConfig) => Record<string, any> | NullValue);
+
 export interface Options {
   /**
    * 指定模版引擎名称
@@ -58,11 +63,17 @@ export interface Options {
    * 指定模版引擎入口文件
    *
    * Specify the template engine entry files
+   *
+   * @default `index${extension}`
    */
   entry?: InputOption;
 
   /**
    * 用于处理指定扩展名的文件，默认跟引擎名称保持一致
+   *
+   * Specify the extension of the file to be processed, defaults to the same as the engine name
+   *
+   * @default `.${engine}`
    */
   extension?: string;
 
@@ -71,7 +82,7 @@ export interface Options {
    *
    * Template engine configuration
    */
-  engineOptions?: Record<string, any>;
+  engineOptions?: EngineOptions;
 
   /**
    * 强制美化代码，一些模版引擎可能不建议在渲染时美化(如：pug)或不支持美化，使用此参数在完成渲染后再美化HTML代码
@@ -86,4 +97,12 @@ export interface Options {
    * Output log level
    */
   logLevel?: LogLevel;
+
+
+  /**
+   * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
+   *
+   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
+   */
+  enforce?: 'pre' | 'post';
 }

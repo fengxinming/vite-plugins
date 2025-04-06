@@ -11,7 +11,7 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
     "@vitejs/plugin-react": "^2.2.0",
-    "ejs": "^3.1.10",
+    "nunjucks": "^3.2.4",
     "vite": "^3.1.0",
     "vite-plugin-external": "workspace:^",
     "vite-plugin-view": "workspace:^"

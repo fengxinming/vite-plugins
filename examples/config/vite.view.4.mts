@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import Handlebars from 'handlebars';
 import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
-import vitePluginView from 'vite-plugin-view';
+import { view } from 'vite-plugin-view';
 
 Handlebars.registerHelper('stringify', (obj) => {
   return JSON.stringify(obj, null, 2);
@@ -21,7 +21,7 @@ export default defineConfig({
         'react-dom/client': 'ReactDOM'
       }
     }) as Plugin,
-    vitePluginView({
+    view({
       entry: 'index.handlebars',
       engine: 'handlebars',
       logLevel: 'TRACE'
