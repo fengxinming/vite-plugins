@@ -11,7 +11,7 @@
 
 ---
 
-# TypeScript 类型定义
+## TypeScript 类型定义
 
 ```typescript
 import type { LogLevel } from 'base-log-factory';

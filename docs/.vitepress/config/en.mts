@@ -101,6 +101,17 @@ export const en = defineConfig({
           ]
         }]
       },
+      '/plugins/vite-plugin-view/': {
+        base: '/plugins/vite-plugin-view/',
+        items: [{
+          text: 'vite-plugin-view',
+          items: [
+            { text: 'Quick start', link: 'quick-start' },
+            { text: 'Options', link: 'options' },
+            { text: 'Usage Examples', link: 'usage' }
+          ]
+        }]
+      },
     },
 
     socialLinks: [
@@ -146,6 +157,11 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
       text: 'vite-plugin-separate-importer', 
       activeMatch: '/plugins/vite-plugin-separate-importer/',
       link: '/plugins/vite-plugin-separate-importer/quick-start' 
+    },
+    { 
+      text: 'vite-plugin-view', 
+      activeMatch: '/plugins/vite-plugin-view/',
+      link: '/plugins/vite-plugin-view/quick-start'
     }
   ];
 }

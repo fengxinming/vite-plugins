@@ -70,7 +70,7 @@ export default defineConfig({
 });
 ```
 
-**Build esm format bundle**
+<!-- **Build esm format bundle**
 
 ```ts
 import { defineConfig } from 'vite';
@@ -107,7 +107,7 @@ export default defineConfig({
 </script>
 <link rel="modulepreload" href="https://esm.sh/react@18.3.1" />
 <link rel="modulepreload" href="https://esm.sh/react-dom@18.3.1" />
-```
+``` -->
 
 ## Documentation
 

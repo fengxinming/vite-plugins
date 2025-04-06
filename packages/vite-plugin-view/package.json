@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-view",
   "version": "6.0.0",
-  "description": "Separate importers from your code.",
+  "description": "Dynamically render pages using custom template engines instead of the static `index.html` entry file.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
   "main": "./dist/index.js",
@@ -20,7 +20,7 @@
     "build:lib": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build:lib",
-    "release": "npm publish"
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",
@@ -29,20 +29,27 @@
   },
   "keywords": [
     "vite-plugin",
-    "vite-plugin-view"
+    "vite-plugin-view",
+    "engine",
+    "template",
+    "view"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://github.com/fengxinming/vite-plugins#readme",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-view/quick-start",
   "dependencies": {
+    "@types/consolidate": "^0.14.4",
     "consolidate": "^1.0.4",
-    "pretty": "^2.0.0"
+    "fs-extra": "^11.1.1",
+    "pretty": "^2.0.0",
+    "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
-    "pug": "^3.0.3"
+    "@rollup/plugin-typescript": "^12.1.2",
+    "vite": "^6.1.0"
   },
   "files": [
     "dist"

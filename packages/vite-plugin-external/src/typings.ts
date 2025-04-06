@@ -23,6 +23,20 @@ export type { LogLevel } from 'base-log-factory';
 
 export interface BasicOptions {
   /**
+   * External dependencies
+   *
+   * 配置外部依赖
+   */
+  externals?: Record<string, string> | ExternalFn;
+
+  /**
+   * Log level
+   *
+   * 输出日志等级
+   */
+  logLevel?: LogLevel;
+
+  /**
    * The current working directory in which to join `cacheDir`.
    *
    * 设置当前目录，用于拼接 `cacheDir` 的相对路径。
@@ -39,20 +53,6 @@ export interface BasicOptions {
    * @default `${cwd}/node_modules/.vite_external`
    */
   cacheDir?: string;
-
-  /**
-   * External dependencies
-   *
-   * 配置外部依赖
-   */
-  externals?: Record<string, string> | ExternalFn;
-
-  /**
-   * Log level
-   *
-   * 输出日志等级
-   */
-  logLevel?: LogLevel;
 }
 
 export interface Options extends BasicOptions {

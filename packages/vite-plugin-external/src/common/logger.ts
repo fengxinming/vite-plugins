@@ -1,11 +1,5 @@
-import { Level, Logger } from 'base-log-factory';
-import { ColorfulAppender } from 'blf-colorful-appender';
+import { logFactory } from 'vp-runtime-helper';
 
 import { PLUGIN_NAME } from './constants';
 
-export const logger = new Logger(PLUGIN_NAME, {
-  level: Level.WARN,
-  appenders: [
-    new ColorfulAppender()
-  ]
-});
+export const logger = logFactory.getLogger(PLUGIN_NAME);

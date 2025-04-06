@@ -24,7 +24,7 @@
 
 ---
 
-# TypeScript 类型定义
+## TypeScript 类型定义
 
 ```typescript
 import { Config as SirvConfig, HTTPVersion, RouteOptions, Handler } from 'find-my-way';

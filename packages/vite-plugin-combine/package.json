@@ -36,7 +36,7 @@
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://fengxinming.github.io/vite-plugins/vite-plugin-combine/quick-start",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-combine/quick-start",
   "dependencies": {
     "base-log-factory": "^2.0.9",
     "blf-colorful-appender": "^1.0.2",

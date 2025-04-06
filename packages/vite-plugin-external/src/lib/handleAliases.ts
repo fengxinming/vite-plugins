@@ -12,12 +12,12 @@ export async function setAliases(
   const { externals } = opts;
 
   if (!externals) {
-    logger.debug('`options.externals` is not specified.');
+    logger.debug('"options.externals" is not specified.');
     return;
   }
 
   if (isFunction(externals)) {
-    logger.warn('`options.externals` as function is not supported.');
+    logger.warn('"options.externals" as function is not supported.');
     return;
   }
 
@@ -25,7 +25,7 @@ export async function setAliases(
 
   // empty globals
   if (Object.keys(globalObject).length === 0) {
-    logger.warn('`options.externals` is empty.');
+    logger.warn('"options.externals" is empty.');
     return;
   }
 

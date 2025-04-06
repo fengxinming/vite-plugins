@@ -101,6 +101,17 @@ export const zh = defineConfig({
           ]
         }]
       },
+      '/zh/plugins/vite-plugin-view/': {
+        base: '/zh/plugins/vite-plugin-view/',
+        items: [{
+          text: 'vite-plugin-view',
+          items: [
+            { text: '快速入门', link: 'quick-start' },
+            { text: '配置项', link: 'options' },
+            { text: '使用示例', link: 'usage' }
+          ]
+        }]
+      },
     },
 
     socialLinks: [
@@ -146,6 +157,11 @@ function navPlugins(): DefaultTheme.NavItemWithLink[] {
       text: 'vite-plugin-separate-importer', 
       activeMatch: '/zh/plugins/vite-plugin-separate-importer/',
       link: '/zh/plugins/vite-plugin-separate-importer/quick-start' 
+    },
+    { 
+      text: 'vite-plugin-view', 
+      activeMatch: '/zh/plugins/vite-plugin-view/',
+      link: '/zh/plugins/vite-plugin-view/quick-start' 
     }
   ];
 }
