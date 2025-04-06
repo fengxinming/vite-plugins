@@ -29,14 +29,17 @@
   },
   "keywords": [
     "vite-plugin",
-    "vite-plugin-view"
+    "vite-plugin-view",
+    "engine",
+    "template",
+    "view"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://fengxinming.github.io/vite-plugins/vite-plugin-view/quick-start",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-view/quick-start",
   "dependencies": {
     "@types/consolidate": "^0.14.4",
     "consolidate": "^1.0.4",

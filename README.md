@@ -4,33 +4,21 @@
 
 ## Plugin List
 
-### [vite-plugin-combine](packages/vite-plugin-combine)
+* [vite-plugin-combine](/packages/vite-plugin-combine/) - Combines multiple module files into a single target file. It supports four modes: named exports, default exports, auto exports, and no exports, and automatically generates corresponding import statements based on configuration.
 
-**Functionality**: Combines multiple module files into a single target file. It supports four modes: named exports, default exports, auto exports, and no exports, and automatically generates corresponding import statements based on configuration.
+* [vite-plugin-cp](/packages/vite-plugin-cp/) - A Vite plugin for copying files/directories, supporting flexible content transformations, directory structure preservation or flattening, and custom file renaming.
 
-### [vite-plugin-cp](packages/vite-plugin-cp)
+* [vite-plugin-external](/packages/vite-plugin-external/) - Excludes specified module dependencies from runtime code and bundled outputs.
 
-**Functionality**: A Vite plugin for copying files/directories, supporting flexible content transformations, directory structure preservation or flattening, and custom file renaming.
+* [vite-plugin-hook-use](/packages/vite-plugin-hook-use/) - Displays the sequence and frequency of Vite's hook function invocations.
 
-### [vite-plugin-external](packages/vite-plugin-external)
+* [vite-plugin-include-css](/packages/vite-plugin-include-css/) - Bundles all CSS into a single JavaScript file when `cssCodeSplit: false` is enabled.
 
-**Functionality**: Excludes specified module dependencies from runtime code and bundled outputs.
+* [vite-plugin-mock-data](/packages/vite-plugin-mock-data/) - Provides a simple way to mock data.
 
-### [vite-plugin-hook-use](packages/vite-plugin-hook-use)
+* [vite-plugin-separate-importer](/packages/vite-plugin-separate-importer/) - Converts batch imports from a source module into individual file imports from subdirectories of the source module.
 
-**Functionality**: Displays the sequence and frequency of Vite's hook function invocations.
-
-### [vite-plugin-include-css](packages/vite-plugin-include-css)
-
-**Functionality**: Bundles all CSS into a single JavaScript file when `cssCodeSplit: false` is enabled.
-
-### [vite-plugin-mock-data](packages/vite-plugin-mock-data)
-
-**Functionality**: Provides a simple way to mock data.
-
-### [vite-plugin-separate-importer](packages/vite-plugin-separate-importer)
-
-**Functionality**: Converts batch imports from a source module into individual file imports from subdirectories of the source module.
+* [vite-plugin-view](/packages/vite-plugin-view/) - Dynamically render pages using custom template engines instead of the static `index.html` entry file.
 
 ## Documentation
 
