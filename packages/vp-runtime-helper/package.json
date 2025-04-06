@@ -1,6 +1,6 @@
 {
   "name": "vp-runtime-helper",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Vite plugin runtime helper.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -38,6 +38,8 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
+    "base-log-factory": "^2.1.1",
+    "blf-debug-appender": "^1.0.2",
     "figlet": "^1.8.0",
     "picocolors": "^1.0.0"
   },

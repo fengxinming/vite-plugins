@@ -1,5 +1,7 @@
 import { logFactory } from 'vp-runtime-helper';
 
-import { PLUGIN_NAME } from './constants';
+import { name } from '../package.json';
+
+export const PLUGIN_NAME = name;
 
 export const logger = logFactory.getLogger(PLUGIN_NAME);

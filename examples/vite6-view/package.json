@@ -1,0 +1,20 @@
+{
+  "name": "vite6-view",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build:view.6": "vite build --config=../config/vite.view.6.mts",
+    "dev:view.6": "vite dev --config=../config/vite.view.6.mts",
+    "preview:view.6": "vite preview --config=../config/vite.view.6.mts"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "pug": "^3.0.3",
+    "vite": "^6.0.0",
+    "vite-plugin-external": "workspace:^",
+    "vite-plugin-view": "workspace:^"
+  },
+  "repository": "https://github.com/fengxinming/vite-plugins.git"
+}

@@ -39,7 +39,7 @@ function esbuildPluginResolve(
           };
         }
 
-        logger.trace('Pre-bundling:', {
+        logger.trace('Pre-bundling external:', {
           name: info.name,
           id: path,
           importer,
@@ -75,7 +75,7 @@ export async function setOptimizeDeps(
   if (isFunction<ExternalFn>(externals)) {
     externalFn = externals;
 
-    logger.debug('`options.externals` is a function.');
+    logger.debug('"options.externals" is a function.');
 
     resolver.addHook(externalFn);
   }
@@ -83,25 +83,28 @@ export async function setOptimizeDeps(
     externalEntries = Object.entries(externals);
 
     if (!externalEntries.length) {
-      logger.warn('`options.externals` is empty.');
+      logger.warn('"options.externals" is empty.');
       return null;
     }
 
-    logger.debug('`options.externals` is an object.');
+    logger.debug('"options.externals" is an object.');
 
     await resolver.stashObject(externals);
     resolver.stashed = true;
   }
 
-  const newExternals = collectExternals({}, opts);
-  if (newExternals.length > 0) {
+  const externalArray = collectExternals({}, opts);
+  if (externalArray.length > 0) {
     resolver.addHook((id: string) => {
-      return checkLibName(newExternals, id);
+      return checkLibName(externalArray, id);
     });
   }
 
   const plugins = getValue(config, 'optimizeDeps.esbuildOptions.plugins', []);
-  config.optimizeDeps!.force = true;
+  if (externalFn) {
+    config.optimizeDeps!.force = true;
+    logger.debug('Force to optimize all dependencies due to "options.externals" is a function.');
+  }
   plugins.push(esbuildPluginResolve(resolver));
 
   return resolver;

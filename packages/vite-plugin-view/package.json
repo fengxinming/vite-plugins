@@ -38,11 +38,15 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
+    "@types/consolidate": "^0.14.4",
     "consolidate": "^1.0.4",
-    "pretty": "^2.0.0"
+    "fs-extra": "^11.1.1",
+    "pretty": "^2.0.0",
+    "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
-    "pug": "^3.0.3"
+    "@rollup/plugin-typescript": "^12.1.2",
+    "vite": "^6.1.0"
   },
   "files": [
     "dist"

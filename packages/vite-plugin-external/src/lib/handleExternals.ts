@@ -88,14 +88,11 @@ export function setExternals(
 
   if (isFunction<ExternalFn>(externals)) {
     externalFn = externals;
-    logger.debug('`options.externals` is a function.');
+    logger.debug('"options.externals" is a function.');
   }
   else if (isObject<Record<string, string>>(externals)) {
     globalObject = externals;
-    logger.debug('`options.externals` is an object.');
-  }
-  else {
-    logger.debug('`options.externals` is not a function or object.');
+    logger.debug('"options.externals" is an object.');
   }
 
   const externalArray: any[] = collectExternals(globalObject, opts);

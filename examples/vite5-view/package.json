@@ -1,0 +1,20 @@
+{
+  "name": "vite5-view",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build:view.5": "vite build --config=../config/vite.view.5.mts",
+    "dev:view.5": "vite dev --config=../config/vite.view.5.mts",
+    "preview:view.5": "vite preview --config=../config/vite.view.5.mts"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "ejs": "^3.1.10",
+    "vite": "^5.0.0",
+    "vite-plugin-external": "workspace:^",
+    "vite-plugin-view": "workspace:^"
+  },
+  "repository": "https://github.com/fengxinming/vite-plugins.git"
+}

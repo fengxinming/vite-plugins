@@ -1,0 +1,20 @@
+{
+  "name": "vite4-view",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build:view.4": "vite build --config=../config/vite.view.4.mts",
+    "dev:view.4": "vite dev --config=../config/vite.view.4.mts",
+    "preview:view.4": "vite preview --config=../config/vite.view.4.mts"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "handlebars": "^4.7.8",
+    "vite": "^4.5.0",
+    "vite-plugin-external": "workspace:^",
+    "vite-plugin-view": "workspace:^"
+  },
+  "repository": "https://github.com/fengxinming/vite-plugins.git"
+}

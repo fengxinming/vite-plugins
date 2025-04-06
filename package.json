@@ -21,6 +21,7 @@
     "release:include-css": "npm run build:include-css && pnpm run --filter=vite-plugin-include-css release",
     "release:runtime-helper": "pnpm run --filter=vp-runtime-helper release",
     "release:separate-importer": "npm run build:separate-importer && pnpm run --filter=vite-plugin-separate-importer release",
+    "release:view": "npm run build:view && pnpm run --filter=vite-plugin-view release",
     "build:combine": "npm run build:external && pnpm run --filter=vite-plugin-combine build:lib",
     "build:cp": "npm run build:external && pnpm run --filter=vite-plugin-cp build:lib",
     "build:external": "npm run build:runtime-helper && pnpm run --filter=vite-plugin-external build:lib",
@@ -29,13 +30,15 @@
     "build:mock-data": "npm run build:external && pnpm run --filter=vite-plugin-mock-data build:lib",
     "build:runtime-helper": "pnpm run --filter=vp-runtime-helper build:lib",
     "build:separate-importer": "npm run build:external && pnpm run --filter=vite-plugin-separate-importer build:lib",
+    "build:view": "npm run build:external && pnpm run --filter=vite-plugin-view build:lib",
     "test:combine": "npm run build:combine && pnpm run -r --parallel /build:combine\\.*/",
     "test:cp": "npm run build:cp && pnpm run -r --parallel /build:cp\\.*/",
     "test:external": "npm run build:external && pnpm run -r --parallel /build:external\\.*/",
     "test:hook-use": "npm run build:hook-use && pnpm run -r --parallel /build:hook-use\\.*/",
     "test:include-css": "npm run build:include-css && pnpm run -r --parallel /build:include-css\\.*/",
     "test:mock-data": "npm run build:mock-data && pnpm run -r --parallel /build:mock-data\\.*/",
-    "test:separate-importer": "npm run build:separate-importer && pnpm run -r --parallel /build:separate-importer\\.*/"
+    "test:separate-importer": "npm run build:separate-importer && pnpm run -r --parallel /build:separate-importer\\.*/",
+    "test:view": "npm run build:view && pnpm run -r --parallel /build:view\\.*/"
   },
   "repository": {
     "type": "git",

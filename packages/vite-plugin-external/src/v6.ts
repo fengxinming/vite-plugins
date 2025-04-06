@@ -63,7 +63,7 @@ export default function v6(opts: Options): Plugin {
       const { mode } = this.environment;
 
       if (mode === 'build') {
-        logger.trace(`'${id}' is resolved to ${resolvedId}`);
+        logger.trace(`'${id}' is resolved to ${resolvedId}.`);
         return resolvedId;
       }
 

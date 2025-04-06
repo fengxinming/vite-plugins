@@ -1,0 +1,20 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(content='width=device-width, initial-scale=1.0' name='viewport')
+    title Vite + Vue
+    link(href='./index.css' rel='stylesheet')
+  body
+    - 
+      var define = JSON.stringify(define, null, 2);
+      var env = JSON.stringify(env, null, 2);
+    p
+      | define: 
+      = define
+    p
+      | env: 
+      = env
+    #root
+    script(src='//unpkg.com/vue@3.5.13/dist/vue.runtime.global.js')
+    script(src='./v/main.ts' type='module')
