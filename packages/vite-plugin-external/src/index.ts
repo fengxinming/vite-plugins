@@ -6,7 +6,6 @@ import { banner, colorful, getRuntimeVersion } from 'vp-runtime-helper';
 import pkg from '../package.json';
 import { PLUGIN_NAME } from './common/constants';
 import { logger } from './common/logger';
-// import past from './past';
 import rollback from './rollback';
 import { Options } from './typings';
 import v6 from './v6';
@@ -48,8 +47,9 @@ export default function pluginExternal(opts: Options): Plugin {
     enforce: opts.enforce
   };
 
-  if (parseInt(version.split('.')[0], 10) >= 6 && !opts.rollback) {
-    logger.name = `${PLUGIN_NAME}-v6`;
+  const major = parseInt(version.split('.')[0], 10);
+  if (!opts.rollback && major >= 6) {
+    logger.name = `${PLUGIN_NAME}-v${major}`;
     Object.assign(plugin, v6(opts));
   }
   else {

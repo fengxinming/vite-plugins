@@ -16,8 +16,12 @@ export async function cleanupCache(
   externals: Record<string, string> | ExternalFn | undefined,
   config: ResolvedConfig
 ) {
-  if (!externals || isFunction(externals)) {
+  if (!externals) {
     return;
+  }
+
+  if (isFunction(externals)) {
+    logger.warn('\'options.externals\' as function is not supported.');
   }
 
   const ssr = config.command === 'build' && !!config.build.ssr;

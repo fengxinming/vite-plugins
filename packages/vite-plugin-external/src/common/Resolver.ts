@@ -18,7 +18,7 @@ function makeCjsExternalCode(globalName: string): string {
 export async function stash(libName: string, globalName: string, cacheDir: string): Promise<string> {
   const libPath = makeStashFilePath(cacheDir, libName);
 
-  logger.trace(`Stashing a file: "${libPath}" for "${globalName}".`);
+  logger.trace(`Stashing a file: '${libPath}' for '${globalName}'.`);
 
   await outputFile(
     libPath,
@@ -28,25 +28,7 @@ export async function stash(libName: string, globalName: string, cacheDir: strin
   return libPath;
 }
 
-export function eachExternal(
-  obj: Record<string, string> | Array<[string, string]>,
-  cb: (libName: string, globalName: string) => Promise<ExternalIIFE>
-): Promise<ExternalIIFE[]> {
-  if (Array.isArray(obj)) {
-    const promises: Array<Promise<ExternalIIFE>> = [];
-
-    for (const [libName, globalName] of obj) {
-      promises.push(cb(libName, globalName));
-    }
-
-    return Promise.all(promises);
-  }
-
-  return eachExternal(Object.entries(obj), cb);
-}
-
 export class Resolver {
-  stashed = false;
   readonly stashMap = new Map<string, ExternalIIFE>();
   private resolveHook?: ExternalFn;
   constructor(
@@ -58,7 +40,7 @@ export class Resolver {
     const { stashMap } = this;
     let info = stashMap.get(libName);
     if (info) {
-      logger.trace(`"${libName}" has already been stashed, skipping.`);
+      logger.trace(`'${libName}' has already been stashed, skipping.`);
       return info;
     }
 
@@ -73,21 +55,14 @@ export class Resolver {
     return info;
   }
 
-  async stashObject(
-    obj: Record<string, string> | Array<[string, string]>
-  ): Promise<ExternalIIFE[]> {
-    return eachExternal(
-      obj,
-      (libName, globalName) => this.stash(libName, globalName));
-  }
-
   async resolve(
     source: string,
     importer: string | undefined,
     isResolved: boolean
   ): Promise<ExternalIIFE | true | undefined> {
-    if (this.stashed) {
-      return this.stashMap.get(source);
+    const info = this.stashMap.get(source);
+    if (info) {
+      return info;
     }
 
     const { resolveHook } = this;

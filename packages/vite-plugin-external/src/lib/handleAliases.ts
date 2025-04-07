@@ -3,7 +3,7 @@ import { Alias, UserConfig } from 'vite';
 import { getValue } from 'vp-runtime-helper';
 
 import { logger } from '../common/logger';
-import { eachExternal, stash } from '../common/Resolver';
+import { stash } from '../common/Resolver';
 import { ResolvedOptions } from '../typings';
 export async function setAliases(
   opts: ResolvedOptions,
@@ -12,20 +12,19 @@ export async function setAliases(
   const { externals } = opts;
 
   if (!externals) {
-    logger.debug('"options.externals" is not specified.');
+    logger.debug('\'options.externals\' is not specified.');
     return;
   }
 
   if (isFunction(externals)) {
-    logger.warn('"options.externals" as function is not supported.');
-    return;
+    throw new TypeError('\'options.externals\' as function is not supported.');
   }
 
   const globalObject = externals;
 
   // empty globals
   if (Object.keys(globalObject).length === 0) {
-    logger.warn('"options.externals" is empty.');
+    logger.warn('\'options.externals\' is empty.');
     return;
   }
 
@@ -45,17 +44,21 @@ export async function setAliases(
     config.resolve!.alias = alias;
   }
 
-  await eachExternal(globalObject, async (libName, globalName) => {
-    const libPath = await stash(libName, globalName, cacheDir);
-    (alias as Alias[]).push({
-      find: new RegExp(`^${libName}$`),
-      replacement: libPath
-    });
+  await Promise.all(
+    Object.entries(globalObject).map(([libName, globalName]) => {
+      return (async () => {
+        const libPath = await stash(libName, globalName, cacheDir);
+        (alias as Alias[]).push({
+          find: new RegExp(`^${libName}$`),
+          replacement: libPath
+        });
 
-    return {
-      name: globalName,
-      external: libName,
-      resolvedId: libPath
-    };
-  });
+        return {
+          name: globalName,
+          external: libName,
+          resolvedId: libPath
+        };
+      })();
+    })
+  );
 }

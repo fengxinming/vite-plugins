@@ -10,17 +10,60 @@ import { logger } from '../common/logger';
 import { ExternalFn, ResolvedOptions } from '../typings';
 import { setOutputGlobals } from './handleGlobals';
 
-export function checkLibName(externalArray: Array<RegExp | string>, source: string) {
-  return externalArray.some((external) =>
-    (types.isRegExp(external) ? external.test(source) : external === source)
-  );
+// function ensureArray<T>(
+//   items: Array<T | false | NullValue> | T | false | NullValue
+// ): T[] {
+//   if (Array.isArray(items)) {
+//     return items.filter(Boolean) as T[];
+//   }
+//   if (items) {
+//     return [items];
+//   }
+//   return [];
+// }
+
+// function getIdMatcher<T extends any[]>(
+//   option:
+// 		| undefined
+// 		| boolean
+// 		| string
+// 		| RegExp
+// 		| Array<string | RegExp>
+// 		| ((id: string, ...parameters: T) => boolean | null | void)
+// ): ((id: string, ...parameters: T) => boolean) {
+//   if (option === true) {
+//     return () => true;
+//   }
+//   if (isFunction(option)) {
+//     return (id, ...args) => (!id.startsWith('\0') && option(id, ...args)) || false;
+//   }
+//   if (option) {
+//     const ids = new Set<string>();
+//     const matchers: RegExp[] = [];
+//     for (const value of ensureArray(option)) {
+//       if (value instanceof RegExp) {
+//         matchers.push(value);
+//       }
+//       else {
+//         ids.add(value);
+//       }
+//     }
+//     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+//     return (id: string, ..._args) => ids.has(id) || matchers.some((matcher) => matcher.test(id));
+//   }
+//   return () => false;
+// }
+
+function checkExternal(external: RegExp | string, source: string): boolean {
+  return types.isRegExp(external) ? external.test(source) : external === source;
 }
 
-export function collectExternals(
-  globalObject: Record<string, any>,
-  opts: ResolvedOptions
-): any[] {
-  const externalArray: any[] = Object.keys(globalObject);
+function checkExternalArray(external: Array<RegExp | string>, source: string): boolean {
+  return external.some((external) => checkExternal(external, source));
+}
+
+function collectDeps(opts: ResolvedOptions): Array<RegExp | string> {
+  const externalArray: Array<RegExp | string> = [];
 
   // externalize dependencies for build command
   const { nodeBuiltins, externalizeDeps } = opts;
@@ -49,10 +92,14 @@ export function collectExternals(
   return externalArray.concat(builtinModuleArray, deps);
 }
 
-function mergeExternals(
-  externalArray: any[],
+function mergeOriginal(
+  externalArray: Array<RegExp | string>,
   originalExternal: ExternalOption | undefined
-): Array<RegExp|string> | ((source: string, importer: string | undefined, isResolved: boolean) => boolean | NullValue) {
+): Array<RegExp | string> | ((
+  source: string,
+  importer: string | undefined,
+  isResolved: boolean
+) => boolean | NullValue) {
   // string or RegExp or array
   if (
     typeof originalExternal === 'string'
@@ -68,8 +115,8 @@ function mergeExternals(
       source: string,
       importer: string | undefined,
       isResolved: boolean
-    ): boolean | null | undefined | void {
-      return checkLibName(externalArray, source)
+    ): boolean | NullValue {
+      return checkExternalArray(externalArray, source)
         ? true
         : originalExternal(source, importer, isResolved);
     };
@@ -81,69 +128,66 @@ function mergeExternals(
 export function setExternals(
   opts: ResolvedOptions,
   config: UserConfig
-): void {
-  let globalObject: Record<string, string> = {};
-  let externalFn: ExternalFn | undefined;
+): ExternalFn {
+  let externalFn: ExternalFn;
+  const globalObject: Record<string, string> = {};
   const { externals } = opts;
 
   if (isFunction<ExternalFn>(externals)) {
+    logger.debug('\'options.externals\' is a function.');
+
     externalFn = externals;
-    logger.debug('"options.externals" is a function.');
   }
   else if (isObject<Record<string, string>>(externals)) {
-    globalObject = externals;
-    logger.debug('"options.externals" is an object.');
+    logger.debug('\'options.externals\' is an object.');
+
+    externalFn = (id: string) => externals[id];
+  }
+  else {
+    externalFn = () => false;
   }
 
-  const externalArray: any[] = collectExternals(globalObject, opts);
   const rollupOptions: RollupOptions = getValue(config, 'build.rollupOptions', {});
-  const newExternals = mergeExternals(externalArray, rollupOptions.external);
 
-  if (externalFn) {
-    rollupOptions.external = function (
-      id: string,
-      importer: string | undefined,
-      isResolved: boolean
-    ): boolean | NullValue {
-      let val = externalFn(id, importer, isResolved);
+  // Collect external dependencies
+  const deps = collectDeps(opts);
+  // Merge external dependencies
+  const newExternals = mergeOriginal(deps, rollupOptions.external);
 
-      if (!val) {
-        if (isFunction(newExternals)) {
-          val = newExternals(id, importer, isResolved);
-        }
-        else if (externalArray.length > 0) {
-          val = externalArray.some((n) => {
-            const isMatched = types.isRegExp(n) ? n.test(id) : n === id;
+  const resolveHook: ExternalFn = function (
+    id: string,
+    importer: string | undefined,
+    isResolved: boolean
+  ): string | boolean | NullValue {
+    let val = externalFn(id, importer, isResolved);
 
-            if (isMatched) {
-              logger.trace(`The module "${id}" will be externalized due to the match "${n}".`);
-            }
-
-            return isMatched;
-          });
-        }
+    if (!val) {
+      if (isFunction<(
+        source: string,
+        importer: string | undefined,
+        isResolved: boolean
+      ) => boolean | NullValue>(newExternals)) {
+        val = newExternals(id, importer, isResolved);
       }
-      else if (typeof val === 'string') {
-        globalObject[id] = val;
+      else if (newExternals.length > 0) {
+        val = checkExternalArray(newExternals, id);
       }
-      else {
-        logger.trace(`The module "${id}" will be externalized.`);
-      }
+    }
+    else if (typeof val === 'string') {
+      globalObject[id] = val;
+    }
 
-      logger.trace('External function:', {
-        name: val,
-        id,
-        importer,
-        isResolved
-      });
+    if (val) {
+      logger.debug(`External: '${id}'.`);
+    }
 
-      return !!val;
-    };
-  }
-  else if (externalArray.length > 0) {
-    rollupOptions.external = newExternals;
-  }
+    return val;
+  };
+
+  rollupOptions.external = resolveHook as unknown as ExternalOption;
 
   // Set `rollupOptions.output.globals`
   setOutputGlobals(rollupOptions, globalObject, opts);
+
+  return resolveHook;
 }

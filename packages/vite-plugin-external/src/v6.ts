@@ -12,27 +12,27 @@ import { Options, ResolvedOptions } from './typings';
 
 export default function v6(opts: Options): Plugin {
   let resolvedOptions: ResolvedOptions;
-  let resolver: Resolver | null = null;
+  let resolver: Resolver;
+
+  const autoInterop = opts.interop === 'auto';
 
   return {
     name: PLUGIN_NAME,
-    enforce: opts.interop === 'auto' ? 'pre' : opts.enforce,
+    enforce: autoInterop ? 'pre' : opts.enforce,
     async config(config: UserConfig, env: ConfigEnv) {
       resolvedOptions = buildOptions(opts, env);
+      resolver = new Resolver(resolvedOptions.cacheDir);
 
-      if (isRuntime(resolvedOptions)) {
-        resolver = await setOptimizeDeps(resolvedOptions, config);
-      }
-      else {
-        setExternals(resolvedOptions, config);
+      await setOptimizeDeps(resolver, resolvedOptions, config);
+      resolver.addHook(setExternals(resolvedOptions, config));
+
+      if (autoInterop) {
+        config.build!.rollupOptions!.external = undefined;
       }
     },
 
     configResolved(config) {
-      if (isRuntime(resolvedOptions)) {
-        resolver && logger.debug('Stashed resolved path:', Array.from(resolver.stashMap.keys()));
-      }
-      else {
+      if (!isRuntime(resolvedOptions)) {
         logger.debug('Resolved rollupOptions:', config.build.rollupOptions);
       }
 
@@ -41,13 +41,7 @@ export default function v6(opts: Options): Plugin {
     },
 
     async resolveId(id, importer, { isEntry }) {
-      if (resolver === null) {
-        logger.trace(`External resolver is not ready for "${id}".`);
-        return;
-      }
-
       const info = await resolver.resolve(id, importer, isEntry);
-
 
       if (!info) {
         logger.trace(`'${id}' is not external.`);
@@ -55,7 +49,7 @@ export default function v6(opts: Options): Plugin {
       }
 
       if (info === true) {
-        logger.trace(`'${id}' is marked as external.`);
+        logger.debug(`'${id}' is marked as external.`);
         return { id, external: true };
       }
 
@@ -63,7 +57,7 @@ export default function v6(opts: Options): Plugin {
       const { mode } = this.environment;
 
       if (mode === 'build') {
-        logger.trace(`'${id}' is resolved to ${resolvedId}.`);
+        logger.debug(`'${id}' is resolved to '${resolvedId}'.`);
         return resolvedId;
       }
 
@@ -71,7 +65,7 @@ export default function v6(opts: Options): Plugin {
       const depInfo = depsOptimizer.registerMissingImport(id, resolvedId);
       const depId = depsOptimizer.getOptimizedDepId(depInfo);
 
-      logger.trace(`'${id}' is resolved to ${depId}`);
+      logger.debug(`'${id}' is resolved to ${depId}`);
       return depId;
     }
   };

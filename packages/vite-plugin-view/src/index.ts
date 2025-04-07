@@ -12,7 +12,16 @@ import { Options } from './typings';
  *
  * @example
  * ```js
+import { defineConfig } from 'vite';
+import { view } from 'vite-plugin-view';
 
+export default defineConfig({
+  plugins: [
+    view({
+      engine: 'pug',  // 必填：指定模板引擎
+    })
+  ]
+});
  * ```
  *
  * @returns a vite plugin
