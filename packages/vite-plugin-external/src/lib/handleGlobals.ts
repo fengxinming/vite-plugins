@@ -7,13 +7,12 @@ import { Options } from '../typings';
 
 function rollupOutputGlobals(
   output: OutputOptions,
-  globalObject: Record<string, any>
+  globalObject: Record<string, string>
 ): void {
   const { globals: originalGlobals } = output;
 
   output.globals = (libName: string) => {
     let globalName = globalObject[libName];
-    logger.trace(`Output global: "${libName}" -> "${globalName}".`);
 
     if (!globalName) {
       if (isFunction<(name: string) => string>(originalGlobals)) {
@@ -24,22 +23,25 @@ function rollupOutputGlobals(
       }
     }
 
-    logger.trace(`The global name "${globalName}" will be resolved.`);
+    logger.debug(`Output global: '${libName}' -> '${globalName}'.`);
     return globalName;
   };
 }
 
 export function setOutputGlobals(
   rollupOptions: RollupOptions,
-  globalObject: Record<string, string>,
+  globalObject: Record<string, any>,
   opts: Options
 ): void {
   const { externalGlobals } = opts;
   if (isFunction(externalGlobals)) {
+    const fn = rollupOptions.external as any;
     rollupOptions.plugins = [
       externalGlobals((id: string) => {
-        const globalName =  globalObject[id];
-        logger.trace(`External globals: "${id}" -> "${globalName}".`);
+        const globalName =  fn(id, undefined, true);
+        if (typeof globalName === 'string') {
+          logger.debug(`External global: '${id}' -> '${globalName}'.`);
+        }
         return globalName;
       }),
       ...((rollupOptions.plugins as InputPluginOption[]) || [])

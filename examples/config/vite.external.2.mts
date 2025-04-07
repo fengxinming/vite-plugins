@@ -1,9 +1,13 @@
+import react from '@vitejs/plugin-react';
 import { defineConfig, Plugin } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    react({
+      jsxRuntime: 'classic'
+    }) as unknown as Plugin,
     vitePluginExternal({
       interop: 'auto',
       logLevel: 'TRACE',
@@ -12,7 +16,7 @@ export default defineConfig({
         'react-dom': '$linkdesign.ReactDOM',
         'prop-types': '$linkdesign.PropTypes'
       }
-    }) as Plugin
+    })
   ],
   server: {
     open: true

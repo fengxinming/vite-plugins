@@ -54,3 +54,4 @@ export * from './getHash';
 export * from './getRuntimeVersion';
 export * from './getValue';
 export * from './logger';
+export type { LogLevel } from 'base-log-factory';

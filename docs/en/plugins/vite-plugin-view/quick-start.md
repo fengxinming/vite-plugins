@@ -64,7 +64,7 @@ The plugin supports **59 template engines** (sorted alphabetically):
 ### 1. Install Plugin & Template Engine
 ::: code-group
 ```bash [npm]
-npm install vite-plugin-view <template-engine-name>
+npm add vite-plugin-view <template-engine-name>
 ```
 ```bash [pnpm]
 pnpm add vite-plugin-view <template-engine-name>

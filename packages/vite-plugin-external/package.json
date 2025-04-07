@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-external",
-  "version": "6.1.0-rc.5",
+  "version": "6.1.0",
   "description": "Excludes specified module dependencies from runtime code and built bundles.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -16,7 +16,7 @@
     "build:lib": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build:lib",
-    "release": "pnpm publish --no-git-checks --tag=rc"
+    "release": "pnpm publish --no-git-checks"
   },
   "engines": {
     "node": ">=14.18.0",
@@ -38,8 +38,6 @@
   },
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/quick-start",
   "dependencies": {
-    "base-log-factory": "^2.0.9",
-    "blf-colorful-appender": "^1.0.2",
     "fs-extra": "^11.1.1",
     "is-what-type": "^1.0.1",
     "vp-runtime-helper": "workspace:^"

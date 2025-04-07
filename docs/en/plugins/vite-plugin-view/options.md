@@ -92,9 +92,9 @@ type EngineOptions =
 ## TypeScript Type Definitions
 
 ```typescript
-import type { LogLevel } from 'base-log-factory';
 import type { InputOption, NullValue } from 'rollup';
 import type { ResolvedConfig } from 'vite';
+import type { LogLevel } from 'vp-runtime-helper';
 
 export type SupportedTemplateEngines =
   | 'arc-templates'
