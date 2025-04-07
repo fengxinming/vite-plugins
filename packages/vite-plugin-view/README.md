@@ -1,142 +1,108 @@
-# vite-plugin-separate-importer
+# vite-plugin-view
 
-[![npm package](https://nodei.co/npm/vite-plugin-separate-importer.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-separate-importer)
+[![npm package](https://nodei.co/npm/vite-plugin-view.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-view)
 
-> Transform bulk imports from a single source module into individual file imports from the source module (Vite >= 3.1)
+[![NPM version](https://img.shields.io/npm/v/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
+[![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
 
-[![NPM version](https://img.shields.io/npm/v/vite-plugin-separate-importer.svg?style=flat)](https://npmjs.org/package/vite-plugin-separate-importer)
-[![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-separate-importer.svg?style=flat)](https://npmjs.org/package/vite-plugin-separate-importer)
+> Dynamically render pages using custom template engines instead of the static `index.html` entry file.
 
-## [中文](README_zh-CN.md) | English
+---
+
+## Documentation
+
+For detailed usage instructions and API references, please visit the official documentation:
+
+👉 [View Full Documentation](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-view/quick-start)
+
+---
+
+## Supported Template Engines
+The plugin supports **59 template engines** (sorted alphabetically):
+
+* arc-templates
+* atpl
+* bracket
+* dot
+* dust
+* eco
+* ejs
+* ect
+* haml
+* haml-coffee
+* hamlet
+* handlebars
+* hogan
+* htmling
+* jade
+* jazz
+* jqtpl
+* just
+* liquid
+* liquor
+* lodash
+* marko
+* mote
+* mustache
+* nunjucks
+* plates
+* pug
+* qejs
+* ractive
+* razor
+* react
+* slm
+* squirrelly
+* swig
+* teacup
+* templayed
+* toffee
+* twig
+* underscore
+* vash
+* velocityjs
+* walrus
+* whiskers
+
+---
 
 ## Installation
 
-Install the plugin using npm:
-
 ```bash
-npm install vite-plugin-separate-importer --save-dev
+npm i -D vite-plugin-view <template-engine-name>
 ```
 
-Or using yarn:
+> Replace `<template-engine-name>` with any engine from the list above (e.g., `pug` or `ejs`).
 
-```bash
-yarn add vite-plugin-separate-importer --dev
-```
+---
 
-## Usage
+## Configuration Example
+Configure the plugin in `vite.config.js`:
 
-Import and configure the plugin in your Vite configuration file (e.g., `vite.config.ts` or `vite.config.js`):
-
-### Configuration Example
-
-```typescript
+```javascript
 import { defineConfig } from 'vite';
-import ts from '@rollup/plugin-typescript';
-import pluginExternal from 'vite-plugin-external';
-import pluginSeparateImporter from 'vite-plugin-separate-importer';
-import decamelize from 'decamelize';
+import { view } from 'vite-plugin-view';
 
 export default defineConfig({
   plugins: [
-    pluginExternal({
-      externalizeDeps: ['antd']
-    }),
-    ts(),
-    pluginSeparateImporter({
-      libs: [
-        {
-          name: 'antd',
-          importerSource(importer, libName) {
-            return {
-              es: `${libName}/es/${decamelize(importer)}`,
-              cjs: `${libName}/lib/${decamelize(importer)}`
-            };
-          },
-          insertImport(importer, libName) {
-            return {
-              es: `${libName}/es/${decamelize(importer)}/style`,
-              cjs: `${libName}/lib/${decamelize(importer)}/style`
-            };
-          }
-        }
-      ]
+    view({
+      engine: 'pug',  // 必填：指定模板引擎
     })
-  ],
-  build: {
-    minify: false,
-    lib: {
-      formats: ['es', 'cjs'],
-      entry: ['src/*.tsx'],
-      fileName(format, entryName) {
-        return entryName + (format === 'es' ? '.mjs' : '.js');
-      }
-    }
-  }
+  ]
 });
 ```
 
-### Wrapped Component Example
-```tsx
-import { Button } from 'antd';
+---
 
-export function WrappedButton() {
-  return <Button>Wrapped Button</Button>;
-}
-```
+## Contributing
 
-### Compiled Output
-```js
-import Button from "antd/es/button";
-import "antd/es/button/style";
-function WrappedButton() {
-  return /* @__PURE__ */ React.createElement(Button, null, "Wrapped Button");
-}
-export {
-  WrappedButton
-};
-```
+We welcome contributions from the community! If you find a bug or want to suggest an improvement, feel free to open an issue or submit a pull request.
 
-## Options
+### How to Contribute
+1. Fork the repository.
+2. Create a new branch for your changes.
+3. Submit a pull request with a clear description of your changes.
 
-```ts
-export interface ImportSource {
-  es: string;
-  cjs?: string;
-}
+## License
 
-export interface LibConfig {
-  /**
-   * Library name(s) to be transformed, can be a single string or an array of strings
-   */
-  name: string | string[];
-  /**
-   * New path for the module
-   */
-  importerSource?: (importer: string, libName: string) => string | ImportSource;
-  /**
-   * Insert import source
-   */
-  insertImport?: (importer: string, libName: string) => string | Array<string | ImportSource>;
-}
-
-export interface Options {
-  /**
-   * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-   *
-   * Enforce execution order, `pre` before, `post` after, reference https://vitejs.dev/guide/api-plugin.html#plugin-ordering.
-   */
-  enforce?: 'pre' | 'post';
-
-  /**
-   * Interface for plugin configuration to define the library names and processing logic
-   */
-  libs?: LibConfig[];
-}
-```
-
-## Examples
-
-- [Vite 3 Example](../../examples/vite3-demo)
-- [Vite 4 Example](../../examples/vite4-demo)
-- [Vite 5 Example](../../examples/vite5-demo)
-- [Vite 6 Example](../../examples/vite6-demo)
+This project is licensed under the [MIT License](../../LICENSE).
