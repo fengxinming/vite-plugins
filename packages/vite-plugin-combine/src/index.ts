@@ -1,15 +1,15 @@
-import { unlink, writeFileSync } from 'node:fs';
+import { existsSync, unlink, writeFileSync } from 'node:fs';
 import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
 import { camelCase } from 'es-toolkit';
 import replaceAll from 'fast-replaceall';
-import { move } from 'fs-extra';
+import { move, remove } from 'fs-extra';
 import type { InputOption } from 'rollup';
 import { glob, globSync } from 'tinyglobby';
 import type { Plugin } from 'vite';
 import { normalizePath } from 'vite';
-import { banner, getRuntimeVersion } from 'vp-runtime-helper';
+import { banner } from 'vp-runtime-helper';
 
 import { logger, PLUGIN_NAME } from './logger';
 import { NameExport, Options } from './typings';
@@ -215,9 +215,9 @@ export default function pluginCombine(opts: Options) {
 
   // 生成临时文件
   const tempInput = join(targetDir, tempName + targetExt);
+
   writeFileSync(tempInput, makeESModuleCode(files, absTarget, opts));
   logger.trace(`Temporary file "${tempInput}" has been created.`);
-
 
   const clearTemp = (err?: any) => {
     offExit(clearTemp);
@@ -235,8 +235,9 @@ export default function pluginCombine(opts: Options) {
   };
   onExit(clearTemp);
 
-  const version =  getRuntimeVersion();
+  // const version =  getRuntimeVersion();
 
+  let isWatching;
   let outDir;
 
   return {
@@ -296,49 +297,78 @@ export default function pluginCombine(opts: Options) {
       };
     },
 
-    configResolved({ root, build }) {
+    configResolved({ root, build, command }) {
       outDir = join(root, build.outDir);
       logger.debug('OutDir:', outDir);
+
+      const isBuild = command === 'build';
+      isWatching = isBuild && !!build.watch;
+    },
+
+    buildStart() {
+      this.meta.watchMode = isWatching;
+    },
+
+    buildEnd() {
+      this.meta.watchMode = isWatching;
     },
 
     generateBundle(_, bundle) {
-      for (const [id, chunkInfo] of Object.entries(bundle)) {
-        if (id.startsWith(tempName)) {
-          const fileName = chunkInfo.fileName.replace(tempName, targetName);
+      for (const [, chunkInfo] of Object.entries(bundle)) {
+        const { fileName } = chunkInfo;
 
-          if (chunkInfo.type === 'asset') {
-            this.emitFile({
-              type: 'asset',
-              fileName,
-              source: chunkInfo.source
-            });
-            delete bundle[id];
-          }
-          else if (chunkInfo.type === 'chunk') {
-            if (version.startsWith('3')) {
-              this.emitFile({
-                type: 'asset',
-                fileName,
-                source: chunkInfo.code
-              });
-            }
-            else {
-              this.emitFile({
-                type: 'prebuilt-chunk',
-                fileName,
-                code: chunkInfo.code,
-                exports: chunkInfo.exports,
-                map: chunkInfo.map || undefined
-              });
-            }
-            delete bundle[id];
-          }
+        // if (chunkInfo.type === 'chunk'
+        //     && chunkInfo.facadeModuleId === tempInput
+        //     && fileName.startsWith(chunkInfo.name)
+        // ) {
+        //   const outFile = fileName.replace(tempName, targetName);
+        //   if (version.startsWith('3')) {
+        //     this.emitFile({
+        //       type: 'asset',
+        //       fileName: outFile,
+        //       originalFileName: join(outDir, outFile),
+        //       source: chunkInfo.code
+        //     });
+        //   }
+        //   else {
+        //     this.emitFile({
+        //       type: 'prebuilt-chunk',
+        //       fileName: outFile,
+        //       code: chunkInfo.code,
+        //       exports: chunkInfo.exports,
+        //       map: chunkInfo.map || undefined
+        //     });
+        //   }
+        //   delete bundle[id];
+        // }
+        // else if (chunkInfo.type === 'asset' && fileName.startsWith(tempName)) {
+        //   const outFile = fileName.replace(tempName, targetName);
+        //   this.emitFile({
+        //     type: 'asset',
+        //     fileName: outFile,
+        //     originalFileName: join(outDir, outFile),
+        //     source: chunkInfo.source
+        //   });
+        //   delete bundle[id];
+        // }
+        if ((chunkInfo.type === 'chunk'
+            && chunkInfo.facadeModuleId === tempInput
+            && fileName.startsWith(chunkInfo.name))
+            || (chunkInfo.type === 'asset'
+                && fileName.startsWith(tempName))
+        ) {
+          chunkInfo.fileName = fileName.replace(tempName, targetName);
         }
       }
     },
     async closeBundle() {
       const files = await glob(`${outDir}/**/${tempName}.d.ts`, { cwd, absolute: true });
-      await Promise.allSettled(files.map((file) => move(file, file.replace(tempName, targetName))));
+      await Promise.allSettled(files.map((file) => {
+        const outFile = file.replace(tempName, targetName);
+        return existsSync(outFile)
+          ? remove(file)
+          : move(file, outFile);
+      }));
       setTimeout(clearTemp, opts.clearInDelay || 1000);
     }
   } as Plugin;
