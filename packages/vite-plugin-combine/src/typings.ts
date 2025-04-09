@@ -15,20 +15,11 @@ export interface Options {
   /**
    * Path to the target file after combination.
    *
-   * 合并后的目标文件路径。
+   * 合并后的目标文件虚拟路径。
    *
    * @default 'index.js'
    */
   target: string;
-
-  /**
-   * Whether to overwrite the existing target file。
-   *
-   * 是否覆盖已存在的目标文件。
-   *
-   * @default false
-   */
-  overwrite?: boolean;
 
   /**
    * Custom function or boolean value for controlling the generation of export names.

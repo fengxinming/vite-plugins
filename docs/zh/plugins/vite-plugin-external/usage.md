@@ -367,13 +367,13 @@ vite.config.mjs
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 import { globSync } from 'tinyglobby';
-import pkg from './package.json';
+import { dependencies } from './package.json';
 
 export default defineConfig({
   plugins: [
     pluginExternal({
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.dependencies)
+      externalizeDeps: Object.keys(dependencies)
     })
   ],
   build: {
