@@ -7,7 +7,7 @@ import type { UserConfig } from 'vite';
 import { escapeRegex, getValue } from 'vp-runtime-helper';
 
 import { logger } from '../common/logger';
-import { ExternalFn, ResolvedOptions } from '../typings';
+import type { ExternalFn, ResolvedOptions } from '../typings';
 import { setOutputGlobals } from './handleGlobals';
 
 // function ensureArray<T>(

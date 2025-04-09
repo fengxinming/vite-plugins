@@ -4,7 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/vite-plugin-cp.svg)](https://npmjs.org/package/vite-plugin-cp)
 [![npm downloads](https://img.shields.io/npm/dm/vite-plugin-cp.svg)](https://npmjs.org/package/vite-plugin-cp)
-[![MIT License](https://img.shields.io/npm/l/vite-plugin-cp.svg)](https://opensource.org/licenses/MIT)
+[![Node version](https://img.shields.io/node/v/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
 
 > A powerful Vite plugin for copying files/directories with advanced transformation and renaming capabilities.
 
@@ -83,4 +83,4 @@ We welcome contributions from the community! If you find a bug or want to sugges
 
 ## License
 
-This project is licensed under the [MIT License](../../LICENSE).
+This project is licensed under the [MIT License](LICENSE).

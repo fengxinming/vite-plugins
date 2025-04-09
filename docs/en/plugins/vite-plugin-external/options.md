@@ -76,7 +76,7 @@ Configure external dependencies for specific modes. [Example](/plugins/vite-plug
 
 ```typescript
 import type { NullValue, Plugin as RollupPlugin } from 'rollup';
-import { ConfigEnv } from 'vite';
+import type { ConfigEnv } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
 export type ExternalFn = (

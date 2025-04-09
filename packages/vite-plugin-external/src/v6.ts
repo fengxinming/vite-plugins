@@ -8,7 +8,7 @@ import { setExternals } from './lib/handleExternals';
 import { setOptimizeDeps } from './lib/handleOptimizeDeps';
 import { buildOptions, isRuntime } from './lib/handleOptions';
 import { cleanupCache } from './rollback';
-import { Options, ResolvedOptions } from './typings';
+import type { Options, ResolvedOptions } from './typings';
 
 export default function v6(opts: Options): Plugin {
   let resolvedOptions: ResolvedOptions;

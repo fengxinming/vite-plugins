@@ -2,10 +2,11 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-view.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-view)
 
+> 使用自定义模板引擎动态渲染页面，替代静态的 `index.html` 入口文件。
+
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
-
-> 使用自定义模板引擎动态渲染页面，替代静态的 `index.html` 入口文件。
+[![Node version](https://img.shields.io/node/v/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
 
 ---
 

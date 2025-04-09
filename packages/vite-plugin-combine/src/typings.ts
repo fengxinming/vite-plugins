@@ -1,5 +1,5 @@
-import type { LogLevel } from 'base-log-factory';
 import type { NullValue } from 'rollup';
+import type { LogLevel } from 'vp-runtime-helper';
 
 export type { LogLevel };
 
@@ -73,4 +73,12 @@ export interface Options {
    * 写入文件前处理代码字符串
    */
   beforeWrite?: (code: string) => string | NullValue;
+
+  /**
+   * Clear the cache file after the specified time.
+   *
+   * 在指定时间后清除缓存文件
+   *
+   */
+  clearInDelay?: number;
 }
