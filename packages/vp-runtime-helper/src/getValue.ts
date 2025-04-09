@@ -108,28 +108,21 @@ function getWithPath(object: any, path: readonly PropertyKey[], defaultValue: an
     return defaultValue;
   }
 
-  let lastPath: PropertyKey;
+  const lastIndex = path.length - 1;
   let lastObject: Record<PropertyKey, any> = object;
   let current: Record<string, any> | void | null = null;
-  const len = path.length - 1;
-  let index = 0;
+  let cursor = 0;
 
-  const next = (givenValue: any): void => {
-    lastPath = path[index];
-    current = lastObject[lastPath];
+  for (let prevPath: PropertyKey; cursor <= lastIndex; cursor++) {
+    prevPath = path[cursor];
+    current = lastObject[prevPath];
+
     if (current == null) {
-      current = givenValue;
-      lastObject[lastPath] = current;
+      current = cursor === lastIndex ? defaultValue : typeof prevPath === 'number' ? [] : {};
+      lastObject[prevPath] = current;
     }
-  };
 
-  for (; index < len; index++) {
-    next({});
     lastObject = current as never;
-  }
-
-  if (index === len) {
-    next(defaultValue);
   }
 
   return current;

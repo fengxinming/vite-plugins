@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { isFunction } from 'is-what-type';
-import { ConfigEnv, Plugin, ResolvedConfig, UserConfig } from 'vite';
+import type { ConfigEnv, Plugin, ResolvedConfig, UserConfig } from 'vite';
 import { getDepsCacheDir } from 'vp-runtime-helper';
 
 import { PLUGIN_NAME } from './common/constants';
@@ -10,7 +10,7 @@ import { logger } from './common/logger';
 import { setAliases } from './lib/handleAliases';
 import { setExternals } from './lib/handleExternals';
 import { buildOptions, isRuntime } from './lib/handleOptions';
-import { ExternalFn, Options, ResolvedOptions } from './typings';
+import type { ExternalFn, Options, ResolvedOptions } from './typings';
 
 export async function cleanupCache(
   externals: Record<string, string> | ExternalFn | undefined,

@@ -1,13 +1,13 @@
 import { EOL } from 'node:os';
 
-import { Plugin } from 'vite';
+import type { Plugin } from 'vite';
 import { banner, colorful, getRuntimeVersion } from 'vp-runtime-helper';
 
 import pkg from '../package.json';
 import { PLUGIN_NAME } from './common/constants';
 import { logger } from './common/logger';
 import rollback from './rollback';
-import { Options } from './typings';
+import type { Options } from './typings';
 import v6 from './v6';
 
 /**

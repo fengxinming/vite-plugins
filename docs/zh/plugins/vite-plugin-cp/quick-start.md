@@ -2,10 +2,12 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-cp.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-cp)
 
+> 一个用于复制文件/目录，并支持灵活转换文件内容、保留或扁平化目录结构、自定义文件重命名等的Vite插件。
+
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
+[![Node version](https://img.shields.io/node/v/vite-plugin-cp.svg?style=flat)](https://npmjs.org/package/vite-plugin-cp)
 
-> 一个用于复制文件/目录，并支持灵活转换文件内容、保留或扁平化目录结构、自定义文件重命名等的Vite插件。
 
 ## 安装
 

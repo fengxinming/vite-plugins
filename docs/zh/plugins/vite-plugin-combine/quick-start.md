@@ -2,10 +2,11 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-combine.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-combine)
 
+> 将多个模块文件合并成一个目标文件。它支持命名导出、默认导出、自动导出和无导出四种模式，并可以根据配置自动生成相应的导入语句。
+
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
-
-> 将多个模块文件合并成一个目标文件。它支持命名导出、默认导出、自动导出和无导出四种模式，并可以根据配置自动生成相应的导入语句。
+[![Node version](https://img.shields.io/node/v/vite-plugin-combine.svg?style=flat)](https://npmjs.org/package/vite-plugin-combine)
 
 ## 安装
 

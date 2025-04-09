@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync, unlink, writeFileSync } from 'node:fs';
+import { unlink, writeFileSync } from 'node:fs';
 import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
@@ -6,14 +6,15 @@ import { camelCase } from 'es-toolkit';
 import replaceAll from 'fast-replaceall';
 import { move } from 'fs-extra';
 import type { InputOption } from 'rollup';
-import { globSync } from 'tinyglobby';
+import { glob, globSync } from 'tinyglobby';
 import type { Plugin } from 'vite';
 import { normalizePath } from 'vite';
-import { banner } from 'vp-runtime-helper';
+import { banner, getRuntimeVersion } from 'vp-runtime-helper';
 
 import { logger, PLUGIN_NAME } from './logger';
 import { NameExport, Options } from './typings';
 export * from './typings';
+
 function onExit(listener: (...args: any[]) => any): void {
   process.on('exit', listener);
   process.on('SIGHUP', listener);
@@ -158,7 +159,22 @@ function normalizeTarget(cwd: string, target: string) {
   return absTarget;
 }
 
-export default function pluginCombine(opts: Options): Plugin {
+function getFiles(src: string | string[], cwd: string, prefix: string): string[] {
+  return globSync(src, { cwd, absolute: true }).filter((f) => {
+    if (f.includes(prefix)) {
+      unlink(f, (e) => {
+        if (e) {
+          return;
+        }
+        logger.trace(`"${f}" has been deleted.`);
+      });
+      return false;
+    }
+    return true;
+  });
+}
+
+export default function pluginCombine(opts: Options) {
   banner(PLUGIN_NAME);
 
   if (!opts) {
@@ -174,11 +190,11 @@ export default function pluginCombine(opts: Options): Plugin {
   const cwd = opts.cwd || process.cwd();
 
   const prefix = `${PLUGIN_NAME}-temp-`;
-  const files = globSync(src, { cwd, absolute: true, ignore: `**${prefix}**` });
+  const files = getFiles(src, cwd, prefix);
 
   if (!files.length) {
     logger.warn(`No files found in "${src}".`);
-    return null as unknown as Plugin;
+    return;
   }
 
   logger.debug(`Found ${files.length} files in "${src}":`, files);
@@ -189,12 +205,19 @@ export default function pluginCombine(opts: Options): Plugin {
   // target 绝对地址
   const absTarget = normalizeTarget(cwd, target);
 
+  // 临时文件名
   const tempName = `${prefix}${Math.random().toString(36).slice(2)}`;
-  const { ext: targetExt, dir: targetDir, name: targetName } = parse(absTarget);
-  const tempInput = join(targetDir, tempName + targetExt);
+  const {
+    ext: targetExt,
+    dir: targetDir,
+    name: targetName
+  } = parse(absTarget);
 
+  // 生成临时文件
+  const tempInput = join(targetDir, tempName + targetExt);
   writeFileSync(tempInput, makeESModuleCode(files, absTarget, opts));
   logger.trace(`Temporary file "${tempInput}" has been created.`);
+
 
   const clearTemp = (err?: any) => {
     offExit(clearTemp);
@@ -206,9 +229,13 @@ export default function pluginCombine(opts: Options): Plugin {
       logger.trace(`"${tempInput}" has been deleted.`);
     });
 
-    logger.debug('Exit event received:', err);
+    if (err !== void 0) {
+      logger.debug('Exit event received:', err);
+    }
   };
   onExit(clearTemp);
+
+  const version =  getRuntimeVersion();
 
   let outDir;
 
@@ -274,35 +301,45 @@ export default function pluginCombine(opts: Options): Plugin {
       logger.debug('OutDir:', outDir);
     },
 
-    async closeBundle() {
-      const { overwrite } = opts;
-      const list = readdirSync(outDir);
+    generateBundle(_, bundle) {
+      for (const [id, chunkInfo] of Object.entries(bundle)) {
+        if (id.startsWith(tempName)) {
+          const fileName = chunkInfo.fileName.replace(tempName, targetName);
 
-      const promises: Array<Promise<void>> = [];
-      for (const file of list) {
-        const state =  statSync(join(outDir, file));
-        if (state.isFile() && file.startsWith(`${tempName}.`)) {
-          const newPath = join(outDir, replaceAll(file, tempName, targetName));
-
-          if (existsSync(newPath) && !overwrite) {
-            logger.warn(`"${newPath}" already exists, please set overwrite to true.`);
+          if (chunkInfo.type === 'asset') {
+            this.emitFile({
+              type: 'asset',
+              fileName,
+              source: chunkInfo.source
+            });
+            delete bundle[id];
           }
-          else {
-            const oldPath = join(outDir, file);
-            promises.push(move(oldPath, newPath).then(
-              () => {
-                logger.info(`"${newPath}" has been created.`);
-                logger.trace(`"${oldPath}" exists?`, existsSync(oldPath));
-              },
-              (err) => {
-                logger.warn(`Could not create "${newPath}".`, err);
-              })
-            );
+          else if (chunkInfo.type === 'chunk') {
+            if (version.startsWith('3')) {
+              this.emitFile({
+                type: 'asset',
+                fileName,
+                source: chunkInfo.code
+              });
+            }
+            else {
+              this.emitFile({
+                type: 'prebuilt-chunk',
+                fileName,
+                code: chunkInfo.code,
+                exports: chunkInfo.exports,
+                map: chunkInfo.map || undefined
+              });
+            }
+            delete bundle[id];
           }
         }
       }
-
-      await Promise.all(promises).then(clearTemp);
+    },
+    async closeBundle() {
+      const files = await glob(`${outDir}/**/${tempName}.d.ts`, { cwd, absolute: true });
+      await Promise.allSettled(files.map((file) => move(file, file.replace(tempName, targetName))));
+      setTimeout(clearTemp, opts.clearInDelay || 1000);
     }
-  };
+  } as Plugin;
 }

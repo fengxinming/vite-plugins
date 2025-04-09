@@ -1,5 +1,5 @@
 import { isFunction, isObject } from 'is-what-type';
-import { InputPluginOption, OutputOptions, RollupOptions } from 'rollup';
+import type { InputPluginOption, OutputOptions, RollupOptions } from 'rollup';
 import { getValue } from 'vp-runtime-helper';
 
 import { logger } from '../common/logger';

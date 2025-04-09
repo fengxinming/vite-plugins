@@ -2,10 +2,12 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-view.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-view)
 
+> Dynamically render pages using custom template engines instead of the static `index.html` entry file.
+
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
+[![Node version](https://img.shields.io/node/v/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
 
-> Dynamically render pages using custom template engines instead of the static `index.html` entry file.
 
 ---
 
@@ -88,7 +90,7 @@ import { view } from 'vite-plugin-view';
 export default defineConfig({
   plugins: [
     view({
-      engine: 'pug',  // 必填：指定模板引擎
+      engine: 'pug',  // Set the template engine to use (e.g., 'pug', 'ejs', etc.)
     })
   ]
 });
