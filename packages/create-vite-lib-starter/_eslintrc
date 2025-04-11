@@ -1,0 +1,16 @@
+{
+  "extends": [
+    "fe",
+    "fe/ts"
+  ],
+  "plugins": [
+    "simple-import-sort"
+  ],
+  "globals": {
+    "__DEV__": true
+  },
+  "rules": {
+    "simple-import-sort/imports": "error",
+    "simple-import-sort/exports": "error"
+  }
+}

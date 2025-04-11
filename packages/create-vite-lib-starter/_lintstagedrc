@@ -1,0 +1,4 @@
+{
+  "*.ts?(x)": "eslint --fix --ignore-path .eslintignore",
+  "*.js?(x)": "eslint --fix --ignore-path .eslintignore"
+}
