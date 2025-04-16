@@ -1,4 +1,4 @@
-import { isWhat } from 'is-what-type';
+import { isPlainObject, isWhat } from 'is-what-type';
 import { NullValue } from 'rollup';
 
 import { ExternalFn } from '../typings';
@@ -26,6 +26,7 @@ export default class ExternalHook {
     | string
     | RegExp
     | Array<string | RegExp>
+    | Record<string, string>
   ): this {
     let hook;
     const type = typeof arg;
@@ -40,6 +41,10 @@ export default class ExternalHook {
         id: string,
         importer: string | undefined,
         isResolved: boolean) => (!id.startsWith('\0') && arg(id, importer, isResolved));
+    }
+    // object
+    else if (isPlainObject<Record<string, string>>(arg)) {
+      hook = (id: string) => arg[id];
     }
     // string | RegExp | (string | RegExp)[]
     else if (arg) {

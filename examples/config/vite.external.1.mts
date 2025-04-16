@@ -16,7 +16,7 @@ export default defineConfig({
         'react-dom': '$linkdesign.ReactDOM',
         'prop-types': '$linkdesign.PropTypes'
       }
-    }) as Plugin
+    })
   ],
   server: {
     open: true

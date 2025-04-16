@@ -1,7 +1,6 @@
 import { builtinModules } from 'node:module';
 import { types } from 'node:util';
 
-import { isFunction, isObject } from 'is-what-type';
 import type { ExternalOption, RollupOptions } from 'rollup';
 import type { UserConfig } from 'vite';
 import { escapeRegex, getValue } from 'vp-runtime-helper';
@@ -64,15 +63,8 @@ export function setExternals(
   const globalObject: Record<string, string> = {};
   const { externals } = opts;
 
-  if (isFunction<ExternalFn>(externals)) {
-    logger.debug('\'options.externals\' is a function.');
-
+  if (externals) {
     externalHook.use(externals);
-  }
-  else if (isObject<Record<string, string>>(externals)) {
-    logger.debug('\'options.externals\' is an object.');
-
-    externalHook.use((id: string) => externals[id]);
   }
 
   const rollupOptions: RollupOptions = getValue(config, 'build.rollupOptions', {});

@@ -115,7 +115,8 @@ export default function pluginCp(opts: Options) {
     globOptions,
     copyOptions,
     logLevel,
-    delay
+    delay,
+    enableBanner
   } = opts || {};
 
   if (!Array.isArray(targets) || !targets.length) {
@@ -123,7 +124,9 @@ export default function pluginCp(opts: Options) {
     return;
   }
 
-  banner(PLUGIN_NAME);
+  if (enableBanner) {
+    banner(PLUGIN_NAME);
+  }
 
   if (logLevel) {
     logger.level = logLevel;

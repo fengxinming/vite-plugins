@@ -37,7 +37,9 @@ import v6 from './v6';
  * @returns a vite plugin
  */
 export default function pluginExternal(opts: Options): Plugin {
-  banner(pkg.name);
+  if (opts.enableBanner) {
+    banner(pkg.name);
+  }
 
   const version = getRuntimeVersion();
   colorful.green(`${EOL}Vite@${version} ${pkg.name}@${pkg.version}`);

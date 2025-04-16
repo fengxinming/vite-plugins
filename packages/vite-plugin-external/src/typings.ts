@@ -102,6 +102,13 @@ export interface Options extends BasicOptions {
    * Fix https://github.com/rollup/rollup/issues/3188
    */
   externalGlobals?: (globals: ModuleNameMap) => RollupPlugin;
+
+  /**
+   * Whether to output the banner
+   *
+   * 是否输出 banner
+   */
+  enableBanner?: boolean;
 }
 
 export interface ResolvedOptions extends Options, ConfigEnv {

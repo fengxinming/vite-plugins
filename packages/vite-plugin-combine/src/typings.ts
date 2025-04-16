@@ -72,4 +72,11 @@ export interface Options {
    *
    */
   clearInDelay?: number;
+
+  /**
+   * Whether to output the banner
+   *
+   * 是否输出 banner
+   */
+  enableBanner?: boolean;
 }

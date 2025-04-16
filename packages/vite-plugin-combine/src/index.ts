@@ -197,10 +197,12 @@ function getFiles(src: string | string[], cwd: string, prefix: string): string[]
 }
 
 export default function pluginCombine(opts: Options) {
-  banner(PLUGIN_NAME);
-
   if (!opts) {
     opts = {} as Options;
+  }
+
+  if (opts.enableBanner) {
+    banner(PLUGIN_NAME);
   }
 
   const { src, logLevel } = opts;

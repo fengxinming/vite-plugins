@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -17,7 +17,7 @@ export default defineConfig({
           return '$linkdesign.PropTypes';
         }
       }
-    }) as Plugin
+    })
   ],
   server: {
     open: true

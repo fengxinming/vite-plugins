@@ -117,4 +117,11 @@ export interface Options {
    * 复制前的延迟时间。
    */
   delay?: number;
+
+  /**
+   * Whether to output the banner
+   *
+   * 是否输出 banner
+   */
+  enableBanner?: boolean;
 }
