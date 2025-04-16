@@ -20,10 +20,11 @@ export default defineConfig({
         react: 'React',
         'react-dom/client': 'ReactDOM'
       }
-    }) as Plugin,
+    }) as unknown as Plugin,
     view({
-      entry: 'index.handlebars',
+      entry: 'index.hbs',
       engine: 'handlebars',
+      extension: '.hbs',
       logLevel: 'TRACE'
     }) as Plugin
   ],

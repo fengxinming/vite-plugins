@@ -220,7 +220,8 @@ export default defineConfig({
     }),
     view({
       engine: 'nunjucks',
-      // entry: 'index.nunjucks', // Default is 'index.nunjucks', can configure multiple templates
+      extension: '.njk',
+      // entry: 'index.njk', // Default is 'index.njk', can configure multiple templates
       engineOptions: {
         title: 'Vite + React' // Available as `title` variable in templates
       },
@@ -239,7 +240,7 @@ export default defineConfig({
 
 ### Using Passed Parameters in Templates
 
-`index.nunjucks`:
+`index.njk`:
 
 ```html
 <!doctype html>
@@ -311,7 +312,8 @@ export default defineConfig({
     }),
     view({
       engine: 'handlebars',
-      // entry: 'index.handlebars', // Default is 'index.handlebars', can configure multiple templates
+      extension: '.hbs',
+      // entry: 'index.hbs', // Default is 'index.hbs', can configure multiple templates
       engineOptions: {
         title: 'Vite + React' // Available as `title` variable in templates
       },
@@ -330,7 +332,7 @@ export default defineConfig({
 
 ### Using Passed Parameters in Templates
 
-`index.handlebars`:
+`index.hbs`:
 
 ```handlebars
 <!doctype html>

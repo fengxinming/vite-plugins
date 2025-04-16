@@ -11,7 +11,7 @@ export default defineConfig({
     pluginExternal({
       nodeBuiltins: true,
       externalizeDeps: Object.keys(pkg.dependencies)
-    }) as Plugin,
+    }),
     ts({
       tsconfig: './tsconfig.build.json'
     }) as Plugin

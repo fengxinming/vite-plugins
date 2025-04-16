@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "./src/**/*.ts",
+    "./test/index.test.ts",
+    "./node_modules/vite/client.d.ts",
+    "./vite.config.mts"
+  ]
+}

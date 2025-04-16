@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-view.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-view)
 
-> Dynamically render pages using custom template engines instead of the static `index.html` entry file.
+> Dynamically render pages using custom template engines instead of the static `.html` entry file.
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-view.svg?style=flat)](https://npmjs.org/package/vite-plugin-view)

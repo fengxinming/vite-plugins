@@ -1,0 +1,16 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src"
+  ],
+  "entryPointStrategy": "expand",
+  "outputFileStrategy": "modules",
+  "entryFileName": "entry",
+  "lang": "zh",
+  "plugin": [
+    "typedoc-plugin-markdown",
+  ],
+  "out": "docs/zh/api",
+  "readme": "none",
+  "tsconfig": "./tsconfig.typedoc.json"
+}

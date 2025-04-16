@@ -62,8 +62,8 @@ async function doCopy(config: Target, cwd: string, globOptions: GlobOptions, cop
 
       return cpFile(matchedPath, destPath, copyOptions).then(() => {
         logger.trace(`Copied "${matchedPath}" to "${destPath}".`);
-      }, () => {
-        logger.warn(`Could not copy "${matchedPath}" to "${destPath}".`);
+      }, (e) => {
+        logger.warn(`Could not copy "${matchedPath}" to "${destPath}".`, e);
       });
     }));
   };
@@ -115,7 +115,8 @@ export default function pluginCp(opts: Options) {
     globOptions,
     copyOptions,
     logLevel,
-    delay
+    delay,
+    enableBanner
   } = opts || {};
 
   if (!Array.isArray(targets) || !targets.length) {
@@ -123,7 +124,9 @@ export default function pluginCp(opts: Options) {
     return;
   }
 
-  banner(PLUGIN_NAME);
+  if (enableBanner) {
+    banner(PLUGIN_NAME);
+  }
 
   if (logLevel) {
     logger.level = logLevel;

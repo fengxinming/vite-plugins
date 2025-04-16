@@ -3,10 +3,8 @@ import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
 import { camelCase } from 'es-toolkit';
-import replaceAll from 'fast-replaceall';
-import { move, remove } from 'fs-extra';
 import type { InputOption } from 'rollup';
-import { glob, globSync } from 'tinyglobby';
+import { globSync } from 'tinyglobby';
 import type { Plugin } from 'vite';
 import { normalizePath } from 'vite';
 import { banner } from 'vp-runtime-helper';
@@ -66,7 +64,60 @@ function spliceCode(
   nameExport?: NameExport | boolean
 ): string {
   const importDeclare: string[] = [];
-  const exportDeclare: string[] = [];
+  const exportNames: string[] = [];
+
+  const handles = {
+    named: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`export { default as ${exportName} } from '${relativePath}';`);
+      },
+      end(code: string) {
+        return code;
+      }
+    },
+    default: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`import ${exportName} from '${relativePath}';`);
+        exportNames.push(exportName);
+      },
+      end(code: string) {
+        return `${code}export default { ${exportNames.join(', ')} };${EOL}`;
+      }
+    },
+    both: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`import ${exportName} from '${relativePath}';`);
+        exportNames.push(exportName);
+      },
+      end(code: string) {
+        code += `export { ${exportNames.join(', ')} };${EOL}`;
+        return `${code}export default { ${exportNames.join(', ')} };${EOL}`;
+      }
+    },
+    all: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`export * from '${relativePath}';`);
+      },
+      end(code: string) {
+        return code;
+      }
+    },
+    none: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`import '${relativePath}';`);
+      },
+      end(code: string) {
+        return `${code}export {};${EOL}`;
+      }
+    }
+  };
+
+  const fns = handles[exportsType];
+  if (!fns) {
+    return '';
+  }
+
+  const make = fns.collect;
 
   for (const file of files) {
     const { name, dir } = parse(file);
@@ -75,31 +126,10 @@ function spliceCode(
     const relativeDir = relative(dirname(target), dir);
     const relativePath = `./${join(relativeDir, name)}`;
 
-    importDeclare.push(`import ${exportName} from '${relativePath}';`);
-    exportDeclare.push(exportName);
+    make(exportName, relativePath);
   }
 
-  if (exportDeclare.length === 0) {
-    return '';
-  }
-
-  let code = importDeclare.join(EOL) + EOL;
-  const exportStr = exportDeclare.join(', ');
-
-  if (exportsType === 'named' || exportsType === 'both') {
-    code += `export { ${exportStr} };${EOL}`;
-  }
-  else if (exportsType === 'default' || exportsType === 'both') {
-    code += `export default { ${exportDeclare.join(', ')} };${EOL}`;
-  }
-  else if (exportsType === 'none') {
-    for (const name of exportDeclare) {
-      code = replaceAll(code, ` ${name} from`, '');
-    }
-    code += `export {};${EOL}`;
-  }
-
-  return code;
+  return fns.end(importDeclare.join(EOL) + EOL);
 }
 
 function makeESModuleCode(
@@ -111,15 +141,7 @@ function makeESModuleCode(
   const exportsType = opts.exports || 'named';
   const { nameExport, beforeWrite } = opts;
 
-  let mainCode = '';
-  switch (exportsType) {
-    case 'named':
-    case 'default':
-    case 'both':
-    case 'none':
-      mainCode = spliceCode(files, absTarget, exportsType, nameExport);
-      break;
-  }
+  let mainCode = spliceCode(files, absTarget, exportsType, nameExport);
 
   if (typeof beforeWrite === 'function') {
     const code = beforeWrite(mainCode);
@@ -166,7 +188,7 @@ function getFiles(src: string | string[], cwd: string, prefix: string): string[]
         if (e) {
           return;
         }
-        logger.trace(`"${f}" has been deleted.`);
+        logger.trace(`'${f}' has been deleted.`);
       });
       return false;
     }
@@ -175,10 +197,12 @@ function getFiles(src: string | string[], cwd: string, prefix: string): string[]
 }
 
 export default function pluginCombine(opts: Options) {
-  banner(PLUGIN_NAME);
-
   if (!opts) {
     opts = {} as Options;
+  }
+
+  if (opts.enableBanner) {
+    banner(PLUGIN_NAME);
   }
 
   const { src, logLevel } = opts;
@@ -193,11 +217,11 @@ export default function pluginCombine(opts: Options) {
   const files = getFiles(src, cwd, prefix);
 
   if (!files.length) {
-    logger.warn(`No files found in "${src}".`);
+    logger.warn(`No files found in '${src}'.`);
     return;
   }
 
-  logger.debug(`Found ${files.length} files in "${src}":`, files);
+  logger.debug(`Found ${files.length} files in '${src}':`, files);
 
   // 组合到目标文件中
   const target = opts.target || 'index.js';
@@ -205,28 +229,22 @@ export default function pluginCombine(opts: Options) {
   // target 绝对地址
   const absTarget = normalizeTarget(cwd, target);
 
-  // 临时文件名
-  const tempName = `${prefix}${Math.random().toString(36).slice(2)}`;
-  const {
-    ext: targetExt,
-    dir: targetDir,
-    name: targetName
-  } = parse(absTarget);
+  if (existsSync(absTarget)) {
+    throw new Error(`File '${absTarget}' already exists.`);
+  }
 
   // 生成临时文件
-  const tempInput = join(targetDir, tempName + targetExt);
-
-  writeFileSync(tempInput, makeESModuleCode(files, absTarget, opts));
-  logger.trace(`Temporary file "${tempInput}" has been created.`);
+  writeFileSync(absTarget, makeESModuleCode(files, absTarget, opts));
+  logger.trace(`Target file '${absTarget}' has been created.`);
 
   const clearTemp = (err?: any) => {
     offExit(clearTemp);
 
-    unlink(tempInput, (e) => {
+    unlink(absTarget, (e) => {
       if (e) {
         return;
       }
-      logger.trace(`"${tempInput}" has been deleted.`);
+      logger.trace(`'${absTarget}' has been deleted.`);
     });
 
     if (err !== void 0) {
@@ -245,7 +263,7 @@ export default function pluginCombine(opts: Options) {
     enforce: ('enforce' in opts) ? opts.enforce : 'post',
 
     async config(config) {
-      const inputs = files.concat(tempInput);
+      const inputs = files.concat(absTarget);
       const { build } = config;
 
       if (build) {
@@ -313,62 +331,7 @@ export default function pluginCombine(opts: Options) {
       this.meta.watchMode = isWatching;
     },
 
-    generateBundle(_, bundle) {
-      for (const [, chunkInfo] of Object.entries(bundle)) {
-        const { fileName } = chunkInfo;
-
-        // if (chunkInfo.type === 'chunk'
-        //     && chunkInfo.facadeModuleId === tempInput
-        //     && fileName.startsWith(chunkInfo.name)
-        // ) {
-        //   const outFile = fileName.replace(tempName, targetName);
-        //   if (version.startsWith('3')) {
-        //     this.emitFile({
-        //       type: 'asset',
-        //       fileName: outFile,
-        //       originalFileName: join(outDir, outFile),
-        //       source: chunkInfo.code
-        //     });
-        //   }
-        //   else {
-        //     this.emitFile({
-        //       type: 'prebuilt-chunk',
-        //       fileName: outFile,
-        //       code: chunkInfo.code,
-        //       exports: chunkInfo.exports,
-        //       map: chunkInfo.map || undefined
-        //     });
-        //   }
-        //   delete bundle[id];
-        // }
-        // else if (chunkInfo.type === 'asset' && fileName.startsWith(tempName)) {
-        //   const outFile = fileName.replace(tempName, targetName);
-        //   this.emitFile({
-        //     type: 'asset',
-        //     fileName: outFile,
-        //     originalFileName: join(outDir, outFile),
-        //     source: chunkInfo.source
-        //   });
-        //   delete bundle[id];
-        // }
-        if ((chunkInfo.type === 'chunk'
-            && chunkInfo.facadeModuleId === tempInput
-            && fileName.startsWith(chunkInfo.name))
-            || (chunkInfo.type === 'asset'
-                && fileName.startsWith(tempName))
-        ) {
-          chunkInfo.fileName = fileName.replace(tempName, targetName);
-        }
-      }
-    },
-    async closeBundle() {
-      const files = await glob(`${outDir}/**/${tempName}.d.ts`, { cwd, absolute: true });
-      await Promise.allSettled(files.map((file) => {
-        const outFile = file.replace(tempName, targetName);
-        return existsSync(outFile)
-          ? remove(file)
-          : move(file, outFile);
-      }));
+    closeBundle() {
       setTimeout(clearTemp, opts.clearInDelay || 1000);
     }
   } as Plugin;

@@ -54,13 +54,13 @@ export default defineConfig({
 
 > Sometimes development and production environments use different CDNs. You can configure `development` and `production` modes for respective external dependencies.
 
-production `index.html`
+development `index.html`
 ```html
 <script src="//unpkg.com/react@18.3.1/umd/react.development.js"></script>
 <script src="//unpkg.com/react-dom@18.3.1/umd/react.development.js"></script>
 ```
 
-development `index.html`
+production `index.html`
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
@@ -103,7 +103,6 @@ import vitePluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     vitePluginExternal({
-      logLevel: 'TRACE',
       externals: {
         react: '$linkdesign.React',
         'react-dom': '$linkdesign.ReactDOM',
@@ -158,26 +157,97 @@ createRoot(document.getElementById('root')).render(
 
 ```js [Vite 6.x]
 (function() {
-  // ... (code remains unchanged)
-});
+  "use strict";
+  function getDefaultExportFromCjs(x) {
+    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  }
+  var react;
+  var hasRequiredReact;
+  function requireReact() {
+    if (hasRequiredReact) return react;
+    hasRequiredReact = 1;
+    react = $linkdesign.React;
+    return react;
+  }
+  var reactExports = requireReact();
+  const React = /* @__PURE__ */ getDefaultExportFromCjs(reactExports);
+  var reactDom;
+  var hasRequiredReactDom;
+  function requireReactDom() {
+    if (hasRequiredReactDom) return reactDom;
+    hasRequiredReactDom = 1;
+    reactDom = $linkdesign.ReactDOM;
+    return reactDom;
+  }
+  var reactDomExports = requireReactDom();
+  const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDomExports);
+  function App() {
+    const [count, setCount] = reactExports.useState(0);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, reactExports.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  ReactDOM.render(
+    /* @__PURE__ */ React.createElement(App, null),
+    document.getElementById("root")
+  );
+})();
 ```
 
 ```js [Vite 5.x]
 (function() {
-  // ... (code remains unchanged)
-});
+  "use strict";
+  function getDefaultExportFromCjs(x) {
+    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  }
+  var react = React;
+  const React$1 = /* @__PURE__ */ getDefaultExportFromCjs(react);
+  var reactDom = $linkdesign.ReactDOM;
+  const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDom);
+  function App() {
+    const [count, setCount] = react.useState(0);
+    return /* @__PURE__ */ React$1.createElement(React$1.Fragment, null, /* @__PURE__ */ React$1.createElement("p", null, react.version), /* @__PURE__ */ React$1.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React$1.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  ReactDOM.render(
+    /* @__PURE__ */ React$1.createElement(App, null),
+    document.getElementById("root")
+  );
+})();
 ```
 
 ```js [Vite 4.x]
 (function() {
-  // ... (code remains unchanged)
-});
+  "use strict";
+  function getDefaultExportFromCjs(x) {
+    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
+  }
+  var react = React;
+  const React$1 = /* @__PURE__ */ getDefaultExportFromCjs(react);
+  var reactDom = $linkdesign.ReactDOM;
+  const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDom);
+  function App() {
+    const [count, setCount] = react.useState(0);
+    return /* @__PURE__ */ React$1.createElement(React$1.Fragment, null, /* @__PURE__ */ React$1.createElement("p", null, react.version), /* @__PURE__ */ React$1.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React$1.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  ReactDOM.render(
+    /* @__PURE__ */ React$1.createElement(App, null),
+    document.getElementById("root")
+  );
+})();
 ```
 
 ```js [Vite 3.x]
 (function() {
-  // ... (code remains unchanged)
-});
+  "use strict";
+  var react = React;
+  var reactDom = $linkdesign.ReactDOM;
+  function App() {
+    const [count, setCount] = react.useState(0);
+    return /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement("p", null, react.version), /* @__PURE__ */ react.createElement("h1", null, "Count: ", count), /* @__PURE__ */ react.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  reactDom.render(
+    /* @__PURE__ */ react.createElement(App, null),
+    document.getElementById("root")
+  );
+})();
 ```
 
 :::
@@ -189,25 +259,60 @@ createRoot(document.getElementById('root')).render(
 ::: code-group
 ```js [Vite 6.x]
 (function(React, ReactDOM) {
-  // ... (code remains unchanged)
+  "use strict";
+  function App() {
+    const [count, setCount] = React.useState(0);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, React.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  ReactDOM.render(
+    /* @__PURE__ */ React.createElement(App, null),
+    document.getElementById("root")
+  );
 })($linkdesign.React, $linkdesign.ReactDOM);
 ```
 
 ```js [Vite 5.x]
 (function(React, ReactDOM) {
-  // ... (code remains unchanged)
+  "use strict";
+  function App() {
+    const [count, setCount] = React.useState(0);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, React.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  ReactDOM.render(
+    /* @__PURE__ */ React.createElement(App, null),
+    document.getElementById("root")
+  );
 })($linkdesign.React, $linkdesign.ReactDOM);
 ```
 
 ```js [Vite 4.x]
 (function(React, ReactDOM) {
-  // ... (code remains unchanged)
+  "use strict";
+  function App() {
+    const [count, setCount] = React.useState(0);
+    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, React.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  ReactDOM.render(
+    /* @__PURE__ */ React.createElement(App, null),
+    document.getElementById("root")
+  );
 })($linkdesign.React, $linkdesign.ReactDOM);
 ```
 
 ```js [Vite 3.x]
 (function(React, ReactDOM) {
-  // ... (code remains unchanged)
+  "use strict";
+  const _interopDefaultLegacy = (e) => e && typeof e === "object" && "default" in e ? e : { default: e };
+  const React__default = /* @__PURE__ */ _interopDefaultLegacy(React);
+  const ReactDOM__default = /* @__PURE__ */ _interopDefaultLegacy(ReactDOM);
+  function App() {
+    const [count, setCount] = React.useState(0);
+    return /* @__PURE__ */ React__default.default.createElement(React__default.default.Fragment, null, /* @__PURE__ */ React__default.default.createElement("p", null, React.version), /* @__PURE__ */ React__default.default.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React__default.default.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
+  }
+  ReactDOM__default.default.render(
+    /* @__PURE__ */ React__default.default.createElement(App, null),
+    document.getElementById("root")
+  );
 })($linkdesign.React, $linkdesign.ReactDOM);
 ```
 :::

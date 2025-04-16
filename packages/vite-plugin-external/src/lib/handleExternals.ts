@@ -1,11 +1,11 @@
 import { builtinModules } from 'node:module';
 import { types } from 'node:util';
 
-import { isFunction, isObject } from 'is-what-type';
-import type { ExternalOption, NullValue, RollupOptions } from 'rollup';
+import type { ExternalOption, RollupOptions } from 'rollup';
 import type { UserConfig } from 'vite';
 import { escapeRegex, getValue } from 'vp-runtime-helper';
 
+import ExternalHook from '../common/ExternalHook';
 import { logger } from '../common/logger';
 import type { ExternalFn, ResolvedOptions } from '../typings';
 import { setOutputGlobals } from './handleGlobals';
@@ -54,134 +54,69 @@ import { setOutputGlobals } from './handleGlobals';
 //   return () => false;
 // }
 
-function checkExternal(external: RegExp | string, source: string): boolean {
-  return types.isRegExp(external) ? external.test(source) : external === source;
-}
+export function setExternals(
+  opts: ResolvedOptions,
+  config: UserConfig
+): ExternalFn {
+  const externalHook = new ExternalHook();
 
-function checkExternalArray(external: Array<RegExp | string>, source: string): boolean {
-  return external.some((external) => checkExternal(external, source));
-}
+  const globalObject: Record<string, string> = {};
+  const { externals } = opts;
 
-function collectDeps(opts: ResolvedOptions): Array<RegExp | string> {
-  const externalArray: Array<RegExp | string> = [];
+  if (externals) {
+    externalHook.use(externals);
+  }
+
+  const rollupOptions: RollupOptions = getValue(config, 'build.rollupOptions', {});
 
   // externalize dependencies for build command
   const { nodeBuiltins, externalizeDeps } = opts;
 
-  let builtinModuleArray: RegExp[] = [];
-  let deps: Array<RegExp | string> = [];
-
   // handle nodejs built-in modules
   if (nodeBuiltins) {
-    builtinModuleArray = builtinModules.map((builtinModule) => {
+    let builtinModuleArray;
+    externalHook.use(builtinModuleArray = builtinModules.map((builtinModule) => {
       return new RegExp(`^(?:node:)?${escapeRegex(builtinModule)}(?:/.+)*$`);
-    });
+    }));
 
     logger.debug('Externalize nodejs built-in modules:', builtinModuleArray);
   }
 
   // externalize given dependencies
   if (externalizeDeps) {
-    deps = externalizeDeps.map((dep) => {
+    let deps;
+    externalHook.use(deps = externalizeDeps.map((dep) => {
       return types.isRegExp(dep) ? dep : new RegExp(`^${escapeRegex(dep)}(?:/.+)*$`);
-    });
+    }));
 
     logger.debug('Externalize given dependencies:', deps);
   }
 
-  return externalArray.concat(builtinModuleArray, deps);
-}
-
-function mergeOriginal(
-  externalArray: Array<RegExp | string>,
-  originalExternal: ExternalOption | undefined
-): Array<RegExp | string> | ((
-  source: string,
-  importer: string | undefined,
-  isResolved: boolean
-) => boolean | NullValue) {
-  // string or RegExp or array
-  if (
-    typeof originalExternal === 'string'
-    || types.isRegExp(originalExternal)
-    || Array.isArray(originalExternal)
-  ) {
-    return externalArray.concat(originalExternal);
-  }
-
-  // function
-  if (isFunction(originalExternal)) {
-    return function (
-      source: string,
-      importer: string | undefined,
-      isResolved: boolean
-    ): boolean | NullValue {
-      return checkExternalArray(externalArray, source)
-        ? true
-        : originalExternal(source, importer, isResolved);
-    };
-  }
-
-  return externalArray;
-}
-
-export function setExternals(
-  opts: ResolvedOptions,
-  config: UserConfig
-): ExternalFn {
-  let externalFn: ExternalFn;
-  const globalObject: Record<string, string> = {};
-  const { externals } = opts;
-
-  if (isFunction<ExternalFn>(externals)) {
-    logger.debug('\'options.externals\' is a function.');
-
-    externalFn = externals;
-  }
-  else if (isObject<Record<string, string>>(externals)) {
-    logger.debug('\'options.externals\' is an object.');
-
-    externalFn = (id: string) => externals[id];
-  }
-  else {
-    externalFn = () => false;
-  }
-
-  const rollupOptions: RollupOptions = getValue(config, 'build.rollupOptions', {});
-
-  // Collect external dependencies
-  const deps = collectDeps(opts);
   // Merge external dependencies
-  const newExternals = mergeOriginal(deps, rollupOptions.external);
-
+  if (rollupOptions.external) {
+    externalHook.use(rollupOptions.external);
+  }
   const resolveHook: ExternalFn = function (
     id: string,
     importer: string | undefined,
     isResolved: boolean
-  ): string | boolean | NullValue {
-    let val = externalFn(id, importer, isResolved);
+  ): string | boolean {
 
-    if (!val) {
-      if (isFunction<(
-        source: string,
-        importer: string | undefined,
-        isResolved: boolean
-      ) => boolean | NullValue>(newExternals)) {
-        val = newExternals(id, importer, isResolved);
+    for (const hook of externalHook.hooks) {
+      const val = hook(id, importer, isResolved);
+
+      if (typeof val === 'string') {
+        globalObject[id] = val;
+        return val;
       }
-      else if (newExternals.length > 0) {
-        val = checkExternalArray(newExternals, id);
+
+      if (val) {
+        logger.debug(`External: '${id}'.`);
+        return true;
       }
     }
-    else if (typeof val === 'string') {
-      globalObject[id] = val;
-    }
 
-    if (val) {
-      logger.debug(`External: '${id}'.`);
-    }
-
-    return val;
+    return false;
   };
 
   rollupOptions.external = resolveHook as unknown as ExternalOption;

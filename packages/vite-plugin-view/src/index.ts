@@ -29,10 +29,13 @@ export default defineConfig({
 function view(opts: Options): Plugin | undefined {
   const {
     entry,
-    logLevel
+    logLevel,
+    enableBanner
   } = opts;
 
-  banner(PLUGIN_NAME);
+  if (enableBanner) {
+    banner(PLUGIN_NAME);
+  }
 
   if (logLevel) {
     logger.level = logLevel;

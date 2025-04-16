@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-external",
-  "version": "6.1.0",
+  "version": "6.1.1",
   "description": "Excludes specified module dependencies from runtime code and built bundles.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -28,6 +28,7 @@
     "directory": "packages/vite-plugin-external"
   },
   "keywords": [
+    "vite",
     "vite-plugin",
     "vite-plugin-external"
   ],
@@ -39,7 +40,7 @@
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/quick-start",
   "dependencies": {
     "fs-extra": "^11.1.1",
-    "is-what-type": "^1.0.1",
+    "is-what-type": "^1.1.0",
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
