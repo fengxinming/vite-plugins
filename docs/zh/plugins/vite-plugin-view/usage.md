@@ -214,7 +214,8 @@ export default defineConfig({
     }),
     view({
       engine: 'nunjucks',
-      // entry: 'index.nunjucks', // 默认为 'index.nunjucks'，可以配置多个模版文件
+      extension: '.njk',
+      // entry: 'index.njk', // 默认为 'index.njk'，可以配置多个模版文件
       engineOptions: {
         title: 'Vite + React' // 在模版中可以使用 `title` 变量
       },
@@ -233,7 +234,7 @@ export default defineConfig({
 
 ### 在模板中使用透传参数
 
-`index.nunjucks`
+`index.njk`
 
 ```html
 <!doctype html>
@@ -302,7 +303,8 @@ export default defineConfig({
     }),
     view({
       engine: 'handlebars',
-      // entry: 'index.handlebars', // 默认为 'index.handlebars'，可以配置多个模版文件
+      extension: '.hbs',
+      // entry: 'index.hbs', // 默认为 'index.hbs'，可以配置多个模版文件
       engineOptions: {
         title: 'Vite + React' // 在模版中可以使用 `title` 变量
       },
@@ -321,9 +323,9 @@ export default defineConfig({
 
 ### 在模板中使用透传参数
 
-`index.handlebars`
+`index.hbs`
 
-```handlebars
+```hbs
 <!doctype html>
 <html lang="en">
   <head>

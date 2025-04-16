@@ -24,10 +24,11 @@ export default defineConfig({
         react: 'React',
         'react-dom/client': 'ReactDOM'
       }
-    }) as Plugin,
+    }) as unknown as Plugin,
     view({
-      entry: 'index.nunjucks',
+      entry: 'index.njk',
       engine: 'nunjucks',
+      extension: '.njk',
       logLevel: 'TRACE',
       engineOptions: {
         title: 'Vite + React'

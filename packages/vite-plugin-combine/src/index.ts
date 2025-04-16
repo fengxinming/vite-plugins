@@ -3,9 +3,8 @@ import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
 import { camelCase } from 'es-toolkit';
-import { move, remove } from 'fs-extra';
 import type { InputOption } from 'rollup';
-import { glob, globSync } from 'tinyglobby';
+import { globSync } from 'tinyglobby';
 import type { Plugin } from 'vite';
 import { normalizePath } from 'vite';
 import { banner } from 'vp-runtime-helper';
@@ -189,7 +188,7 @@ function getFiles(src: string | string[], cwd: string, prefix: string): string[]
         if (e) {
           return;
         }
-        logger.trace(`"${f}" has been deleted.`);
+        logger.trace(`'${f}' has been deleted.`);
       });
       return false;
     }
@@ -216,11 +215,11 @@ export default function pluginCombine(opts: Options) {
   const files = getFiles(src, cwd, prefix);
 
   if (!files.length) {
-    logger.warn(`No files found in "${src}".`);
+    logger.warn(`No files found in '${src}'.`);
     return;
   }
 
-  logger.debug(`Found ${files.length} files in "${src}":`, files);
+  logger.debug(`Found ${files.length} files in '${src}':`, files);
 
   // 组合到目标文件中
   const target = opts.target || 'index.js';
@@ -228,28 +227,22 @@ export default function pluginCombine(opts: Options) {
   // target 绝对地址
   const absTarget = normalizeTarget(cwd, target);
 
-  // 临时文件名
-  const tempName = `${prefix}${Math.random().toString(36).slice(2)}`;
-  const {
-    ext: targetExt,
-    dir: targetDir,
-    name: targetName
-  } = parse(absTarget);
+  if (existsSync(absTarget)) {
+    throw new Error(`File '${absTarget}' already exists.`);
+  }
 
   // 生成临时文件
-  const tempInput = join(targetDir, tempName + targetExt);
-
-  writeFileSync(tempInput, makeESModuleCode(files, absTarget, opts));
-  logger.trace(`Temporary file "${tempInput}" has been created.`);
+  writeFileSync(absTarget, makeESModuleCode(files, absTarget, opts));
+  logger.trace(`Target file '${absTarget}' has been created.`);
 
   const clearTemp = (err?: any) => {
     offExit(clearTemp);
 
-    unlink(tempInput, (e) => {
+    unlink(absTarget, (e) => {
       if (e) {
         return;
       }
-      logger.trace(`"${tempInput}" has been deleted.`);
+      logger.trace(`'${absTarget}' has been deleted.`);
     });
 
     if (err !== void 0) {
@@ -268,7 +261,7 @@ export default function pluginCombine(opts: Options) {
     enforce: ('enforce' in opts) ? opts.enforce : 'post',
 
     async config(config) {
-      const inputs = files.concat(tempInput);
+      const inputs = files.concat(absTarget);
       const { build } = config;
 
       if (build) {
@@ -336,62 +329,7 @@ export default function pluginCombine(opts: Options) {
       this.meta.watchMode = isWatching;
     },
 
-    generateBundle(_, bundle) {
-      for (const [, chunkInfo] of Object.entries(bundle)) {
-        const { fileName } = chunkInfo;
-
-        // if (chunkInfo.type === 'chunk'
-        //     && chunkInfo.facadeModuleId === tempInput
-        //     && fileName.startsWith(chunkInfo.name)
-        // ) {
-        //   const outFile = fileName.replace(tempName, targetName);
-        //   if (version.startsWith('3')) {
-        //     this.emitFile({
-        //       type: 'asset',
-        //       fileName: outFile,
-        //       originalFileName: join(outDir, outFile),
-        //       source: chunkInfo.code
-        //     });
-        //   }
-        //   else {
-        //     this.emitFile({
-        //       type: 'prebuilt-chunk',
-        //       fileName: outFile,
-        //       code: chunkInfo.code,
-        //       exports: chunkInfo.exports,
-        //       map: chunkInfo.map || undefined
-        //     });
-        //   }
-        //   delete bundle[id];
-        // }
-        // else if (chunkInfo.type === 'asset' && fileName.startsWith(tempName)) {
-        //   const outFile = fileName.replace(tempName, targetName);
-        //   this.emitFile({
-        //     type: 'asset',
-        //     fileName: outFile,
-        //     originalFileName: join(outDir, outFile),
-        //     source: chunkInfo.source
-        //   });
-        //   delete bundle[id];
-        // }
-        if ((chunkInfo.type === 'chunk'
-            && chunkInfo.facadeModuleId === tempInput
-            && fileName.startsWith(chunkInfo.name))
-            || (chunkInfo.type === 'asset'
-                && fileName.startsWith(tempName))
-        ) {
-          chunkInfo.fileName = fileName.replace(tempName, targetName);
-        }
-      }
-    },
-    async closeBundle() {
-      const files = await glob(`${outDir}/**/${tempName}.d.ts`, { cwd, absolute: true });
-      await Promise.allSettled(files.map((file) => {
-        const outFile = file.replace(tempName, targetName);
-        return existsSync(outFile)
-          ? remove(file)
-          : move(file, outFile);
-      }));
+    closeBundle() {
       setTimeout(clearTemp, opts.clearInDelay || 1000);
     }
   } as Plugin;
