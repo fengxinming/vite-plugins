@@ -56,13 +56,13 @@ export default defineConfig({
 
 > 有时候可能开发环境和生产环境用到的 cdn 不一致。针对这种情况，可以配置 `development` 和 `production` 两个模式，分别对应开发环境和生产环境的外部依赖。
 
-production `index.html`
+development `index.html`
 ```html
 <script src="//unpkg.com/react@18.3.1/umd/react.development.js"></script>
 <script src="//unpkg.com/react-dom@18.3.1/umd/react.development.js"></script>
 ```
 
-development `index.html`
+production `index.html`
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
 ```
@@ -109,7 +109,6 @@ import vitePluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     vitePluginExternal({
-      logLevel: 'TRACE',
       externals: {
         react: '$linkdesign.React',
         'react-dom': '$linkdesign.ReactDOM',

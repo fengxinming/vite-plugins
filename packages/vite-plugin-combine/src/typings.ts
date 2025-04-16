@@ -35,7 +35,7 @@ export interface Options {
    *
    * @default 'named'
    */
-  exports?: 'named' | 'default' | 'both' | 'none';
+  exports?: 'named' | 'default' | 'both' | 'all' | 'none';
 
   /**
    * The value of enforce can be either `"pre"` or `"post"`, see more at https://vitejs.dev/guide/api-plugin.html#plugin-ordering.

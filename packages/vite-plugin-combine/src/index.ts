@@ -3,7 +3,6 @@ import { EOL } from 'node:os';
 import { dirname, isAbsolute, join, parse, relative } from 'node:path';
 
 import { camelCase } from 'es-toolkit';
-import replaceAll from 'fast-replaceall';
 import { move, remove } from 'fs-extra';
 import type { InputOption } from 'rollup';
 import { glob, globSync } from 'tinyglobby';
@@ -66,7 +65,60 @@ function spliceCode(
   nameExport?: NameExport | boolean
 ): string {
   const importDeclare: string[] = [];
-  const exportDeclare: string[] = [];
+  const exportNames: string[] = [];
+
+  const handles = {
+    named: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`export { default as ${exportName} } from '${relativePath}';`);
+      },
+      end(code: string) {
+        return code;
+      }
+    },
+    default: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`import ${exportName} from '${relativePath}';`);
+        exportNames.push(exportName);
+      },
+      end(code: string) {
+        return `${code}export default { ${exportNames.join(', ')} };${EOL}`;
+      }
+    },
+    both: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`import ${exportName} from '${relativePath}';`);
+        exportNames.push(exportName);
+      },
+      end(code: string) {
+        code += `export { ${exportNames.join(', ')} };${EOL}`;
+        return `${code}export default { ${exportNames.join(', ')} };${EOL}`;
+      }
+    },
+    all: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`export * from '${relativePath}';`);
+      },
+      end(code: string) {
+        return code;
+      }
+    },
+    none: {
+      collect(exportName: string, relativePath: string) {
+        importDeclare.push(`import '${relativePath}';`);
+      },
+      end(code: string) {
+        return `${code}export {};${EOL}`;
+      }
+    }
+  };
+
+  const fns = handles[exportsType];
+  if (!fns) {
+    return '';
+  }
+
+  const make = fns.collect;
 
   for (const file of files) {
     const { name, dir } = parse(file);
@@ -75,31 +127,10 @@ function spliceCode(
     const relativeDir = relative(dirname(target), dir);
     const relativePath = `./${join(relativeDir, name)}`;
 
-    importDeclare.push(`import ${exportName} from '${relativePath}';`);
-    exportDeclare.push(exportName);
+    make(exportName, relativePath);
   }
 
-  if (exportDeclare.length === 0) {
-    return '';
-  }
-
-  let code = importDeclare.join(EOL) + EOL;
-  const exportStr = exportDeclare.join(', ');
-
-  if (exportsType === 'named' || exportsType === 'both') {
-    code += `export { ${exportStr} };${EOL}`;
-  }
-  else if (exportsType === 'default' || exportsType === 'both') {
-    code += `export default { ${exportDeclare.join(', ')} };${EOL}`;
-  }
-  else if (exportsType === 'none') {
-    for (const name of exportDeclare) {
-      code = replaceAll(code, ` ${name} from`, '');
-    }
-    code += `export {};${EOL}`;
-  }
-
-  return code;
+  return fns.end(importDeclare.join(EOL) + EOL);
 }
 
 function makeESModuleCode(
@@ -111,15 +142,7 @@ function makeESModuleCode(
   const exportsType = opts.exports || 'named';
   const { nameExport, beforeWrite } = opts;
 
-  let mainCode = '';
-  switch (exportsType) {
-    case 'named':
-    case 'default':
-    case 'both':
-    case 'none':
-      mainCode = spliceCode(files, absTarget, exportsType, nameExport);
-      break;
-  }
+  let mainCode = spliceCode(files, absTarget, exportsType, nameExport);
 
   if (typeof beforeWrite === 'function') {
     const code = beforeWrite(mainCode);

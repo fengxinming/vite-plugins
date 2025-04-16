@@ -48,5 +48,8 @@
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
     "fs-extra": "^11.3.0"
-  }
+  },
+  "files": [
+    "dist"
+  ]
 }

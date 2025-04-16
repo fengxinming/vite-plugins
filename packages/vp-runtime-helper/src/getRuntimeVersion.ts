@@ -62,6 +62,13 @@ function getClosestPkg(path?: string): Record<string, any> | null {
 
 export function getRuntimeVersion(): string {
   const { argv } = process;
-  const pkg = getClosestPkg(argv[1]);
+  let vitePath = argv[1];
+
+  // It might not be vite
+  if (!/(\\|\/)vite(\\|\/)/.test(vitePath)) {
+    vitePath = join(process.cwd(), 'node_modules', 'vite');
+  }
+
+  const pkg = getClosestPkg(vitePath);
   return pkg ? pkg.version : version;
 }

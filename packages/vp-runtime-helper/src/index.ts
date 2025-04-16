@@ -49,6 +49,7 @@ export function sleep(ms: number): Promise<void> {
 
 export * from './colorful';
 export * from './flattenId';
+export * from './generateStarter';
 export * from './getDepsCacheDir';
 export * from './getHash';
 export * from './getRuntimeVersion';

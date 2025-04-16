@@ -4,8 +4,8 @@ layout: home
 
 hero:
   name: create-vite-lib-starter
-  text: 一个模块化的 JavaScript 工具库
-  tagline: 快来尝试一下吧！
+  text: 这里是描述
+  tagline: 这里是标语
   actions:
     - theme: brand
       text: 介绍

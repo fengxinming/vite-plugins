@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-combine",
-  "version": "6.1.1",
+  "version": "6.1.2",
   "description": "Combines multiple module files into a single target file. It supports four modes: named exports, default exports, automatic exports, and no exports, and can auto-generate corresponding import statements based on configuration.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",

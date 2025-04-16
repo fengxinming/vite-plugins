@@ -62,8 +62,8 @@ async function doCopy(config: Target, cwd: string, globOptions: GlobOptions, cop
 
       return cpFile(matchedPath, destPath, copyOptions).then(() => {
         logger.trace(`Copied "${matchedPath}" to "${destPath}".`);
-      }, () => {
-        logger.warn(`Could not copy "${matchedPath}" to "${destPath}".`);
+      }, (e) => {
+        logger.warn(`Could not copy "${matchedPath}" to "${destPath}".`, e);
       });
     }));
   };

@@ -2,8 +2,8 @@
 
 import {
   intro,
-  outro,
-  spinner
+  log,
+  outro
 } from '@clack/prompts';
 import color from 'picocolors';
 import { Plugin } from 'vite';
@@ -12,8 +12,6 @@ import { banner } from 'vp-runtime-helper';
 import pkg from '../package.json';
 
 const PLUGIN_NAME = pkg.name;
-
-const s = spinner();
 
 /**
  * Shows the usage of the hook function of the `vite` plugin.
@@ -51,7 +49,10 @@ export default function pluginHookUse(): Plugin {
     // 在开发中不会被调用
     'moduleParsed',
     // Vite 独有钩子
+    'hotUpdate',
+    'applyToEnvironment',
     'config',
+    'configEnvironment',
     'configResolved',
     'configureServer',
     'configurePreviewServer',
@@ -72,7 +73,10 @@ export default function pluginHookUse(): Plugin {
     'generateBundle',
     'writeBundle',
     'closeBundle',
-    'renderError'
+    'renderError',
+    'onLog',
+    'closeWatcher',
+    'watchChange'
   ].reduce((prev, hook) => {
     prev[hook] = function () {
       // console.log(color.green(`\n=== Enter hook "${hook}" ===\n`));
@@ -94,9 +98,8 @@ export default function pluginHookUse(): Plugin {
     console.log();
     intro(color.inverse(' === Start === '));
     order.forEach((count, hookName) => {
-      s.start();
       const text = `${hookName}(${count})`;
-      s.stop(text);
+      log.step(text);
     });
     outro(color.inverse(' === End === '));
   };

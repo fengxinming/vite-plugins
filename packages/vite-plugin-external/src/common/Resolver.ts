@@ -30,7 +30,7 @@ export async function stash(libName: string, globalName: string, cacheDir: strin
 
 export class Resolver {
   readonly stashMap = new Map<string, ExternalIIFE>();
-  private resolveHook?: ExternalFn;
+  private readonly resolveHooks: ExternalFn[] = [];
   constructor(
     private readonly cacheDir: string
   ) {
@@ -59,14 +59,13 @@ export class Resolver {
     source: string,
     importer: string | undefined,
     isResolved: boolean
-  ): Promise<ExternalIIFE | true | undefined> {
+  ): Promise<ExternalIIFE | boolean> {
     const info = this.stashMap.get(source);
     if (info) {
       return info;
     }
 
-    const { resolveHook } = this;
-    if (resolveHook) {
+    for (const resolveHook of this.resolveHooks) {
       const globalName = resolveHook(source, importer, isResolved);
 
       if (globalName === true) {
@@ -77,21 +76,12 @@ export class Resolver {
         return this.stash(source, globalName);
       }
     }
+
+    return false;
   }
 
-  addHook(fn: ExternalFn): void {
-    const { resolveHook } = this;
-    if (!resolveHook) {
-      this.resolveHook = fn;
-      return;
-    }
-
-    this.resolveHook = (source: string, importer: string | undefined, isResolved: boolean) => {
-      let val = resolveHook(source, importer, isResolved);
-      if (!val) {
-        val = fn(source, importer, isResolved);
-      }
-      return val;
-    };
+  useHook(hook: ExternalFn): this {
+    this.resolveHooks.push(hook);
+    return this;
   }
 }

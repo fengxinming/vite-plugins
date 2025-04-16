@@ -24,7 +24,7 @@ export default function v6(opts: Options): Plugin {
       resolver = new Resolver(resolvedOptions.cacheDir);
 
       await setOptimizeDeps(resolver, resolvedOptions, config);
-      resolver.addHook(setExternals(resolvedOptions, config));
+      resolver.useHook(setExternals(resolvedOptions, config));
 
       if (autoInterop) {
         config.build!.rollupOptions!.external = undefined;

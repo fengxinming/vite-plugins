@@ -4,8 +4,8 @@ layout: home
 
 hero:
   name: create-vite-lib-starter
-  text: A modern JavaScript utility library delivering modularity, performance, & extras.
-  tagline: Come and give it a try!
+  text: Here is description.
+  tagline: Here is tagline!
   actions:
     - theme: brand
       text: Introduction
