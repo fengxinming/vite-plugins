@@ -11,7 +11,7 @@ export default defineConfig({
       externals: {
         vue: 'Vue'
       }
-    }) as Plugin,
+    }),
     vue() as Plugin,
     view({
       engine: 'pug',
