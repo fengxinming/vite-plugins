@@ -1,7 +1,7 @@
 # Option Reference
 
 ## `externals`
-* Type: `Record<string, any>`
+* Type: `ExternalFn | boolean | string | RegExp | Array<string | RegExp> | Record<string, string>`
 * Required: `false`
 
 Configure external dependencies. [Example](/plugins/vite-plugin-external/usage#basic-usage)
@@ -105,7 +105,13 @@ export interface BasicOptions {
   /**
    * External dependencies configuration
    */
-  externals?: Record<string, string> | ExternalFn;
+  externals?:
+    | ExternalFn
+    | boolean
+    | string
+    | RegExp
+    | Array<string | RegExp>
+    | Record<string, string>;
 
   /**
    * Logging level configuration

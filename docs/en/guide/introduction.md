@@ -18,4 +18,4 @@
 
 * [vite-plugin-separate-importer](/plugins/vite-plugin-separate-importer/quick-start) - Converts batch imports from a source module into individual file imports from subdirectories of the source module.
 
-* [vite-plugin-view](/plugins/vite-plugin-view/quick-start) - Dynamically render pages using custom template engines instead of the static `index.html` entry file.
+* [vite-plugin-view](/plugins/vite-plugin-view/quick-start) - Dynamically render pages using custom template engines instead of the static `.html` entry file.

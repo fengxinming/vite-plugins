@@ -12,7 +12,7 @@ export default defineConfig({
         react: 'React',
         'react-dom/client': 'ReactDOM'
       }
-    }) as Plugin,
+    }),
     react({
       jsxRuntime: 'classic'
     }) as unknown as Plugin,

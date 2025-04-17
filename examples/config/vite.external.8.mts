@@ -1,5 +1,5 @@
 import externalGlobals from 'rollup-plugin-external-globals';
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -12,7 +12,7 @@ export default defineConfig({
         react: 'React',
         'react-dom/client': 'ReactDOM'
       }
-    }) as Plugin
+    })
   ],
   build: {
     minify: false,

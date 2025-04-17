@@ -1,12 +1,12 @@
-import type { ConfigEnv, Plugin, UserConfig } from 'vite';
-import { DevEnvironment } from 'vite';
+import { isPlainObject } from 'is-what-type';
+import type { ConfigEnv, DevEnvironment, HtmlTagDescriptor, IndexHtmlTransformResult, Plugin, UserConfig } from 'vite';
 
 import { PLUGIN_NAME } from './common/constants';
 import { logger } from './common/logger';
 import { Resolver } from './common/Resolver';
 import { setExternals } from './lib/handleExternals';
 import { setOptimizeDeps } from './lib/handleOptimizeDeps';
-import { buildOptions, isRuntime } from './lib/handleOptions';
+import { buildOptions } from './lib/handleOptions';
 import { cleanupCache } from './rollback';
 import type { Options, ResolvedOptions } from './typings';
 
@@ -14,11 +14,9 @@ export default function v6(opts: Options): Plugin {
   let resolvedOptions: ResolvedOptions;
   let resolver: Resolver;
 
-  const autoInterop = opts.interop === 'auto';
-
   return {
     name: PLUGIN_NAME,
-    enforce: autoInterop ? 'pre' : opts.enforce,
+    enforce: 'pre',
     async config(config: UserConfig, env: ConfigEnv) {
       resolvedOptions = buildOptions(opts, env);
       resolver = new Resolver(resolvedOptions.cacheDir);
@@ -26,18 +24,24 @@ export default function v6(opts: Options): Plugin {
       await setOptimizeDeps(resolver, resolvedOptions, config);
       resolver.useHook(setExternals(resolvedOptions, config));
 
-      if (autoInterop) {
+      const { output } = config.build!.rollupOptions!;
+      const isIIFE = output && (Array.isArray(output)
+        ? output.some((o) => o.format === 'iife')
+        : output.format === 'iife');
+
+      if (opts.interop === 'auto' || !isIIFE) {
         config.build!.rollupOptions!.external = undefined;
       }
     },
 
     configResolved(config) {
-      if (!isRuntime(resolvedOptions)) {
-        logger.debug('Resolved rollupOptions:', config.build.rollupOptions);
-      }
+      logger.debug('Resolved rollupOptions:', config.build.rollupOptions);
 
       // cleanup cache metadata
-      cleanupCache(resolvedOptions.externals, config);
+      const { externals } = resolvedOptions;
+      if (isPlainObject(externals)) {
+        cleanupCache(Object.keys(externals), config);
+      }
     },
 
     async resolveId(id, importer, { isEntry }) {
@@ -49,14 +53,19 @@ export default function v6(opts: Options): Plugin {
       }
 
       if (info === true) {
-        logger.debug(`'${id}' is marked as external.`);
+        logger.debug(`'${id}' is externalized.`);
         return { id, external: true };
       }
 
-      const { resolvedId } = info;
+      const { resolvedId, link } = info;
       const { mode } = this.environment;
 
       if (mode === 'build') {
+        if (info.format === 'es') {
+          logger.debug(`'${id}' is resolved to '${link}'.`);
+          return { id: link!, external: true };
+        }
+
         logger.debug(`'${id}' is resolved to '${resolvedId}'.`);
         return resolvedId;
       }
@@ -67,6 +76,29 @@ export default function v6(opts: Options): Plugin {
 
       logger.debug(`'${id}' is resolved to ${depId}`);
       return depId;
+    },
+
+    transformIndexHtml(html: string): IndexHtmlTransformResult | undefined {
+      const { stashMap } = resolver;
+      const tags: HtmlTagDescriptor[] = [];
+      stashMap.forEach((info) => {
+        if (info.format === 'es') {
+          tags.push({
+            tag: 'link',
+            attrs: {
+              rel: 'modulepreload',
+              href: info.link
+            },
+            injectTo: 'head'
+          });
+        }
+      });
+      if (tags.length > 0) {
+        return {
+          html,
+          tags
+        };
+      }
     }
   };
 }

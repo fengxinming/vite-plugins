@@ -1,12 +1,15 @@
 import type { Plugin } from 'esbuild';
-import { isFunction } from 'is-what-type';
 import type { UserConfig } from 'vite';
+import { isCSSRequest } from 'vite';
 import { getValue } from 'vp-runtime-helper';
 
 import { ESBUILD_PLUGIN_NAME } from '../common/constants';
 import { logger } from '../common/logger';
 import { Resolver } from '../common/Resolver';
-import type { ExternalFn, ResolvedOptions } from '../typings';
+import type { ExternalIIFE, ResolvedOptions } from '../typings';
+
+const externalWithConversionNamespace = 'vite:dep-pre-bundle:external-conversion';
+const convertedExternalPrefix = 'vite-dep-pre-bundle-external:';
 
 function esbuildPluginResolve(
   resolver: Resolver
@@ -22,6 +25,13 @@ function esbuildPluginResolve(
       }, async (args) => {
         const { path, importer, kind } = args;
 
+        if (path.startsWith(convertedExternalPrefix)) {
+          return {
+            path: path.slice(convertedExternalPrefix.length),
+            external: true
+          };
+        }
+
         const isResolved = kind === 'entry-point';
         const info = await resolver.resolve(path, importer, isResolved);
 
@@ -34,22 +44,47 @@ function esbuildPluginResolve(
           logger.trace(`The module '${path}' will be externalized.`);
           return {
             path,
-            external: true
+            namespace: externalWithConversionNamespace
           };
         }
 
-        logger.trace('Pre-bundling external:', {
-          name: info.name,
-          id: path,
-          importer,
-          isResolved
-        });
+        if ((info as ExternalIIFE).name) {
+          logger.trace('Pre-bundling IIFE external:', {
+            name: (info as ExternalIIFE).name,
+            id: path,
+            importer,
+            isResolved
+          });
+        }
+        else {
+          logger.trace('Pre-bundling ES external:', {
+            link: info.link,
+            id: path,
+            importer,
+            isResolved
+          });
+        }
 
         // Collect resolved globals
         return {
           path: info.resolvedId
         };
       });
+
+      build.onLoad(
+        { filter: /./, namespace: externalWithConversionNamespace },
+        (args) => {
+          const modulePath = `"${convertedExternalPrefix}${args.path}"`;
+          return {
+            contents:
+              isCSSRequest(args.path)
+                ? `import ${modulePath};`
+                : `export { default } from ${modulePath};
+export * from ${modulePath};`,
+            loader: 'js'
+          };
+        },
+      );
 
       build.onEnd(() => {
         logger.debug('Pre-bundling externals:', Array.from(resolver.stashMap.keys()));
@@ -65,12 +100,12 @@ export async function setOptimizeDeps(
 ): Promise<void> {
   const plugins = getValue(config, 'optimizeDeps.esbuildOptions.plugins', []);
 
-  const { externals } = opts;
+  // const { externals } = opts;
 
-  if (isFunction<ExternalFn>(externals)) {
-    config.optimizeDeps!.force = true;
-    logger.debug('Force to optimize all dependencies due to \'options.externals\' is a function.');
-  }
+  // if (isFunction<ExternalFn>(externals)) {
+  //   config.optimizeDeps!.force = true;
+  //   logger.debug('Force to optimize all dependencies due to \'options.externals\' is a function.');
+  // }
 
   plugins.push(esbuildPluginResolve(resolver));
 }

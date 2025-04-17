@@ -1,4 +1,4 @@
-import { isFunction } from 'is-what-type';
+import { isPlainObject } from 'is-what-type';
 import { Alias, UserConfig } from 'vite';
 import { getValue } from 'vp-runtime-helper';
 
@@ -11,23 +11,16 @@ export async function setAliases(
 ): Promise<void> {
   const { externals } = opts;
 
-  if (!externals) {
-    logger.debug('\'options.externals\' is not specified.');
-    return;
+  if (!isPlainObject(externals)) {
+    throw new TypeError('\'options.externals\' is not an object.');
   }
-
-  if (isFunction(externals)) {
-    throw new TypeError('\'options.externals\' as function is not supported.');
-  }
-
-  const globalObject = externals;
 
   // empty globals
-  if (Object.keys(globalObject).length === 0) {
+  if (Object.keys(externals).length === 0) {
     logger.warn('\'options.externals\' is empty.');
     return;
   }
-
+  const globalObject = externals;
   const { cacheDir } = opts;
 
   // // cleanup cache dir
@@ -47,16 +40,16 @@ export async function setAliases(
   await Promise.all(
     Object.entries(globalObject).map(([libName, globalName]) => {
       return (async () => {
-        const libPath = await stash(libName, globalName, cacheDir);
+        const { resolvedId } = await stash(libName, globalName, cacheDir);
         (alias as Alias[]).push({
           find: new RegExp(`^${libName}$`),
-          replacement: libPath
+          replacement: resolvedId
         });
 
         return {
           name: globalName,
           external: libName,
-          resolvedId: libPath
+          resolvedId: resolvedId
         };
       })();
     })

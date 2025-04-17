@@ -1,7 +1,7 @@
 # 配置选项参考
 
 ## `externals`
-* 类型：`Record<string, any>`
+* 类型：`ExternalFn | boolean | string | RegExp | Array<string | RegExp> | Record<string, string>`
 * 必填：`false`
 
 配置外部依赖项。[示例](/zh/plugins/vite-plugin-external/usage#基础使用)
@@ -104,7 +104,13 @@ export interface BasicOptions {
   /**
    * 外部依赖项配置
    */
-  externals?: Record<string, string> | ExternalFn;
+  externals?:
+    | ExternalFn
+    | boolean
+    | string
+    | RegExp
+    | Array<string | RegExp>
+    | Record<string, string>;
 
   /**
    * 日志级别配置
