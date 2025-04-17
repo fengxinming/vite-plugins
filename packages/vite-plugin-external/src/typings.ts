@@ -13,10 +13,18 @@ export type ModuleNameFn = ((id: string) => string);
 export type ModuleNameMap = Record<string, string> | ModuleNameFn;
 
 export interface ExternalIIFE {
+  format: 'iife';
   name: string;
   external: string;
   resolvedId: string;
-  cdn?: string;
+  link?: string;
+}
+
+export interface ExternalES {
+  format: 'es';
+  external: string;
+  resolvedId: string;
+  link: string;
 }
 
 export type { LogLevel } from 'base-log-factory';
@@ -27,7 +35,13 @@ export interface BasicOptions {
    *
    * 配置外部依赖
    */
-  externals?: Record<string, string> | ExternalFn;
+  externals?:
+    | ExternalFn
+    | boolean
+    | string
+    | RegExp
+    | Array<string | RegExp>
+    | Record<string, string>;
 
   /**
    * Log level

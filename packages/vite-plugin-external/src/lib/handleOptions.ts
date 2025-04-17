@@ -38,6 +38,14 @@ export function buildOptions(
             if (isPlainObject<Record<string, string>>(value)) {
               externals = Object.assign({}, externals, value);
             }
+            else if (Array.isArray(value)) {
+              if (Array.isArray(externals)) {
+                externals = Array.from(new Set(externals.concat(value)));
+              }
+              else {
+                externals = value;
+              }
+            }
             else {
               externals = value;
             }
@@ -76,8 +84,4 @@ export function buildOptions(
   logger.debug('Resolved Options:', resolvedOpts);
 
   return resolvedOpts;
-}
-
-export function isRuntime({ command, interop }: ResolvedOptions) {
-  return command === 'serve' || ((command as any) === 'dev') || interop === 'auto';
 }

@@ -60,7 +60,6 @@ export function setExternals(
 ): ExternalFn {
   const externalHook = new ExternalHook();
 
-  const globalObject: Record<string, string> = {};
   const { externals } = opts;
 
   if (externals) {
@@ -96,6 +95,8 @@ export function setExternals(
   if (rollupOptions.external) {
     externalHook.use(rollupOptions.external);
   }
+
+  const globalObject: Record<string, string> = {};
   const resolveHook: ExternalFn = function (
     id: string,
     importer: string | undefined,
@@ -111,7 +112,7 @@ export function setExternals(
       }
 
       if (val) {
-        logger.debug(`External: '${id}'.`);
+        logger.debug(`Externalized: '${id}'.`);
         return true;
       }
     }

@@ -39,6 +39,8 @@ yarn add vite-plugin-external
 
 :::
 
+**iife 格式打包**
+
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -66,18 +68,22 @@ export default defineConfig({
 });
 ```
 
+**动态配置 externals**
 ```js
 import { defineConfig } from 'vite';
-import vitePluginExternal from 'vite-plugin-external';
+import react from '@vitejs/plugin-react';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
+    react({
+      jsxRuntime: 'classic',
+    }),
+    pluginExternal({
       externals(libName) {
         if (libName === 'react') {
           return 'React';
         }
-        
         if (libName === 'react-dom/client') {
           return 'ReactDOM';
         }
@@ -94,19 +100,49 @@ export default defineConfig({
 });
 ```
 
+**esm 格式打包**
+```js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    react({
+      jsxRuntime: 'classic',
+    }),
+    pluginExternal({
+      externals: {
+        react: 'https://esm.sh/react@18.3.1',
+        'react-dom/client': 'https://esm.sh/react-dom@18.3.1'
+      }
+    })
+  ]
+});
+```
+
+## Q&A
+
+* 问: 开发时修改 `externals` 后，页面无法正常加载
+* 答: Vite将之前的依赖缓存了，需要手动删除 `./node_modules/.vite/deps` 文件夹
+
 ## 变更记录
 
-* 6.1.0
-  * 针对 Vite 6.x 重新实现了 external 插件逻辑
+* **6.2.0**
+  * 支持链接到外部资源
+
+* **6.1.0**
+  * 针对 Vite 6.x 重新实现了 `vite-plugin-external` 的内部逻辑
   * 新增可选参数 `rollback`，可回退到原来的实现逻辑
   * 新增可选参数 `logLevel`，可控制日志输出等级，即："TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF"
+  * 支持外部依赖的动态设置
 
-* 6.0.0
+* **6.0.0**
   * 新增可选参数 `externalGlobals` 修复 https://github.com/rollup/rollup/issues/3188
 
-* 4.3.1
+* **4.3.1**
   * `externalizeDeps` 配置项支持传入正则表达式
 
-* 4.3.0
+* **4.3.0**
   * 上一个版本的 `mode: false` 的逻辑改用 `interop: 'auto'` 代替
   * 新增字段 `nodeBuiltins` 和 `externalizeDeps` 配置项用于开发node模块后的打包处理

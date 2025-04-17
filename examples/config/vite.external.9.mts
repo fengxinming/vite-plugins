@@ -1,5 +1,5 @@
 import { globSync } from 'tinyglobby';
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 
 // https://vitejs.dev/config/
@@ -9,7 +9,7 @@ export default defineConfig({
       logLevel: 'TRACE',
       nodeBuiltins: true,
       externalizeDeps: ['vite']
-    }) as Plugin
+    })
   ],
   build: {
     outDir: 'dist/external/9',

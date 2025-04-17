@@ -1,6 +1,6 @@
-import type { LogLevel } from 'base-log-factory';
 import type { CopyOptions } from 'fs-extra';
 import type { GlobOptions } from 'tinyglobby';
+import type { LogLevel } from 'vp-runtime-helper';
 
 export type TransformFile = (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
 

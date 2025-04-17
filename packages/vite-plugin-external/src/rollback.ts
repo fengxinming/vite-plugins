@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { isFunction } from 'is-what-type';
+import { isPlainObject } from 'is-what-type';
 import type { ConfigEnv, Plugin, ResolvedConfig, UserConfig } from 'vite';
 import { getDepsCacheDir } from 'vp-runtime-helper';
 
@@ -9,19 +9,19 @@ import { PLUGIN_NAME } from './common/constants';
 import { logger } from './common/logger';
 import { setAliases } from './lib/handleAliases';
 import { setExternals } from './lib/handleExternals';
-import { buildOptions, isRuntime } from './lib/handleOptions';
-import type { ExternalFn, Options, ResolvedOptions } from './typings';
+import { buildOptions } from './lib/handleOptions';
+import type { Options, ResolvedOptions } from './typings';
+
+function isRuntime({ command, interop }: ResolvedOptions) {
+  return command === 'serve' || ((command as any) === 'dev') || interop === 'auto';
+}
 
 export async function cleanupCache(
-  externals: Record<string, string> | ExternalFn | undefined,
+  deps: string[],
   config: ResolvedConfig
 ) {
-  if (!externals) {
+  if (deps.length === 0) {
     return;
-  }
-
-  if (isFunction(externals)) {
-    logger.warn('\'options.externals\' as function is not supported.');
   }
 
   const ssr = config.command === 'build' && !!config.build.ssr;
@@ -42,11 +42,11 @@ export async function cleanupCache(
 
   const { optimized } = metadata;
   if (optimized && Object.keys(optimized).length) {
-    Object.keys(externals).forEach((libName) => {
+    for (const libName of deps) {
       if (optimized[libName]) {
         delete optimized[libName];
       }
-    });
+    }
 
     try {
       writeFileSync(cachedMetadataPath, JSON.stringify(metadata));
@@ -80,7 +80,10 @@ export default function rollback(opts: Options): Plugin {
       }
 
       // cleanup cache metadata
-      cleanupCache(resolvedOptions.externals, config);
+      const { externals } = resolvedOptions;
+      if (isPlainObject(externals)) {
+        cleanupCache(Object.keys(externals), config);
+      }
     }
   };
 }

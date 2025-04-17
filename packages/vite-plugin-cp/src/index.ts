@@ -12,6 +12,8 @@ import { logger, PLUGIN_NAME } from './logger';
 import type { Options, Target } from './typings';
 import { changeName, makeCopy, stringify } from './util';
 
+export * from './typings';
+
 async function doCopy(config: Target, cwd: string, globOptions: GlobOptions, copyOptions: CopyOptions) {
   const { src, rename, flatten, transform } = config;
   let { dest } = config;
@@ -20,20 +22,21 @@ async function doCopy(config: Target, cwd: string, globOptions: GlobOptions, cop
     throw new Error(`${stringify(config)} target must have "src" and "dest" properties.`);
   }
 
-  // dest become absolute path
+  // dest becomes absolute path
   dest = toAbsolutePath(dest, cwd);
   const cpFile = makeCopy(transform);
+
   const run = async (source: string) => {
-  // source become absolute path
+    // source becomes absolute path
     const absSource = toAbsolutePath(source, cwd);
 
     let isNotFlatten = false;
     try {
-    // check if 'source' is directory
-      isNotFlatten = statSync(absSource).isDirectory() && flatten === false;
+      // check if 'source' is directory
+      isNotFlatten = statSync(absSource).isDirectory() && !flatten;
     }
     catch (e) {
-    // 'source' is not a file or directory
+      // 'source' is not a file or directory
     }
 
     // matched files and folders
@@ -89,11 +92,11 @@ async function doCopy(config: Target, cwd: string, globOptions: GlobOptions, cop
  *     cp({
  *       targets: [
  *         // copy files of './node_modules/vite/dist' to './dist/test'
- *         { src: './node_modules/vite/dist', dest: './dist/test' },
+ *         { src: './node_modules/vite/dist', dest: './dist/test', flatten: false },
  *
  *         // copy files of './node_modules/vite/dist' to './dist/test2'
  *         // and keep the directory structure of copied files
- *         { src: './node_modules/vite/dist', dest: './dist/test2', flatten: false },
+ *         { src: './node_modules/vite/dist', dest: './dist/test2' },
  *
  *         // copy './node_modules/vite/README.md' to './dist/README.md'
  *         { src: './node_modules/vite/README.md', dest: './dist' },
@@ -158,7 +161,7 @@ export default function pluginCp(opts: Options) {
 
     await Promise.all(targets.map((target) => {
       if (!isObject(target)) {
-        throw new Error(`${stringify(target)} target must be an object`);
+        throw new TypeError(`${stringify(target)} target must be an object`);
       }
 
       return doCopy(

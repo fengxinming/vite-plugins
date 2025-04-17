@@ -51,19 +51,18 @@ export default defineConfig({
 ```js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import vitePluginExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
-      react({
-        jsxRuntime: 'classic',
-      }),
+    react({
+      jsxRuntime: 'classic',
+    }),
+    pluginExternal({
       externals(libName) {
         if (libName === 'react') {
           return 'React';
         }
-        
         if (libName === 'react-dom/client') {
           return 'ReactDOM';
         }
@@ -80,44 +79,31 @@ export default defineConfig({
 });
 ```
 
-<!-- **Build esm format bundle**
-
-```ts
+**Build esm format bundle**
+```js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import createExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
     react({
       jsxRuntime: 'classic',
     }),
-    createExternal({
-      externals(libName) {
-        if (libName === 'react') {
-          return 'React';
-        }
-        if (libName === 'react-dom/client') {
-          return 'ReactDOM';
-        }
-      },
-    }),
+    pluginExternal({
+      externals: {
+        react: 'https://esm.sh/react@18.3.1',
+        'react-dom/client': 'https://esm.sh/react-dom@18.3.1'
+      }
+    })
   ]
 });
 ```
 
-```html
-<script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.3.1",
-      "react-dom/client": "https://esm.sh/react-dom@18.3.1"
-    }
-  }
-</script>
-<link rel="modulepreload" href="https://esm.sh/react@18.3.1" />
-<link rel="modulepreload" href="https://esm.sh/react-dom@18.3.1" />
-``` -->
+## Q&A
+
+* Q: Page cannot load after modifying `externals`
+* A: The previous dependencies are cached by Vite, you need to manually delete the `./node_modules/.vite/deps` folder
 
 ## Contributing
 

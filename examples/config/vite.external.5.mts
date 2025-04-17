@@ -14,7 +14,7 @@ export default defineConfig({
         react: 'React',
         'react-dom/client': 'ReactDOM'
       }
-    }) as Plugin
+    })
   ],
   build: {
     minify: false,

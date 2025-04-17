@@ -18,4 +18,4 @@
 
 * [vite-plugin-separate-importer](/zh/plugins/vite-plugin-separate-importer/quick-start) - 将原来从一个源模块批量导入内容变成分批从源模块下导入单个文件。
 
-* [vite-plugin-view](/plugins/vite-plugin-view/quick-start) - 使用自定义模板引擎动态渲染页面，替代静态的 `index.html` 入口文件。
+* [vite-plugin-view](/plugins/vite-plugin-view/quick-start) - 使用自定义模板引擎动态渲染页面，替代静态的 `.html` 入口文件。

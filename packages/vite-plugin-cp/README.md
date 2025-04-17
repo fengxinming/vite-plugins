@@ -27,10 +27,10 @@ export default defineConfig({
     cp({
       targets: [
         // Copy all files from 'node_modules/vite/dist' to 'dist/cp/test'
-        { src: './node_modules/vite/dist', dest: 'dist/cp/test' },
+        { src: './node_modules/vite/dist', dest: 'dist/cp/test', flatten: true },
 
         // Copy all files from 'node_modules/vite/dist' to 'dist/cp/test2', but keep the directory structure
-        { src: './node_modules/vite/dist', dest: 'dist/cp/test2', flatten: false },
+        { src: './node_modules/vite/dist', dest: 'dist/cp/test2' },
 
         // Copy the README.md file from 'node_modules/vite' to 'dist/cp'
         { src: './node_modules/vite/README.md', dest: 'dist/cp' },

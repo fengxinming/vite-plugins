@@ -1,6 +1,6 @@
-import ts from '@rollup/plugin-typescript';
 import { defineConfig, Plugin } from 'vite';
 import vitePluginCombine from 'vite-plugin-combine';
+import ts from 'vite-plugin-dts';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,7 +12,7 @@ export default defineConfig({
       exports: 'both'
     }),
     ts({
-      tsconfig: './tsconfig.build.json',
+      tsconfigPath: './tsconfig.build.json',
       compilerOptions: {
         declarationDir: 'dist/combine/3'
       }

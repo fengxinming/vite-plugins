@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-external",
-  "version": "6.1.1",
+  "version": "6.2.0",
   "description": "Excludes specified module dependencies from runtime code and built bundles.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",

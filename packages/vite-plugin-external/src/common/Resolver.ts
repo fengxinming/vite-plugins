@@ -1,9 +1,10 @@
 import { join } from 'node:path';
 
 import { outputFile } from 'fs-extra';
+import { isAbsoluteURL } from 'is-what-type';
 import { flattenId } from 'vp-runtime-helper';
 
-import { ExternalFn, ExternalIIFE } from '../typings';
+import type { ExternalES, ExternalFn, ExternalIIFE } from '../typings';
 import { logger } from './logger';
 
 function makeStashFilePath(cacheDir: string, libName: string): string {
@@ -15,28 +16,55 @@ function makeCjsExternalCode(globalName: string): string {
   return `module.exports = ${globalName};`;
 }
 
-export async function stash(libName: string, globalName: string, cacheDir: string): Promise<string> {
-  const libPath = makeStashFilePath(cacheDir, libName);
+function makeEsExternalCode(link: string): string {
+  return `export { default } from '${link}';
+export * from '${link}';`;
+}
 
+export async function stash(libName: string, globalName: string, cacheDir: string): Promise<ExternalIIFE | ExternalES> {
+  const libPath = makeStashFilePath(cacheDir, libName);
   logger.trace(`Stashing a file: '${libPath}' for '${globalName}'.`);
+
+  let info: ExternalIIFE | ExternalES;
+  let code;
+
+  if (isAbsoluteURL(globalName)) {
+    info = {
+      external: libName,
+      resolvedId: libPath,
+      link: globalName,
+      format: 'es'
+    } as ExternalES;
+    code = makeEsExternalCode(globalName);
+  }
+  else {
+    info = {
+      external: libName,
+      resolvedId: libPath,
+      name: globalName,
+      format: 'iife'
+    } as ExternalIIFE;
+    code = makeCjsExternalCode(globalName);
+  }
 
   await outputFile(
     libPath,
-    makeCjsExternalCode(globalName),
+    code,
     'utf-8'
   );
-  return libPath;
+
+  return info;
 }
 
 export class Resolver {
-  readonly stashMap = new Map<string, ExternalIIFE>();
+  readonly stashMap = new Map<string, ExternalIIFE | ExternalES>();
   private readonly resolveHooks: ExternalFn[] = [];
   constructor(
     private readonly cacheDir: string
   ) {
   }
 
-  async stash(libName: string, globalName: string): Promise<ExternalIIFE> {
+  async stash(libName: string, globalName: string): Promise<ExternalIIFE | ExternalES> {
     const { stashMap } = this;
     let info = stashMap.get(libName);
     if (info) {
@@ -44,11 +72,7 @@ export class Resolver {
       return info;
     }
 
-    info = {
-      name: globalName,
-      external: libName,
-      resolvedId: await stash(libName, globalName, this.cacheDir)
-    };
+    info = await stash(libName, globalName, this.cacheDir);
 
     this.stashMap.set(libName, info);
 
@@ -59,7 +83,7 @@ export class Resolver {
     source: string,
     importer: string | undefined,
     isResolved: boolean
-  ): Promise<ExternalIIFE | boolean> {
+  ): Promise<ExternalIIFE | ExternalES | boolean> {
     const info = this.stashMap.get(source);
     if (info) {
       return info;

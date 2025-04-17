@@ -44,10 +44,10 @@ export default defineConfig({
     cp({
       targets: [
         // 从 'node_modules/vite/dist' 复制所有文件到 'dist/cp/test'
-        { src: './node_modules/vite/dist', dest: 'dist/cp/test' },
+        { src: './node_modules/vite/dist', dest: 'dist/cp/test', flatten: true },
 
         // 将 'node_modules/vite/dist' 的所有文件复制到 'dist/cp/test2'，保留目录结构
-        { src: './node_modules/vite/dist', dest: 'dist/cp/test2', flatten: false },
+        { src: './node_modules/vite/dist', dest: 'dist/cp/test2' },
 
         // 将 'node_modules/vite' 的README.md文件复制到 'dist/cp'
         { src: './node_modules/vite/README.md', dest: 'dist/cp' },

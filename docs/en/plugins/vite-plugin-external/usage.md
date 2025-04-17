@@ -17,7 +17,14 @@ export default defineConfig({
         vue: 'Vue'
       }
     })
-  ]
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        format: 'iife'
+      }
+    }
+  }
 });
 ```
 
@@ -25,11 +32,11 @@ export default defineConfig({
 
 ```js
 import { defineConfig } from 'vite';
-import vitePluginExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
+    pluginExternal({
       externals(libName) {
         if (libName === 'react') {
           return 'React';
@@ -98,11 +105,11 @@ Example configuration:
 `vite.config.mjs`
 ```js
 import { defineConfig } from 'vite';
-import vitePluginExternal from 'vite-plugin-external';
+import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    vitePluginExternal({
+    pluginExternal({
       externals: {
         react: '$linkdesign.React',
         'react-dom': '$linkdesign.ReactDOM',
