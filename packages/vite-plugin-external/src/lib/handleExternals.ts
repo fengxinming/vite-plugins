@@ -69,26 +69,28 @@ export function setExternals(
   const rollupOptions: RollupOptions = getValue(config, 'build.rollupOptions', {});
 
   // externalize dependencies for build command
-  const { nodeBuiltins, externalizeDeps } = opts;
+  const { nodeBuiltins, externalizeDeps, command } = opts;
 
-  // handle nodejs built-in modules
-  if (nodeBuiltins) {
-    let builtinModuleArray;
-    externalHook.use(builtinModuleArray = builtinModules.map((builtinModule) => {
-      return new RegExp(`^(?:node:)?${escapeRegex(builtinModule)}(?:/.+)*$`);
-    }));
+  if (command === 'build') {
+    // handle nodejs built-in modules
+    if (nodeBuiltins) {
+      let builtinModuleArray;
+      externalHook.use(builtinModuleArray = builtinModules.map((builtinModule) => {
+        return new RegExp(`^(?:node:)?${escapeRegex(builtinModule)}(?:/.+)*$`);
+      }));
 
-    logger.debug('Externalize nodejs built-in modules:', builtinModuleArray);
-  }
+      logger.debug('Externalize nodejs built-in modules:', builtinModuleArray);
+    }
 
-  // externalize given dependencies
-  if (externalizeDeps) {
-    let deps;
-    externalHook.use(deps = externalizeDeps.map((dep) => {
-      return types.isRegExp(dep) ? dep : new RegExp(`^${escapeRegex(dep)}(?:/.+)*$`);
-    }));
+    // externalize given dependencies
+    if (externalizeDeps) {
+      let deps;
+      externalHook.use(deps = externalizeDeps.map((dep) => {
+        return types.isRegExp(dep) ? dep : new RegExp(`^${escapeRegex(dep)}(?:/.+)*$`);
+      }));
 
-    logger.debug('Externalize given dependencies:', deps);
+      logger.debug('Externalize given dependencies:', deps);
+    }
   }
 
   // Merge external dependencies

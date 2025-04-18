@@ -1,7 +1,7 @@
 import { isAbsolute, join } from 'node:path';
 
 import figlet from 'figlet';
-import { normalizePath, PreviewServer, ViteDevServer } from 'vite';
+import { normalizePath } from 'vite';
 
 const escapeRegexRE = /[-/\\^$*+?.()|[\]{}]/g;
 export function escapeRegex(str: string): string {
@@ -21,26 +21,6 @@ export function toAbsolutePath(pth: string, cwd: string): string {
   return normalizePath(pth);
 }
 
-const postfixRE = /[?#].*$/;
-export function cleanUrl(url: string): string {
-  return url.replace(postfixRE, '');
-}
-
-export function isDevServer(
-  server: ViteDevServer | PreviewServer,
-): server is ViteDevServer {
-  return 'pluginContainer' in server;
-}
-
-const VOLUME_RE = /^[A-Z]:/i;
-export const FS_PREFIX = '/@fs/';
-export function fsPathFromId(id: string): string {
-  const fsPath = normalizePath(
-    id.startsWith(FS_PREFIX) ? id.slice(FS_PREFIX.length) : id,
-  );
-  return fsPath.startsWith('/') || VOLUME_RE.test(fsPath) ? fsPath : `/${fsPath}`;
-}
-
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
@@ -48,11 +28,11 @@ export function sleep(ms: number): Promise<void> {
 }
 
 export * from './colorful';
-export * from './flattenId';
+export * from './depsCache';
+export * from './devServer';
 export * from './generateStarter';
-export * from './getDepsCacheDir';
-export * from './getHash';
-export * from './getRuntimeVersion';
 export * from './getValue';
+export * from './hash';
 export * from './logger';
+export * from './version';
 export type { LogLevel } from 'base-log-factory';

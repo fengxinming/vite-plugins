@@ -10,15 +10,18 @@ export default defineConfig({
     }) as unknown as Plugin,
     vitePluginExternal({
       logLevel: 'TRACE',
-      // interop: 'auto',
-      externals(libName) {
-        if (libName === 'react') {
-          return 'https://esm.sh/react@18.3.1';
-        }
-        if (libName === 'react-dom/client') {
-          return 'https://esm.sh/react-dom@18.3.1';
-        }
+      externals: {
+        react: 'https://esm.sh/react@18.3.1',
+        'react-dom/client': 'https://esm.sh/react-dom@18.3.1'
       }
+      // externals(libName) {
+      //   if (libName === 'react') {
+      //     return 'https://esm.sh/react@18.3.1';
+      //   }
+      //   if (libName === 'react-dom/client') {
+      //     return 'https://esm.sh/react-dom@18.3.1';
+      //   }
+      // }
     })
   ],
   // resolve: {

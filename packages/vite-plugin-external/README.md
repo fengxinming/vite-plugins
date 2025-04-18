@@ -100,6 +100,27 @@ export default defineConfig({
 });
 ```
 
+## Changelog
+
+* **6.2.0**
+  * Support links to external resources
+
+* **6.1.0**
+  * Reimplemented external plugin logic for Vite 6.x compatibility
+  * Added optional `rollback` parameter to revert to previous implementation
+  * Added optional `logLevel` parameter to control logging level (values: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF")
+  * Support to set `externals` as a function
+
+* **6.0.0**
+  * Added optional `externalGlobals` parameter to fix issue [rollup#3188](https://github.com/rollup/rollup/issues/3188)
+
+* **4.3.1**
+  * `externalizeDeps` configuration supports regex patterns
+
+* **4.3.0**
+  * Previous `mode: false` logic replaced with `interop: 'auto'`
+  * Added `nodeBuiltins` and `externalizeDeps` configurations for Node module bundling
+
 ## Q&A
 
 * Q: Page cannot load after modifying `externals`
