@@ -20,6 +20,7 @@
     "build:external.7": "vite build --config=../config/vite.external.7.mts",
     "build:external.8": "vite build --config=../config/vite.external.8.mts",
     "build:external.9": "vite build --config=../config/vite.external.9.mts",
+    "build:external.10": "vite build --config=../config/vite.external.10.mts",
     "build:hook-use.1": "vite build --config=../config/vite.hook-use.1.mts",
     "build:include-css.1": "vite build --config=../config/vite.include-css.1.mts",
     "build:mock-data.1": "vite build --config=../config/vite.mock-data.1.mts",

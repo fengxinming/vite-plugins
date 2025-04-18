@@ -59,6 +59,34 @@ export default defineConfig({
 });
 ```
 
+## 动态配置 ESM 格式 CDN
+
+> 将指定的依赖替换为 CDN 资源, 并在 `index.html` 中添加 `modulepreload` 链接标签
+
+```js
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    react({
+      jsxRuntime: 'classic'
+    }),
+    pluginExternal({
+      externals(libName) {
+        if (libName === 'react') {
+          return 'https://esm.sh/react@18.3.1';
+        }
+        if (libName === 'react-dom/client') {
+          return 'https://esm.sh/react-dom@18.3.1';
+        }
+      }
+    })
+  ]
+});
+```
+
 ## 多模式场景配置
 
 > 有时候可能开发环境和生产环境用到的 cdn 不一致。针对这种情况，可以配置 `development` 和 `production` 两个模式，分别对应开发环境和生产环境的外部依赖。

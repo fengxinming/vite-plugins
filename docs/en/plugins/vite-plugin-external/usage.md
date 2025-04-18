@@ -57,6 +57,34 @@ export default defineConfig({
 });
 ```
 
+## Dynamic Configuration of ESM format CDN
+
+> Replace specific CDN links with dynamic configuration, and inject `modulepreload` links into the HTML header.
+
+```js
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    react({
+      jsxRuntime: 'classic'
+    }),
+    pluginExternal({
+      externals(libName) {
+        if (libName === 'react') {
+          return 'https://esm.sh/react@18.3.1';
+        }
+        if (libName === 'react-dom/client') {
+          return 'https://esm.sh/react-dom@18.3.1';
+        }
+      }
+    })
+  ]
+});
+```
+
 ## Multi-Environment Configuration
 
 > Sometimes development and production environments use different CDNs. You can configure `development` and `production` modes for respective external dependencies.
