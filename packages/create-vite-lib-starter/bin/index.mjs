@@ -4,7 +4,7 @@ import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ensureDir } from 'fs-extra';
-import { generateStarter } from 'vp-runtime-helper';
+import { displayTime, generateStarter } from 'vp-runtime-helper';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,10 +20,12 @@ async function run() {
   const templateDir = resolve(__dirname, '..');
   const packageName = basename(targetDir);
 
+  const startTime = Date.now();
   await generateStarter(templateDir, targetDir, {
     name: packageName,
     dependencies: {}
   });
+  console.info(`Generated ${packageName} in ${displayTime(Date.now() - startTime)}.`);
 }
 
 run();
