@@ -6,7 +6,7 @@ import { isObject } from 'is-what-type';
 import type { GlobOptions } from 'tinyglobby';
 import { glob } from 'tinyglobby';
 import type { Plugin } from 'vite';
-import { banner, sleep, toAbsolutePath } from 'vp-runtime-helper';
+import { banner, displayTime, sleep, toAbsolutePath } from 'vp-runtime-helper';
 
 import { logger, PLUGIN_NAME } from './logger';
 import type { Options, Target } from './typings';
@@ -176,7 +176,7 @@ export default function pluginCp(opts: Options) {
       );
     }));
 
-    logger.info(`Done in ${Number((Date.now() - startTime) / 1000).toFixed(1)}s`);
+    logger.info(`Done in ${displayTime(Date.now() - startTime)}`);
   };
 
   return plugin;
