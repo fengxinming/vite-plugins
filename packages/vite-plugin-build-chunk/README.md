@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-build-chunk.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-build-chunk)
 
-> 
+> Generate additional build artifacts (e.g., chunk files in different formats) after Vite's main build process. Ideal for scenarios requiring multi-format outputs or secondary builds.
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-build-chunk.svg?style=flat)](https://npmjs.org/package/vite-plugin-build-chunk)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-build-chunk.svg?style=flat)](https://npmjs.org/package/vite-plugin-build-chunk)
