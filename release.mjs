@@ -9,8 +9,6 @@ import { request } from 'undici';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const [,, packageName] = process.argv;
-
 async function getLatestVersion(pkgName) {
   const { body } = await request(`https://registry.npmjs.org/${pkgName}`);
 
@@ -19,25 +17,28 @@ async function getLatestVersion(pkgName) {
     console.error(`Package '${pkgName}' not found!`);
     return null;
   }
-  return pkg['dist-tags'].latest;
+  const { latest } = pkg['dist-tags'];
+  console.info(`Latest version of '${pkgName}' is '${latest}'.`);
+  return latest;
 }
 
-function release(pkg) {
+function release(pkg, currentDir) {
   return new Promise((resolve, reject) => {
     const { name } = pkg;
     const tag = /\d+\.\d+\.\d+-([a-z]+)\.\d+/.exec(name);
     const args = [
       'publish',
-      '--filter',
-      packageName,
       '--no-git-checks',
       '--tag',
       tag ? tag[1] : 'latest'
     ];
-    const child = spawn('pnpm', args);
+    const child = spawn('pnpm', args, { cwd: currentDir });
     let err = '';
     child.stderr.on('data', (data) => {
       err += data;
+    });
+    child.on('error', (err) => {
+      reject(err);
     });
     child.on('close', (code) => {
       if (code === 0) {
@@ -52,16 +53,20 @@ function release(pkg) {
 }
 async function run() {
   const packagesDir = join(__dirname, 'packages');
-  const fileList = await readdir(packagesDir);
-  await Promise.all(fileList.map((pkgName) => (async () => {
-    const latestVersion = await getLatestVersion(pkgName);
-    const pkg = JSON.parse(await readFile(join(packagesDir, pkgName, 'package.json'), 'utf-8'));
-    if (pkg.version !== latestVersion) {
-      return release(pkg);
-    }
+  await Promise.all(
+    (await readdir(packagesDir)).map((pkgName) => (async () => {
+      const latestVersion = await getLatestVersion(pkgName);
+      const packageDir = join(packagesDir, pkgName);
+      const pkgPath = join(packageDir, 'package.json');
+      const pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
 
-    console.info(`'${pkgName}' is up to date!`);
-  })()));
+      if (pkg.version !== latestVersion) {
+        return release(pkg, packageDir);
+      }
+
+      console.info(`'${pkgName}' is up to date!`);
+    })())
+  );
 }
 
 run().catch((err) => {
