@@ -1,5 +1,9 @@
 # create-vite-lib-starter
 
+[![NPM version](https://img.shields.io/npm/v/create-vite-lib-starter.svg?style=flat)](https://npmjs.org/package/create-vite-lib-starter)
+[![NPM Downloads](https://img.shields.io/npm/dm/create-vite-lib-starter.svg?style=flat)](https://npmjs.org/package/create-vite-lib-starter)
+[![Node version](https://img.shields.io/node/v/create-vite-lib-starter.svg?style=flat)](https://npmjs.org/package/create-vite-lib-starter)
+
 > Quickly generate a Vite library project template with basic configuration and development environment.
 
 ## Usage
