@@ -161,7 +161,7 @@ function processLibs(
  * @returns a vite plugin
  */
 function pluginSeparateImporter(
-  { enforce, libs = [], logLevel }: Options = {}
+  { enforce, libs = [], logLevel, enableBanner }: Options = {}
 ): Plugin | undefined {
   if (!Array.isArray(libs) || libs.length === 0) {
     logger.warn('No libs specified.');
@@ -172,7 +172,9 @@ function pluginSeparateImporter(
     logger.level = logLevel;
   }
 
-  banner(PLUGIN_NAME);
+  if (enableBanner) {
+    banner(PLUGIN_NAME);
+  }
 
   const libMap: Record<string, LibInfo> = {};
   for (const lib of libs) {

@@ -3,9 +3,9 @@ import { builtinModules } from 'node:module';
 import ts from '@rollup/plugin-typescript';
 import { defineConfig } from 'vite';
 
-import pkg from './package.json';
+import { dependencies } from './package.json';
 
-const externals = Object.keys(pkg.dependencies)
+const externals = Object.keys(dependencies)
   .concat(builtinModules, 'vite')
   .map((n) => new RegExp(`^${n}/?`))
   .concat(/^node:/);

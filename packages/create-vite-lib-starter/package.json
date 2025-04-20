@@ -1,20 +1,17 @@
 {
   "name": "create-vite-lib-starter",
   "version": "1.0.0",
-  "types": "./dist/index.d.ts",
-  "module": "./dist/index.mjs",
-  "main": "./dist/index.js",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "main": "dist/index.js",
+  "unpkg": "dist/index.umd.js",
+  "jsdelivr": "dist/index.umd.js",
   "bin": {
     "create-vite-lib-starter": "bin/index.mjs"
   },
   "scripts": {
+    "deps": "npm run clean && pnpm install",
+    "clean": "rm -rf node_modules",
     "dev": "vite",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
@@ -22,6 +19,7 @@
     "build": "vite build",
     "eslint": "eslint --ext .js,.mjs,.jsx,.ts,.tsx --fix --ignore-path .eslintignore ./",
     "prepare": "husky",
+    "prepublishOnly": "npm run build",
     "preview": "vite preview",
     "test": "vitest run --coverage",
     "typedoc": "typedoc && typedoc --options typedoc.zh.json"
@@ -50,6 +48,6 @@
     "fs-extra": "^11.3.0"
   },
   "files": [
-    "dist"
+    "dist/"
   ]
 }

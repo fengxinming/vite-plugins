@@ -34,5 +34,6 @@ export * from './generateStarter';
 export * from './getValue';
 export * from './hash';
 export * from './logger';
+export * from './time';
 export * from './version';
 export type { LogLevel } from 'base-log-factory';

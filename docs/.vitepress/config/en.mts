@@ -28,6 +28,16 @@ export const en = defineConfig({
           { text: 'Contribution', link: 'contribution' }
         ]
       },
+      '/plugins/vite-plugin-build-chunk/': {
+        base: '/plugins/vite-plugin-build-chunk/',
+        items: [{
+          text: 'vite-plugin-build-chunk',
+          items: [
+            { text: 'Quick start', link: 'quick-start' },
+            { text: 'Options', link: 'options' },
+          ]
+        }]
+      },
       '/plugins/vite-plugin-combine/': {
         base: '/plugins/vite-plugin-combine/',
         items: [{
@@ -122,6 +132,11 @@ export const en = defineConfig({
 
 function navPlugins(): DefaultTheme.NavItemWithLink[] {
   return [
+    { 
+      text: 'vite-plugin-build-chunk', 
+      activeMatch: '/plugins/vite-plugin-build-chunk/', 
+      link: '/plugins/vite-plugin-build-chunk/quick-start'
+    },
     { 
       text: 'vite-plugin-combine', 
       activeMatch: '/plugins/vite-plugin-combine/', 
