@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { spawn } from 'cross-spawn';
+import picocolors from 'picocolors';
 import { request } from 'undici';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,8 +16,11 @@ class Info {
     this.messages = [];
     this.name = name;
   }
-  push(message) {
-    this.messages.push(`[${this.name}] - ${message}`);
+  info(message) {
+    this.messages.push(picocolors.green(`[${this.name}] - ${message}`));
+  }
+  error(message) {
+    this.messages.push(picocolors.red(`[${this.name}] - ${message}`));
   }
 }
 
@@ -25,11 +29,11 @@ async function getLatestVersion(pkgName) {
 
   const pkg = await body.json();
   if (pkg.error) {
-    console.error(`Package '${pkgName}' not found!`);
+    recordMap.get(pkgName).error(`Package '${pkgName}' not found!`);
     return null;
   }
   const { latest } = pkg['dist-tags'];
-  recordMap.get(pkgName).push(`Latest version is '${latest}'.`);
+  recordMap.get(pkgName).info(`Latest version is '${latest}'.`);
   return latest;
 }
 
@@ -56,7 +60,7 @@ function release(pkg, currentDir) {
     });
     child.on('close', (code) => {
       if (code === 0) {
-        recordMap.get(name).push(`'${name}@${pkg.version}' released successfully!`);
+        recordMap.get(name).info(`'${name}@${pkg.version}' released successfully!`);
         resolve();
       }
       else {
@@ -78,11 +82,11 @@ async function run() {
       const pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
 
       if (pkg.version !== latestVersion) {
-        info.push(`Start to release '${pkgName} '...`);
+        info.info(`Start to release '${pkgName} '...`);
         await release(pkg, packageDir);
       }
       else {
-        info.push(`'${pkgName}@${pkg.version}' is up to date!`);
+        info.info(`'${pkgName}@${pkg.version}' is up to date!`);
       }
 
       return info;

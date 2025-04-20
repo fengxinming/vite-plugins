@@ -25,7 +25,7 @@ async function run() {
     name: packageName,
     dependencies: {}
   });
-  console.info(`Generated ${packageName} in ${displayTime(Date.now() - startTime)}.`);
+  console.info(`Generated '${packageName}' in ${displayTime(Date.now() - startTime)}.`);
 }
 
 run();

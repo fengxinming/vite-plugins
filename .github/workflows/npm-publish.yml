@@ -41,7 +41,8 @@ jobs:
         with:
           version: 10
       - run: npm run deps
-      - run: npm run build:vite-plugin-deps
-      - run: npm run release:all
+      - run: npm run build:vite-plugin-deps # 构建 vite-plugin 依赖
+      - run: npm run build:starters         # 构建 starter 依赖
+      - run: npm run release:all            # 发布所有包
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}

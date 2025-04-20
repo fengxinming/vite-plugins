@@ -13,9 +13,9 @@
     }
   },
   "scripts": {
-    "build:lib": "vite build",
+    "build": "vite build",
     "watch": "vite build --watch",
-    "prepublishOnly": "npm run build:lib",
+    "prepublishOnly": "npm run build",
     "release": "pnpm publish --no-git-checks"
   },
   "engines": {
@@ -40,7 +40,7 @@
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/quick-start",
   "dependencies": {
     "fs-extra": "^11.1.1",
-    "is-what-type": "^1.1.0",
+    "is-what-type": "^1.1.1",
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
