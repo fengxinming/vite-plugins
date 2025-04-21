@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitepress'
-import { generateAPISidebar } from './shared.mts'
+import { generateAPISidebar } from './shared.mjs'
 
 // https://vitepress.dev/reference/site-config
 export const en = defineConfig({
-  description: "A collection of custom plugins designed to enhance the functionality of the Vite build tool.",
+  description: "Here is description.",
   lang: 'en-US',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config

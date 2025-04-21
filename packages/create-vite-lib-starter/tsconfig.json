@@ -3,6 +3,8 @@
   "include": [
     "./src/**/*.ts",
     "./test/*.ts",
+    "./docs/.vitepress/**/*.ts",
+    "./docs/.vitepress/**/*.mts",
     "./node_modules/vite/client.d.ts",
     "./vite.config.mts"
   ]

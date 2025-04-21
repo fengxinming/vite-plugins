@@ -13,7 +13,7 @@
     "docs:preview": "vitepress preview docs",
     "release:all": "node ./release.mjs",
     "build:vite-plugin-deps": "pnpm run --parallel --filter=vite-plugin-external... build",
-    "build:starters": "pnpm run --parallel --filter=*-starter... build",
+    "build:starters": "pnpm run --parallel --filter=*-starter^... build",
     "build:all": "npm run build:vite-plugin-deps && pnpm run --parallel --filter=vite-plugin-* --filter=!vite-plugin-external build",
     "test:all": "npm run build:all && pnpm run --filter=*-demo -r --parallel /^build:*/"
   },
@@ -30,6 +30,7 @@
   "dependencies": {
     "cross-spawn": "^7.0.6",
     "markdown-it-mathjax3": "^4.3.2",
+    "picocolors": "^1.0.0",
     "undici": "^7.8.0",
     "vitepress": "^1.6.3",
     "vitepress-plugin-group-icons": "^1.3.8"
@@ -49,7 +50,6 @@
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "husky": "^8.0.3",
     "lint-staged": "^12.5.0",
-    "picocolors": "^1.0.0",
     "react": "^16.14.0"
   }
 }

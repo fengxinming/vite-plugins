@@ -82,7 +82,7 @@ async function run() {
       const pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
 
       if (pkg.version !== latestVersion) {
-        info.info(`Start to release '${pkgName} '...`);
+        info.info(`Start to release '${pkgName}'...`);
         await release(pkg, packageDir);
       }
       else {
