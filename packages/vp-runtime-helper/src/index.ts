@@ -30,7 +30,6 @@ export function sleep(ms: number): Promise<void> {
 export * from './colorful';
 export * from './depsCache';
 export * from './devServer';
-export * from './generateStarter';
 export * from './getValue';
 export * from './hash';
 export * from './logger';

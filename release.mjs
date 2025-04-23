@@ -4,21 +4,36 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { spawn } from 'cross-spawn';
+import picocolors from 'picocolors';
 import { request } from 'undici';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const recordMap = new Map();
+class Info {
+  constructor(name) {
+    this.messages = [];
+    this.name = name;
+  }
+  info(message) {
+    this.messages.push(picocolors.green(`[${this.name}] - ${message}`));
+  }
+  error(message) {
+    this.messages.push(picocolors.red(`[${this.name}] - ${message}`));
+  }
+}
 
 async function getLatestVersion(pkgName) {
   const { body } = await request(`https://registry.npmjs.org/${pkgName}`);
 
   const pkg = await body.json();
   if (pkg.error) {
-    console.error(`Package '${pkgName}' not found!`);
+    recordMap.get(pkgName).error(`Package '${pkgName}' not found!`);
     return null;
   }
   const { latest } = pkg['dist-tags'];
-  console.info(`Latest version of '${pkgName}' is '${latest}'.`);
+  recordMap.get(pkgName).info(`Latest version is '${latest}'.`);
   return latest;
 }
 
@@ -37,39 +52,56 @@ function release(pkg, currentDir) {
     child.stderr.on('data', (data) => {
       err += data;
     });
+    child.stderr.on('error', (err) => {
+      reject(err);
+    });
     child.on('error', (err) => {
       reject(err);
     });
     child.on('close', (code) => {
       if (code === 0) {
-        console.info(`'${name}' released successfully!`);
+        recordMap.get(name).info(`'${name}@${pkg.version}' released successfully!`);
         resolve();
       }
       else {
-        reject(new Error(`'${name}' release failed!${EOL}${err}`));
+        reject(new Error(`'${name}' release failed! ${code}${EOL}${err}`));
       }
     });
   });
 }
 async function run() {
   const packagesDir = join(__dirname, 'packages');
-  await Promise.all(
+  return Promise.all(
     (await readdir(packagesDir)).map((pkgName) => (async () => {
+      const info = new Info(pkgName);
+      recordMap.set(pkgName, info);
+
       const latestVersion = await getLatestVersion(pkgName);
       const packageDir = join(packagesDir, pkgName);
       const pkgPath = join(packageDir, 'package.json');
       const pkg = JSON.parse(await readFile(pkgPath, 'utf-8'));
 
       if (pkg.version !== latestVersion) {
-        return release(pkg, packageDir);
+        info.info(`Start to release '${pkgName}'...`);
+        await release(pkg, packageDir);
+      }
+      else {
+        info.info(`'${pkgName}@${pkg.version}' is up to date!`);
       }
 
-      console.info(`'${pkgName}' is up to date!`);
+      return info;
     })())
   );
 }
 
-run().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+run().then(
+  (infos) => {
+    for (const info of infos) {
+      console.info(info.messages.join(EOL) + EOL);
+    }
+  },
+  (err) => {
+    console.error(err);
+    process.exit(1);
+  }
+);

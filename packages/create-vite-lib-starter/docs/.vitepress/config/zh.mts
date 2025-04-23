@@ -1,9 +1,9 @@
 import { defineConfig } from 'vitepress'
-import { generateAPISidebar } from './shared.mts'
+import { generateAPISidebar } from './shared.mjs'
 
 // https://vitepress.dev/reference/site-config
 export const zh = defineConfig({
-  description: "一个包含多个自定义插件的集合，用于增强 Vite 构建工具的功能。",
+  description: "这里是描述。",
   lang: 'zh-CN',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -34,7 +34,7 @@ export const zh = defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/fengxinming/create-vite-lib-starter.git' }
+      { icon: 'github', link: 'https://github.com/fengxinming/vite-plugins' }
     ]
   }
 })

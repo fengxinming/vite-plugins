@@ -21,7 +21,7 @@ export const shared = defineConfig({
       // We use `[!!code` in demo to prevent transformation, here we revert it back.
       {
         postprocess(code) {
-          return code.replace(/\[\!\!code/g, '[!code')
+          return code.replace(/\[!!code/g, '[!code');
         }
       }
     ],
@@ -49,7 +49,7 @@ export const shared = defineConfig({
 
   themeConfig: {
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/fengxinming/create-vite-lib-starter' }
+      { icon: 'github', link: 'https://github.com/fengxinming/vite-plugins' }
     ]
   },
 

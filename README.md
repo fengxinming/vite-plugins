@@ -1,6 +1,6 @@
 # vite-plugins
 
-> `vite-plugins` is a collection of custom plugins designed to enhance the functionality of the Vite build tool.
+> A collection of custom plugins designed to enhance the functionality of the Vite build tool.
 
 ## Plugin List
 

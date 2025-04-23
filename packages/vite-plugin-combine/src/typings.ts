@@ -1,4 +1,5 @@
 import type { NullValue } from 'rollup';
+import type { ConfigEnv, UserConfig } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
 export type { LogLevel };
@@ -43,6 +44,13 @@ export interface Options {
    * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
    */
   enforce?: 'pre' | 'post';
+
+  /**
+   * Apply the plugin only for serve or build, or on certain conditions.
+   *
+   * 应用插件仅在 serve 或 build 时，或满足某些条件的情况下。
+   */
+  apply?: 'serve' | 'build' | ((this: void, config: UserConfig, env: ConfigEnv) => boolean);
 
   /**
    * Current Working Directory.

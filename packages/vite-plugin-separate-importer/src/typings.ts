@@ -1,7 +1,9 @@
 import type { LogLevel } from 'base-log-factory';
+import type { ConfigEnv, UserConfig } from 'vite';
 export interface ImportSource {
   es: string;
   cjs?: string;
+  name?: string;
 }
 
 export interface libConfig {
@@ -29,6 +31,13 @@ export interface Options {
    * 强制执行顺序，`pre` 前，`post` 后，参考 https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering。
    */
   enforce?: 'pre' | 'post';
+
+  /**
+   * Apply the plugin only for serve or build, or on certain conditions.
+   *
+   * 应用插件仅在 serve 或 build 时，或满足某些条件的情况下。
+   */
+  apply?: 'serve' | 'build' | ((this: void, config: UserConfig, env: ConfigEnv) => boolean);
 
  /**
   * 插件配置接口，用于定义待转换的库名称及其处理逻辑

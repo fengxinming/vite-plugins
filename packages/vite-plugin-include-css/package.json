@@ -13,9 +13,9 @@
     }
   },
   "scripts": {
-    "build:lib": "vite build",
+    "build": "vite build",
     "watch": "vite build --watch",
-    "prepublishOnly": "npm run build:lib",
+    "prepublishOnly": "npm run build",
     "release": "pnpm publish --no-git-checks"
   },
   "engines": {
