@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-separate-importer",
-  "version": "6.0.4",
+  "version": "6.1.0",
   "description": "Transform bulk imports from a single source module into individual file imports from the source module.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
@@ -38,8 +38,6 @@
   },
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-separate-importer/quick-start",
   "dependencies": {
-    "base-log-factory": "^2.0.9",
-    "blf-colorful-appender": "^1.0.2",
     "es-module-lexer": "^1.5.0",
     "vp-runtime-helper": "workspace:^"
   },

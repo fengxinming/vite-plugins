@@ -34,7 +34,7 @@ export const zh = defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/fengxinming/create-vite-lib-starter.git' }
+      { icon: 'github', link: 'https://github.com/fengxinming/vite-plugins' }
     ]
   }
 })

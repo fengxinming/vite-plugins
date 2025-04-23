@@ -83,9 +83,9 @@ function processLibs(
             if (typeof source === 'string') {
               source = { es: source };
             }
-            const { es, cjs } = source || {};
+            const { es, cjs, name: newImporter } = source || {};
             if (es) {
-              newImportDeclarationStr += `import ${importer} from "${es}";${EOL}`;
+              newImportDeclarationStr += `import ${newImporter || importer} from "${es}";${EOL}`;
               if (cjs) {
                 cjsTransformers.push((code) => {
                   return code.replace(es, cjs);
@@ -161,8 +161,10 @@ function processLibs(
  * @returns a vite plugin
  */
 function pluginSeparateImporter(
-  { enforce, libs = [], logLevel, enableBanner }: Options = {}
+  opts: Options = {}
 ): Plugin | undefined {
+  const { enforce, libs = [], logLevel, enableBanner } = opts;
+
   if (!Array.isArray(libs) || libs.length === 0) {
     logger.warn('No libs specified.');
     return;
@@ -201,6 +203,7 @@ function pluginSeparateImporter(
   return {
     name: PLUGIN_NAME,
     enforce,
+    apply: ('apply' in opts) ? opts.apply : 'build',
 
     async transform(
       code: string,

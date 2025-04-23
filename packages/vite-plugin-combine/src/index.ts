@@ -261,6 +261,7 @@ export default function pluginCombine(opts: Options) {
   return {
     name: PLUGIN_NAME,
     enforce: ('enforce' in opts) ? opts.enforce : 'post',
+    apply: ('apply' in opts) ? opts.apply : 'build',
 
     async config(config) {
       const inputs = files.concat(absTarget);
