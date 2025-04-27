@@ -163,7 +163,7 @@ function processLibs(
 function pluginSeparateImporter(
   opts: Options = {}
 ): Plugin | undefined {
-  const { enforce, libs = [], logLevel, enableBanner } = opts;
+  const { enforce, libs = [], logLevel } = opts;
 
   if (!Array.isArray(libs) || libs.length === 0) {
     logger.warn('No libs specified.');
@@ -174,7 +174,7 @@ function pluginSeparateImporter(
     logger.level = logLevel;
   }
 
-  if (enableBanner) {
+  if (opts.enableBanner) {
     banner(PLUGIN_NAME);
   }
 

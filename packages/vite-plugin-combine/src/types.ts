@@ -1,5 +1,6 @@
 import type { NullValue } from 'rollup';
 import type { ConfigEnv, UserConfig } from 'vite';
+import type { PluginOptions as DtsPluginOptions } from 'vite-plugin-dts';
 import type { LogLevel } from 'vp-runtime-helper';
 
 export type { LogLevel };
@@ -74,17 +75,16 @@ export interface Options {
   beforeWrite?: (code: string) => string | NullValue;
 
   /**
-   * Clear the cache file after the specified time.
-   *
-   * 在指定时间后清除缓存文件
-   *
-   */
-  clearInDelay?: number;
-
-  /**
    * Whether to output the banner
    *
    * 是否输出 banner
    */
   enableBanner?: boolean;
+
+  /**
+   * Whether to generate d.ts file
+   *
+   * 是否生成 d.ts 文件
+   */
+  dts?: boolean | DtsPluginOptions;
 }

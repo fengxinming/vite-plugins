@@ -39,13 +39,13 @@
   },
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/quick-start",
   "dependencies": {
+    "@types/fs-extra": "^11.0.4",
     "fs-extra": "^11.1.1",
     "is-what-type": "^1.1.1",
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/fs-extra": "^11.0.4",
     "vite": "^6.1.0"
   },
   "files": [

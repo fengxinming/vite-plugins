@@ -43,7 +43,7 @@
     "@commitlint/cli": "^17.6.1",
     "@commitlint/config-conventional": "^17.6.1",
     "@types/node": "^20.17.28",
-    "eslint": "^8.48.0",
+    "eslint": "^8.57.1",
     "eslint-config-fe": "^2.1.3",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
