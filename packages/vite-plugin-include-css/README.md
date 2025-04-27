@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-include-css.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-include-css)
 
-> When `cssCodeSplit: false` is enabled, all CSS will be bundled into a single JavaScript file.
+> Bundles all CSS into a single JavaScript file when `cssCodeSplit: false` is enabled.
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-include-css.svg?style=flat)](https://npmjs.org/package/vite-plugin-include-css)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-include-css.svg?style=flat)](https://npmjs.org/package/vite-plugin-include-css)

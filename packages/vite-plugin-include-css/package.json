@@ -1,7 +1,7 @@
 {
   "name": "vite-plugin-include-css",
   "version": "6.0.0",
-  "description": "When `cssCodeSplit: false` is enabled, all CSS will be bundled into a single JavaScript file.",
+  "description": "Bundles all CSS into a single JavaScript file when `cssCodeSplit: false` is enabled.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -45,7 +45,6 @@
     "dist"
   ],
   "dependencies": {
-    "fast-replaceall": "^2.0.1",
     "magic-string": "^0.30.17",
     "terser": "^5.39.0",
     "vp-runtime-helper": "workspace:^"

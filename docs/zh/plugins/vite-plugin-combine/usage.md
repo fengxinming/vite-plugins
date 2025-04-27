@@ -39,7 +39,7 @@ export default defineConfig({
 输出的文件内容：
 
 `dist/index.mjs`
-```mjs
+```js
 export { default as default2 } from './Button';
 export { default as default3 } from './Input';
 export { default as default4 } from './Select';

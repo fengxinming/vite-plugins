@@ -1,6 +1,5 @@
 import { EOL } from 'node:os';
 
-import replaceAll from 'fast-replaceall';
 import MagicString from 'magic-string';
 import { minify } from 'terser';
 import type { Plugin, ResolvedConfig } from 'vite';
@@ -33,7 +32,7 @@ document.head.appendChild(__vite_style__);${EOL}`;
   })).code || '';
 
   if (jsCode.includes('"use strict";')) {
-    return replaceAll(jsCode, '"use strict";', `"use strict";${styleCode}`);
+    return jsCode.replace('"use strict";', `"use strict";${styleCode}`);
   }
 
   return closure(tryCatch(styleCode) + jsCode);
