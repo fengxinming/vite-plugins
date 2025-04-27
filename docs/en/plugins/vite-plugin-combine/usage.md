@@ -38,7 +38,7 @@ export default defineConfig({
 This will generate the following files:
 
 `dist/index.mjs`
-```mjs
+```js
 export { default as default2 } from './Button';
 export { default as default3 } from './Input';
 export { default as default4 } from './Select';

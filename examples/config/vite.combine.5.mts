@@ -1,7 +1,6 @@
 
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig, PluginOption } from 'vite';
 import vitePluginCombine from 'vite-plugin-combine';
-import ts from 'vite-plugin-dts';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,14 +11,9 @@ export default defineConfig({
       target: 'src/combine.5.ts',
       beforeWrite(code) {
         return `${code}export * from './util/typings';`;
-      }
-    }),
-    ts({
-      tsconfigPath: './tsconfig.build.json',
-      compilerOptions: {
-        declarationDir: 'dist/combine/5'
-      }
-    }) as Plugin
+      },
+      dts: true
+    }) as unknown as PluginOption
   ],
   build: {
     outDir: 'dist/combine/5',
