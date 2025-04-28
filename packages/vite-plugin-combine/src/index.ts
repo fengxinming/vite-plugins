@@ -108,9 +108,9 @@ export default function pluginCombine(opts: Options): PluginOption {
   return [
     viteCombine,
     dts(
-      Object.assign({}, dtsOpts, {
+      Object.assign({
         include: files.concat(absTarget)
-      })
+      }, dtsOpts)
     )
   ];
 }
