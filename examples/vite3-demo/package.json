@@ -45,6 +45,7 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
     "@vitejs/plugin-react": "^2.2.0",
+    "camel-kit": "^1.0.0",
     "pug": "^3.0.3",
     "rollup-plugin-external-globals": "^0.13.0",
     "tinyglobby": "^0.2.12",

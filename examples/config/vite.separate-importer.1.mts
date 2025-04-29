@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import decamelize from 'decamelize';
+import { decamelize } from 'camel-kit';
 import { defineConfig, Plugin } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 import pluginSeparateImporter from 'vite-plugin-separate-importer';
