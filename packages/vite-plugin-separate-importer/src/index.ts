@@ -2,13 +2,13 @@ import { EOL } from 'node:os';
 
 import type { Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program } from 'acorn';
 import { init, parse } from 'es-module-lexer';
-import { Plugin } from 'vite';
+import type { Plugin } from 'vite';
 import { banner } from 'vp-runtime-helper';
 
 import { logger, PLUGIN_NAME } from './logger';
-import { ImportSource, libConfig, Options } from './typings';
+import type { ImportSource, libConfig, Options } from './types';
 
-export * from './typings';
+export * from './types';
 
 
 interface LibInfo extends libConfig {
@@ -76,16 +76,16 @@ function processLibs(
         break;
 
       case 'ImportSpecifier': {
-        const { name: importer } = specifier.imported as Identifier;
-        if (importer) {
+        const { name: importedName } = specifier.imported as Identifier;
+        if (importedName) {
           if (typeof importFrom === 'function') {
-            let source = importFrom(importer, libName);
+            let source = importFrom(importedName, libName);
             if (typeof source === 'string') {
               source = { es: source };
             }
             const { es, cjs, name: newImporter } = source || {};
             if (es) {
-              newImportDeclarationStr += `import ${newImporter || importer} from "${es}";${EOL}`;
+              newImportDeclarationStr += `import ${newImporter || importedName} from "${es}";${EOL}`;
               if (cjs) {
                 cjsTransformers.push((code) => {
                   return code.replace(es, cjs);
@@ -94,7 +94,7 @@ function processLibs(
             }
           }
         }
-        insertSourceFn(importer, libName);
+        insertSourceFn(importedName, libName);
         break;
       }
     }
@@ -112,7 +112,7 @@ function processLibs(
   import ts from '@rollup/plugin-typescript';
   import createExternal from 'vite-plugin-external';
   import separateImporter from 'vite-plugin-separate-importer';
-  import decamelize from 'decamelize';
+  import { decamelize } from 'camel-kit';
 
   export default defineConfig({
     plugins: [
