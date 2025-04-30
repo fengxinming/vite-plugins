@@ -51,4 +51,11 @@ export interface Options {
    * or specify the directory to define mock routes that should be added to the dev server.
    */
   routes?: RouteConfig | Array<RouteConfig | string> | string;
+
+  /**
+   * Whether to output the banner
+   *
+   * 是否输出 banner
+   */
+  enableBanner?: boolean;
 }
