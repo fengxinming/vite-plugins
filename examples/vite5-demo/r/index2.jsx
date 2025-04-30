@@ -1,3 +1,5 @@
+import '../index.css';
+
 import { StrictMode, useState, version } from 'react';
 import { createRoot } from 'react-dom/client';
 function App() {
