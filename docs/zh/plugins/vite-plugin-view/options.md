@@ -77,7 +77,7 @@ type EngineOptions =
 - **enforce**: 取值需符合 Vite 插件执行顺序规范（[详情](https://vitejs.dev/guide/api-plugin.html#plugin-ordering)）
 
 ## 关键类型引用
-- `LogLevel` 来自 `base-log-factory` 包
+- `LogLevel` 来自 `vp-runtime-helper` 包
 - `InputOption` 来自 `rollup` 包
 - `ResolvedConfig` 来自 `vite` 包
 

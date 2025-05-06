@@ -27,7 +27,7 @@ export interface ExternalES {
   link: string;
 }
 
-export type { LogLevel } from 'base-log-factory';
+export type { LogLevel } from 'vp-runtime-helper';
 
 export interface BasicOptions {
   /**

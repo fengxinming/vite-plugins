@@ -87,7 +87,7 @@ export type ExternalFn = (
 
 export type ModuleNameMap = Record<string, string> | ((id: string) => string);
 
-export type { LogLevel } from 'base-log-factory';
+export type { LogLevel } from 'vp-runtime-helper';
 
 export interface BasicOptions {
   /**

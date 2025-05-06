@@ -38,10 +38,8 @@
   },
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-mock-data/quick-start",
   "dependencies": {
-    "base-log-factory": "^2.0.9",
-    "blf-colorful-appender": "^1.0.2",
     "find-my-way": "^9.2.0",
-    "is-what-type": "^1.0.4",
+    "is-what-type": "^1.1.4",
     "sirv": "^3.0.1",
     "tinyglobby": "^0.2.12",
     "vp-runtime-helper": "workspace:^"

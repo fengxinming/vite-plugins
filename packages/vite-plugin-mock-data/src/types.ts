@@ -1,5 +1,5 @@
-import { LogLevel } from 'base-log-factory';
 import { Config as SirvConfig, Handler, HTTPVersion, RouteOptions } from 'find-my-way';
+import { LogLevel } from 'vp-runtime-helper';
 
 export interface HandleRoute {
   file?: string;

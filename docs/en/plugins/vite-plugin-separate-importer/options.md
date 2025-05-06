@@ -14,7 +14,7 @@
 # TypeScript Type Definitions
 
 ```typescript
-import type { LogLevel } from 'base-log-factory';
+import type { LogLevel } from 'vp-runtime-helper';
 
 export interface ImportSource {
   es: string;
