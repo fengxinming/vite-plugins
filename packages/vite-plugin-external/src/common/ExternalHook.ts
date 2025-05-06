@@ -1,4 +1,4 @@
-import { isPlainObject, isWhat } from 'is-what-type';
+import { ensureType, isPlainObject } from 'is-what-type';
 import { NullValue } from 'rollup';
 
 import { ExternalFn } from '../typings';
@@ -32,11 +32,11 @@ export default class ExternalHook {
     const type = typeof arg;
 
     // boolean
-    if (isWhat<boolean>(arg, type, 'boolean')) {
+    if (ensureType<boolean>(arg, type === 'boolean')) {
       hook = () => arg;
     }
     // ExternalFn
-    else if (isWhat<ExternalFn>(arg, type, 'function')) {
+    else if (ensureType<ExternalFn>(arg, type === 'function')) {
       hook = (
         id: string,
         importer: string | undefined,

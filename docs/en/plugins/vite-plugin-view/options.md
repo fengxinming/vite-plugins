@@ -83,7 +83,7 @@ type EngineOptions =
 ---
 
 ## Key Type References
-- `LogLevel` from `base-log-factory` package
+- `LogLevel` from `vp-runtime-helper` package
 - `InputOption` from `rollup` package
 - `ResolvedConfig` from `vite` package
 

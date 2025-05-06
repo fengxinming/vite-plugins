@@ -1,5 +1,5 @@
-import type { LogLevel } from 'base-log-factory';
 import type { ConfigEnv, UserConfig } from 'vite';
+import type { LogLevel } from 'vp-runtime-helper';
 export interface ImportSource {
   es: string;
   cjs?: string;

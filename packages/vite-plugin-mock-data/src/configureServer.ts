@@ -7,7 +7,7 @@ import sirv, { type Options as SirvOptions } from 'sirv';
 import { send, ViteDevServer } from 'vite';
 import { toAbsolutePath } from 'vp-runtime-helper';
 
-import { HandleRoute, RouteConfig } from './typings';
+import { HandleRoute, RouteConfig } from './types';
 export function sirvOptions(headers?: OutgoingHttpHeaders): SirvOptions {
   return {
     dev: true,

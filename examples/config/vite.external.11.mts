@@ -1,4 +1,4 @@
-import react from '@vitejs/plugin-react';
+import vue from '@vitejs/plugin-vue';
 import type { Plugin } from 'vite';
 import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
@@ -7,34 +7,28 @@ import { view } from 'vite-plugin-view';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-        react({
-          jsxRuntime: 'classic'
-        }) as unknown as Plugin,
+    vue() as Plugin,
     vitePluginExternal({
       logLevel: 'TRACE',
-      externals(libName) {
-        if (libName === 'react') {
-          return 'React';
-        }
-        if (libName === 'react-dom/client') {
-          return 'ReactDOM';
-        }
+      externals: {
+        vue: 'Vue'
       }
     }) as unknown as Plugin,
     view({
       engine: 'pug',
+      logLevel: 'TRACE',
       engineOptions: {
-        title: 'Vite + React + Pug',
-        reactVersion: '18.x'
+        title: 'Vite + Vue + Pug',
+        vueVersion: '3.x'
       }
-    }) as unknown as Plugin
+    }) as Plugin
   ],
   server: {
     open: true
   },
   build: {
     minify: false,
-    outDir: 'dist/external/7',
+    outDir: 'dist/view/6',
     rollupOptions: {
       output: {
         format: 'iife'

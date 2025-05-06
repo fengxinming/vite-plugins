@@ -1,0 +1,21 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    meta(content='width=device-width, initial-scale=1.0' name='viewport')
+    title= title
+    //- link(href='./index.css' rel='stylesheet')
+  body
+    #root
+    if reactVersion === '16.x'
+      script(src='//g.alicdn.com/linkdesign/lib/1.0.1/??babel-polyfill.js,~react.js')
+      script(src='./r/index.jsx' type='module')
+    if reactVersion === '18.x'
+      script(src='//unpkg.com/react@18.3.1/umd/react.production.min.js')
+      script(src='//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js')
+      script(src='./r/index2.jsx' type='module')
+    if reactFormat === 'esm'
+      script(src='./r/index2.jsx' type='module')
+    if vueVersion === '3.x'
+      script(src='//unpkg.com/vue@3.5.13/dist/vue.runtime.global.js')
+      script(src='./v/main.ts' type='module')

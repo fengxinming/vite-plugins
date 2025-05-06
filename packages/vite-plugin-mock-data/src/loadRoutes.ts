@@ -8,7 +8,7 @@ import { glob } from 'tinyglobby';
 import { transformWithEsbuild } from 'vite';
 
 import { logger, PLUGIN_NAME } from './logger';
-import { RouteConfig } from './typings';
+import { RouteConfig } from './types';
 
 async function getRoute(filename: string): Promise<RouteConfig | undefined> {
   logger.debug('Load mock file:', filename);

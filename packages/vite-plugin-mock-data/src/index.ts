@@ -6,9 +6,9 @@ import pkg from '../package.json';
 import { configureServer } from './configureServer';
 import loadRoutes from './loadRoutes';
 import { logger, PLUGIN_NAME } from './logger';
-import { Options, RouteConfig } from './typings';
+import { Options, RouteConfig } from './types';
 
-export * from './typings';
+export * from './types';
 
 
 /**
@@ -32,7 +32,9 @@ export * from './typings';
  * @returns a vite plugin
  */
 export default function pluginMockDate(opts: Options): Plugin {
-  banner(pkg.name);
+  if (opts.enableBanner) {
+    banner(pkg.name);
+  }
 
   const {
     isAfter,
