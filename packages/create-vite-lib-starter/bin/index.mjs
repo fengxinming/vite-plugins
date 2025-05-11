@@ -27,7 +27,11 @@ async function run() {
     files: [
       'dist'
     ],
-    dependencies: {}
+    dependencies: {
+      'markdown-it-mathjax3': '^4.3.2',
+      vitepress: '^2.0.0-alpha.5',
+      'vitepress-plugin-group-icons': '^1.3.8'
+    }
   });
   console.info(`Generated '${packageName}' in ${(Date.now() - startTime)} ms.`);
 }

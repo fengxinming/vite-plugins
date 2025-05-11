@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitepress'
-import { generateAPISidebar } from './shared.mjs'
+import { defineConfig } from 'vitepress';
+import { createNavItems, createSidebar } from './shared.mjs';
 
 // https://vitepress.dev/reference/site-config
 export const en = defineConfig({
@@ -10,31 +10,22 @@ export const en = defineConfig({
     nav: [
       { 
         text: 'Guide',
-        link: '/guide/introduction',
+        link: '/guide/',
         activeMatch: '/guide/'
       },
-      { 
-        text: 'API',
-        link: '/api/entry',
-        activeMatch: '/api/'
+      {
+        text: 'Modules',
+        activeMatch: '/packages/',
+        items: createNavItems('en/packages', '/packages')
       }
     ],
 
     sidebar: {
-      '/guide/': {
-        base: '/guide/',
-        items: [
-          { text: 'Introduction', link: 'introduction' }
-        ]
-      },
-      '/api/': {
-        base: '/api/',
-        items: generateAPISidebar('../../en/api')
-      }
+      ...createSidebar('en/packages', '/packages')
     },
 
     socialLinks: [
       { icon: 'github', link: 'https://github.com/fengxinming/vite-plugins' }
     ]
   }
-})
+});

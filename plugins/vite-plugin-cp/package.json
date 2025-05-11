@@ -1,7 +1,7 @@
 {
-  "name": "vp-runtime-helper",
-  "version": "1.0.11",
-  "description": "Vite plugin runtime helper.",
+  "name": "vite-plugin-cp",
+  "version": "6.0.3",
+  "description": "A powerful Vite plugin for copying files/directories with advanced transformation and renaming capabilities.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
   "main": "./dist/index.js",
@@ -20,33 +20,33 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build",
-    "release": "npm publish"
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fengxinming/vite-plugins.git",
-    "directory": "packages/vp-runtime-helper"
+    "directory": "plugins/vite-plugin-cp"
   },
   "keywords": [
+    "vite",
     "vite-plugin",
-    "vp-runtime-helper"
+    "vite-plugin-cp"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://fengxinming.github.io/vite-plugins/",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-cp/quick-start",
   "dependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "base-log-factory": "^2.1.4",
-    "blf-debug-appender": "^1.0.2",
-    "figlet": "^1.8.0",
     "fs-extra": "^11.3.0",
-    "picocolors": "^1.0.0"
+    "is-what-type": "^1.1.4",
+    "tinyglobby": "^0.2.12",
+    "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
+    "@types/fs-extra": "^11.0.4",
     "vite": "^6.1.0"
   },
   "files": [

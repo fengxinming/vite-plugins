@@ -1,0 +1,29 @@
+{
+  "name": "util",
+  "version": "1.0.0",
+  "description": "A lightweight, modular collection of utility libraries providing practical functions for common development scenarios, with TypeScript support.",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "main": "dist/index.js",
+  "unpkg": "dist/index.umd.js",
+  "jsdelivr": "dist/index.umd.js",
+  "scripts": {
+    "build": "vite build",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run --coverage"
+  },
+  "keywords": [
+    "util"
+  ],
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.1.1",
+    "camel-kit": "^1.0.0",
+    "vite": "^6.2.6",
+    "vite-plugin-build-chunk": "^6.0.0",
+    "vite-plugin-combine": "^6.2.1",
+    "vitest": "^3.1.1"
+  },
+  "files": [
+    "dist"
+  ]
+}

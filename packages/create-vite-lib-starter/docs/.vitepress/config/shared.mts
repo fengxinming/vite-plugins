@@ -1,9 +1,15 @@
+import { readdirSync, readFileSync } from 'node:fs';
+import { EOL } from 'node:os';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { DefaultTheme, defineConfig } from 'vitepress';
 import { groupIconMdPlugin, groupIconVitePlugin } from 'vitepress-plugin-group-icons';
 
 import pkg from '../../../package.json';
-import { basename, join } from 'node:path';
-import { readdirSync } from 'node:fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export const shared = defineConfig({
   title: pkg.name,
@@ -47,12 +53,6 @@ export const shared = defineConfig({
     }
   },
 
-  themeConfig: {
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/fengxinming/vite-plugins' }
-    ]
-  },
-
   vite: {
     plugins: [
       groupIconVitePlugin() as any
@@ -61,17 +61,70 @@ export const shared = defineConfig({
 });
 
 
-export function generateAPISidebar(apiDir: string): DefaultTheme.SidebarItem[] {
-  const exclude = ['entry'];
-  return readdirSync(join(__dirname, apiDir))
-    .reduce((items, file) => {
-      const fnName = basename(file, '.md');
-      if(!exclude.includes(fnName)) {
-        items.push({
-          text: fnName,
-          link: file
-        });
+function pushSidebar(
+  dir: string,
+  base: string,
+  sidebar: Record<string, DefaultTheme.SidebarItem>,
+): void {
+  readdirSync(dir).forEach((file) => {
+    if (file === 'index.md') {
+      return;
+    }
+
+    if (file.endsWith('.md')) {
+      sidebar[base].items![0].items!.push({
+        text: new RegExp(`#\\s+\\**([^*${EOL}]+)\\**\\${EOL}`)
+          .exec(readFileSync(join(dir, file), 'utf8'))![1],
+        link: file.replace(/\.md$/, '')
+      });
+    }
+    else {
+      let text: string | null = null;
+      try {
+        text = new RegExp(`#\\s+\\**([^*${EOL}]+)\\**\\${EOL}`)
+          .exec(readFileSync(join(dir, file, 'index.md'), 'utf8'))![1];
       }
-      return items;
-    }, [] as DefaultTheme.SidebarItem[]);
-};
+      catch (e) { }
+
+      const nextBase = `${join(base, file)}/`;
+      const subItem: DefaultTheme.SidebarItem = {
+        items: []
+      };
+      const item: DefaultTheme.SidebarItem = {
+        base: nextBase,
+        items: [subItem]
+      };
+
+      if (text) {
+        subItem.text = text;
+        subItem.link = 'index';
+      }
+
+      sidebar[nextBase] = item;
+      pushSidebar(join(dir, file), nextBase, sidebar);
+
+      if (subItem.items!.length === 0) {
+        delete sidebar[nextBase];
+      }
+    }
+  });
+}
+
+export function createSidebar(dir: string, base: string): DefaultTheme.Sidebar {
+  const absDir = join(__dirname, '../..', dir);
+  const sidebar: Record<string, DefaultTheme.SidebarItem> = {};
+
+  pushSidebar(absDir, base, sidebar);
+
+  return sidebar as DefaultTheme.Sidebar;
+}
+
+export function createNavItems(dir: string, base: string): DefaultTheme.NavItemWithLink[] {
+  return readdirSync(join(__dirname, '../..', dir)).map((name) => {
+    return {
+      text: name,
+      activeMatch: `${join(dir, name)}/`,
+      link: join(base, name)
+    };
+  });
+}

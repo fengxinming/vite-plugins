@@ -6,6 +6,8 @@
     "./docs/.vitepress/**/*.mts",
     "./packages/**/*.ts",
     "./packages/**/*.mts",
+    "./plugins/**/*.ts",
+    "./plugins/**/*.mts",
     "./examples/**/*.ts",
     "./examples/**/*.mts",
   ],

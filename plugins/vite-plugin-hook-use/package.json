@@ -1,7 +1,7 @@
 {
-  "name": "vp-runtime-helper",
-  "version": "1.0.11",
-  "description": "Vite plugin runtime helper.",
+  "name": "vite-plugin-hook-use",
+  "version": "6.0.2",
+  "description": "Displays the sequence and frequency of vite calling its hook functions.",
   "types": "./dist/index.d.ts",
   "module": "./dist/index.mjs",
   "main": "./dist/index.js",
@@ -20,30 +20,28 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build",
-    "release": "npm publish"
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fengxinming/vite-plugins.git",
-    "directory": "packages/vp-runtime-helper"
+    "directory": "plugins/vite-plugin-hook-use"
   },
   "keywords": [
     "vite-plugin",
-    "vp-runtime-helper"
+    "vite-plugin-hook-use"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://fengxinming.github.io/vite-plugins/",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-hook-use/quick-start",
   "dependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "base-log-factory": "^2.1.4",
-    "blf-debug-appender": "^1.0.2",
-    "figlet": "^1.8.0",
-    "fs-extra": "^11.3.0",
-    "picocolors": "^1.0.0"
+    "@clack/prompts": "^0.7.0",
+    "fs-extra": "^11.1.1",
+    "picocolors": "^1.0.0",
+    "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",

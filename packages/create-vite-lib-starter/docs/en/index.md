@@ -8,11 +8,9 @@ hero:
   tagline: Here is tagline!
   actions:
     - theme: brand
-      text: Introduction
-      link: /guide/introduction
-    - theme: alt
-      text: API Examples
-      link: /api/entry
+      text: Guide
+      link: /guide/
+
   image:
     src: https://vitepress.dev/vitepress-logo-large.svg
     alt: create-vite-lib-starter

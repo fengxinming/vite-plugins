@@ -1,10 +1,10 @@
 {
-  "name": "vp-runtime-helper",
-  "version": "1.0.11",
-  "description": "Vite plugin runtime helper.",
-  "types": "./dist/index.d.ts",
-  "module": "./dist/index.mjs",
-  "main": "./dist/index.js",
+  "name": "vite-plugin-build-chunk",
+  "version": "6.0.0",
+  "description": "Generate additional build artifacts (e.g., chunk files in different formats) after Vite's main build process. Ideal for scenarios requiring multi-format outputs or secondary builds.",
+  "types": "dist/index.d.ts",
+  "module": "dist/index.mjs",
+  "main": "dist/index.js",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -20,30 +20,25 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build",
-    "release": "npm publish"
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fengxinming/vite-plugins.git",
-    "directory": "packages/vp-runtime-helper"
+    "directory": "plugins/vite-plugin-build-chunk"
   },
   "keywords": [
     "vite-plugin",
-    "vp-runtime-helper"
+    "vite-plugin-build-chunk"
   ],
   "author": "Jesse Feng <fxm0016@126.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/fengxinming/vite-plugins/issues"
   },
-  "homepage": "https://fengxinming.github.io/vite-plugins/",
+  "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-build-chunk/quick-start",
   "dependencies": {
-    "@types/fs-extra": "^11.0.4",
-    "base-log-factory": "^2.1.4",
-    "blf-debug-appender": "^1.0.2",
-    "figlet": "^1.8.0",
-    "fs-extra": "^11.3.0",
-    "picocolors": "^1.0.0"
+    "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",

@@ -11,7 +11,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "release:all": "node ./release.mjs",
+    "release:all": "publish-pkgs packages/* plugins/*",
     "build:vite-plugin-deps": "pnpm run --parallel --filter=vite-plugin-external... build",
     "build:starters": "pnpm run --parallel --filter=*-starter^... build",
     "build:all": "npm run build:vite-plugin-deps && pnpm run --parallel --filter=vite-plugin-* --filter=!vite-plugin-external build",
@@ -28,11 +28,9 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "dependencies": {
-    "cross-spawn": "^7.0.6",
     "markdown-it-mathjax3": "^4.3.2",
-    "picocolors": "^1.0.0",
-    "undici": "^7.8.0",
-    "vitepress": "^1.6.3",
+    "publish-pkgs": "^1.0.2",
+    "vitepress": "^2.0.0-alpha.5",
     "vitepress-plugin-group-icons": "^1.3.8"
   },
   "engines": {

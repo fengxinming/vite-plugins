@@ -8,11 +8,9 @@ hero:
   tagline: 这里是标语
   actions:
     - theme: brand
-      text: 介绍
-      link: /zh/guide/introduction
-    - theme: alt
-      text: API 示例
-      link: /zh/api
+      text: 引言
+      link: /zh/guide/
+
   image:
     src: https://vitepress.dev/vitepress-logo-large.svg
     alt: create-vite-lib-starter
