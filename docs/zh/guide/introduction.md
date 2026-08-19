@@ -4,18 +4,22 @@
 
 ## 插件列表
 
+* [vite-plugin-build-chunk](/zh/plugins/vite-plugin-build-chunk/quick-start) - 在 Vite 主构建完成后，额外生成多种格式的 chunk 构建产物（多格式输出/二次打包场景）。
+
 * [vite-plugin-combine](/zh/plugins/vite-plugin-combine/quick-start) - 将多个模块文件合并成一个目标文件。它支持命名导出、默认导出、自动导出和无导出四种模式，并可以根据配置自动生成相应的导入语句。
 
-* [vite-plugin-cp](/zh/plugins/vite-plugin-cp/quick-start) - 一个用于复制文件/目录，并支持灵活转换文件内容、保留或扁平化目录结构、自定义文件重命名等的Vite插件。
+* [vite-plugin-cp](/zh/plugins/vite-plugin-cp/quick-start) - 一个用于复制文件/目录，并支持灵活转换文件内容、保留或扁平化目录结构、自定义文件重命名等的 Vite 插件。
 
 * [vite-plugin-external](/zh/plugins/vite-plugin-external/quick-start) - 从运行时代码和构建后的 bundles 中排除指定的模块依赖项。
 
-* [vite-plugin-hook-use](/zh/plugins/vite-plugin-hook-use/quick-start) - 显示 `vite` 调用其钩子函数的序列和频率
+* [vite-plugin-hook-use](/zh/plugins/vite-plugin-hook-use/quick-start) - 显示 `vite` 调用其钩子函数的序列和频率（调试/定位生命周期性能问题）。
 
-* [vite-plugin-include-css](/zh/plugins/vite-plugin-include-css/quick-start) - 当启用 `cssCodeSplit: false` 时，将所有CSS打包到单个JavaScript文件中。
+* [vite-plugin-include-css](/zh/plugins/vite-plugin-include-css/quick-start) - 当启用 `cssCodeSplit: false` 时，将所有 CSS 打包到单个 JavaScript 文件中。
 
-* [vite-plugin-mock-data](/zh/plugins/vite-plugin-mock-data/quick-start) - 提供了一种简单的方式来模拟数据。
+* [vite-plugin-mock-data](/zh/plugins/vite-plugin-mock-data/quick-start) - 提供了基于文件路由的简单数据 Mock 方案（dev server 专属，支持解析请求体 / 动态参数）。
 
-* [vite-plugin-separate-importer](/zh/plugins/vite-plugin-separate-importer/quick-start) - 将原来从一个源模块批量导入内容变成分批从源模块下导入单个文件。
+* [vite-plugin-reverse-proxy](/zh/plugins/vite-plugin-reverse-proxy/quick-start) - 将指定脚本以 `text/javascript` MIME 类型提供服务（而不是默认的 ES module MIME 类型）。
 
-* [vite-plugin-view](/plugins/vite-plugin-view/quick-start) - 使用自定义模板引擎动态渲染页面，替代静态的 `.html` 入口文件。
+* [vite-plugin-separate-importer](/zh/plugins/vite-plugin-separate-importer/quick-start) - 将原来从一个源模块批量导入内容变成分批从源模块下导入单个文件（更优 tree-shaking）。
+
+* [vite-plugin-view](/zh/plugins/vite-plugin-view/quick-start) - 使用自定义模板引擎动态渲染页面，替代静态的 `.html` 入口文件。

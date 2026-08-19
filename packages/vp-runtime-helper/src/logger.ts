@@ -1,9 +1,9 @@
 import { inspect } from 'node:util';
 
-import { Level, LogEvent, LogFactory, PatternLayout, TPatternConverter } from 'base-log-factory';
+import { Level, LogEvent, LogFactory, PatternLayout, TConverter } from 'base-log-factory';
 import { DebugAppender } from 'blf-debug-appender';
 
-function createConverter(specifier: string): TPatternConverter | undefined {
+function createConverter(specifier: string): TConverter | undefined {
   if (specifier === 'm') {
     return (event: LogEvent): string => {
       return event.message.map((msg) => {

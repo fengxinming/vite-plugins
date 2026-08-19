@@ -2,7 +2,7 @@ import { isObject } from 'is-what-type';
 import { Plugin, ViteDevServer } from 'vite';
 import { banner, toAbsolutePath } from 'vp-runtime-helper';
 
-import pkg from '../package.json';
+import pkg from '../package.json' with { type: 'json' };
 import { configureServer } from './configureServer';
 import loadRoutes from './loadRoutes';
 import { logger, PLUGIN_NAME } from './logger';

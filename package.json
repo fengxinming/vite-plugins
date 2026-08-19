@@ -1,6 +1,6 @@
 {
   "name": "vite-plugins",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A collection of custom plugins designed to enhance the functionality of the Vite build tool.",
   "private": true,
   "scripts": {
@@ -15,7 +15,7 @@
     "build:vite-plugin-deps": "pnpm run --parallel --filter=vite-plugin-external... build",
     "build:starters": "pnpm run --parallel --filter=*-starter^... build",
     "build:all": "npm run build:vite-plugin-deps && pnpm run --parallel --filter=vite-plugin-* --filter=!vite-plugin-external build",
-    "test:all": "npm run build:all && pnpm run --filter=*-demo -r --parallel /^build:*/"
+    "test:all": "npm run build:all && pnpm run --filter=vite8-* -r --parallel /^test/"
   },
   "repository": {
     "type": "git",
@@ -34,7 +34,7 @@
     "vitepress-plugin-group-icons": "^1.3.8"
   },
   "engines": {
-    "node": ">=14.18.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.13.13",
@@ -47,7 +47,6 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "husky": "^8.0.3",
-    "lint-staged": "^12.5.0",
-    "react": "^16.14.0"
+    "lint-staged": "^12.5.0"
   }
 }

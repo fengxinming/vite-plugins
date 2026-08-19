@@ -12,6 +12,10 @@
   },
   "rules": {
     "simple-import-sort/imports": "error",
-    "simple-import-sort/exports": "error"
+    "simple-import-sort/exports": "error",
+    "max-nested-callbacks": [
+      "error",
+      5
+    ]
   }
 }

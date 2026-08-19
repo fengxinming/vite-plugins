@@ -1,6 +1,8 @@
-# 配置项
+# Options
 
 ```ts
+export type TransformFile = (buf: Buffer, matchedPath: string) => string | Buffer | Promise<string | Buffer>;
+
 export interface Target {
   /**
    * Path or glob of what to copy.
@@ -114,5 +116,12 @@ export interface Options {
    * 复制前的延迟时间。
    */
   delay?: number;
+
+  /**
+   * Whether to output the banner
+   *
+   * 是否输出 banner
+   */
+  enableBanner?: boolean;
 }
 ```

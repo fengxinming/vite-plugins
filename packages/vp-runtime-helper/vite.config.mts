@@ -3,7 +3,7 @@ import { builtinModules } from 'node:module';
 import ts from '@rollup/plugin-typescript';
 import { defineConfig } from 'vite';
 
-import { dependencies } from './package.json';
+import { dependencies } from './package.json' with { type: 'json' };
 
 const externals = Object.keys(dependencies)
   .concat(builtinModules, 'vite')
@@ -24,7 +24,7 @@ export default defineConfig({
       fileName: '[name]'
     },
     minify: false,
-    rollupOptions: {
+    rolldownOptions: {
       external: externals
     }
   }

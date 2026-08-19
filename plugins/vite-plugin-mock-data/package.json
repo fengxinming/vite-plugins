@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-mock-data",
-  "version": "6.0.3",
+  "version": "8.0.0",
   "description": "Provides a simple way to mock data.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -13,14 +13,16 @@
     }
   },
   "engines": {
-    "node": ">=14.18.0",
-    "vite": ">=3.1.0"
+    "node": "^20.19.0 || >=22.12.0",
+    "vite": ">=8.0.0"
   },
   "scripts": {
     "build": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build",
-    "release": "pnpm publish --no-git-checks"
+    "release": "pnpm publish --no-git-checks",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -46,8 +48,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
-    "@types/fs-extra": "^11.0.4",
-    "vite": "^6.1.0"
+    "vite": "^8.0.0"
   },
   "files": [
     "dist"

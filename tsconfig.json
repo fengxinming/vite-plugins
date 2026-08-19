@@ -1,5 +1,9 @@
 {
   "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  },
   "include": [
     "./node_modules/vite/client.d.ts",
     "./docs/.vitepress/**/*.ts",

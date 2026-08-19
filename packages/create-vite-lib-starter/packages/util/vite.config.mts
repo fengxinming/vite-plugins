@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import pluginBuildChuck from 'vite-plugin-build-chunk';
 import pluginCombine from 'vite-plugin-combine';
 
-import { name } from './package.json';
+import { name } from './package.json' with { type: 'json' };
 
 // https://vitejs.dev/config/
 export default defineConfig({

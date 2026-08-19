@@ -1,0 +1,17 @@
+{
+  "name": "vite8-reverse-proxy",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build:1": "vite build --config vite.config.1.mts",
+    "build:2": "vite build --config vite.config.2.mts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
+    "vite": "^8.0.0",
+    "vite-plugin-reverse-proxy": "workspace:^",
+    "vitest": "^4.1.10"
+  }
+}

@@ -9,6 +9,9 @@
   "bin": {
     "create-vite-lib-starter": "bin/index.mjs"
   },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
   "scripts": {
     "deps": "npm run clean && pnpm install",
     "clean": "rm -rf node_modules && rm -rf ./*/*/node_modules",

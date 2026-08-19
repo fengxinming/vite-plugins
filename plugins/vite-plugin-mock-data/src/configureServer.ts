@@ -1,4 +1,4 @@
-import { OutgoingHttpHeaders } from 'node:http';
+import { IncomingMessage, OutgoingHttpHeaders, ServerResponse } from 'node:http';
 import { parse } from 'node:path';
 
 import getRouter, { Config as SirvConfig, Handler, HTTPMethod, HTTPVersion, RouteOptions } from 'find-my-way';
@@ -8,6 +8,63 @@ import { send, ViteDevServer } from 'vite';
 import { toAbsolutePath } from 'vp-runtime-helper';
 
 import { HandleRoute, RouteConfig } from './types';
+
+/**
+ * Simple request body parser for JSON / urlencoded payloads.
+ * Populates `req.body` so that route handlers can read it directly,
+ * matching the documented handler signature `(req) => req.body`.
+ */
+function readJsonBody(req: IncomingMessage): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf8');
+      if (!raw) {
+        resolve(undefined);
+        return;
+      }
+      const type = (req.headers['content-type'] || '').toLowerCase();
+      try {
+        if (type.includes('application/json')) {
+          resolve(JSON.parse(raw));
+        }
+        else if (type.includes('application/x-www-form-urlencoded')) {
+          const out: Record<string, string> = {};
+          for (const [k, v] of new URLSearchParams(raw)) {
+            out[k] = v;
+          }
+          resolve(out);
+        }
+        else {
+          resolve(raw);
+        }
+      }
+      catch (e) {
+        reject(e);
+      }
+    });
+    req.on('error', reject);
+  });
+}
+
+function sendResult(
+  req: IncomingMessage,
+  res: ServerResponse,
+  ret: unknown,
+  defaultHeaders: OutgoingHttpHeaders | undefined
+) {
+  if (res.headersSent || ret === undefined) {
+    return;
+  }
+  send(
+    req,
+    res,
+    typeof ret !== 'string' ? JSON.stringify(ret) : ret,
+    isObject(ret) ? 'json' : 'html',
+    { headers: defaultHeaders }
+  );
+}
 export function sirvOptions(headers?: OutgoingHttpHeaders): SirvOptions {
   return {
     dev: true,
@@ -78,7 +135,43 @@ export function configureServer(
           };
         }
         else {
-          handler = routeConfig.handler;
+          // Handler is a user-defined function. Wrap it so that:
+          //   - JSON / urlencoded request bodies are parsed into `req.body`;
+          //   - find-my-way route params are exposed as `req.params`;
+          //   - the handler's return value is auto-sent as JSON;
+          //   - async handlers are awaited;
+          //   - any thrown error becomes a 500 response.
+          const userHandler = routeConfig.handler;
+          const methodsList = methods.toUpperCase().split('/');
+          const needsBody = methodsList.some((m) =>
+            ['POST', 'PUT', 'PATCH', 'DELETE'].includes(m)
+          );
+          handler = async (req: any, res, params: any) => {
+            req.params = params ?? {};
+            try {
+              if (needsBody) {
+                req.body = await readJsonBody(req);
+              }
+            }
+            catch (e) {
+              res.statusCode = 400;
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ error: 'Invalid request body', detail: String(e) }));
+              return;
+            }
+            try {
+              const ret = await userHandler(req, res);
+              sendResult(req, res, ret, server.config.server.headers);
+            }
+            catch (e) {
+              server.config.logger.error(`[mock-data] handler error on ${methods} ${pathname}: ${e}`);
+              if (!res.headersSent) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: 'Mock handler error', detail: String(e) }));
+              }
+            }
+          };
         }
 
         if (handler) {

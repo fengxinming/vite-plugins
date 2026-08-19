@@ -5,7 +5,7 @@ import { minify } from 'terser';
 import type { Plugin, ResolvedConfig } from 'vite';
 import { banner } from 'vp-runtime-helper';
 
-import pkg from '../package.json';
+import pkg from '../package.json' with { type: 'json' };
 
 const PLUGIN_NAME = pkg.name;
 
@@ -52,7 +52,7 @@ document.head.appendChild(__vite_style__);${EOL}`;
  *   ],
  *   build: {
  *     cssCodeSplit: false,
- *     rollupOptions: {
+ *     rolldownOptions: {
  *       output: {
  *         manualChunks: undefined,
  *         assetFileNames: 'assets/[name][extname]',
@@ -113,7 +113,7 @@ export default function pluginIncludeCSS(): Plugin {
 
           if (resolvedConfig.build.sourcemap) {
             const ms = new MagicString(code);
-            chunk.map = ms.generateMap({ hires: 'boundary' });
+            chunk.map = ms.generateMap({ hires: 'boundary' }) as any;
           }
           break;
         }
