@@ -29,11 +29,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 检出代码
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0  # 获取完整提交历史（用于 gh-pages 提交记录）
       - name: 安装Node环境
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24  # 指定 Node.js 版本
       - run: npm run clean
@@ -43,9 +43,9 @@ jobs:
           BASE_URL: ${{ env.base_url }}
       - name: 配置 Pages
         id: configuration
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           # Upload entire repository
           path: './docs/.vitepress/dist'
@@ -66,4 +66,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
