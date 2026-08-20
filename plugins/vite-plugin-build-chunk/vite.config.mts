@@ -1,4 +1,4 @@
-import ts from '@rollup/plugin-typescript';
+import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 
@@ -20,9 +20,10 @@ export default defineConfig({
       // （否则 src/index.ts 里的 import { build } from 'vite' 会挂）。
       externalizeDeps: [...Object.keys(pkg.dependencies), 'vite']
     }),
-    ts({
-      tsconfig: './tsconfig.build.json'
-    })
+    dts({
+      entryRoot: 'src',
+      include: 'src/**/*.ts'
+    }),
   ],
   build: {
     lib: {

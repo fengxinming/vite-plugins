@@ -1,4 +1,4 @@
-import ts from '@rollup/plugin-typescript';
+import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 
@@ -21,8 +21,9 @@ export default defineConfig({
       // （vp-runtime-helper 运行时 import vite，external 化会导致 src 无法加载）。
       externalizeDeps: [...Object.keys(pkg.dependencies), 'vite']
     }),
-    ts({
-      tsconfig: './tsconfig.build.json'
+    dts({
+      entryRoot: 'src',
+      include: 'src/**/*.ts'
     })
   ],
   build: {

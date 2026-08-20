@@ -28,12 +28,12 @@ export interface libConfig {
    * 模块的新路径
    * New path for the module
    */
-  importFrom?: (importer: string, libName: string) => string | ImportSource;
+  resolveModule?: (importer: string, libName: string) => string | ImportSource;
   /**
    * 插入导入声明
    * Insert import source
    */
-  insertFrom?: (importer: string, libName: string) => string | ImportSource | Array<string | ImportSource>;
+  insertSideEffect?: (importer: string, libName: string) => string | ImportSource | Array<string | ImportSource>;
 }
 
 export interface Options {
@@ -102,11 +102,11 @@ export interface libConfig {
   /**
    * New path for the module.
    */
-  importFrom?: (importer: string, libName: string) => string | ImportSource;
+  resolveModule?: (importer: string, libName: string) => string | ImportSource;
   /**
    * Specify the import source to insert.
    */
-  insertFrom?: (importer: string, libName: string) => string | ImportSource | Array<string | ImportSource>;
+  insertSideEffect?: (importer: string, libName: string) => string | ImportSource | Array<string | ImportSource>;
 }
 
 export interface Options {

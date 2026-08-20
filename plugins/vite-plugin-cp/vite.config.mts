@@ -1,4 +1,4 @@
-import ts from '@rollup/plugin-typescript';
+import dts from 'vite-plugin-dts';
 import pluginExternal from 'vite-plugin-external';
 import { defineConfig } from 'vitest/config';
 
@@ -7,6 +7,10 @@ import pkg from './package.json' with { type: 'json' };
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
+    dts({
+      entryRoot: 'src',
+      include: 'src/**/*.ts'
+    }),
     pluginExternal({
       nodeBuiltins: true,
       // 'vite' is a dev-only peer that must stay external when building the
@@ -20,9 +24,6 @@ export default defineConfig({
       // 产物，又不会在 vitest 的 dev server 阶段把它标成 external
       // （vp-runtime-helper 运行时 import vite，external 化会导致 src 无法加载）。
       externalizeDeps: [...Object.keys(pkg.dependencies), 'vite']
-    }),
-    ts({
-      tsconfig: './tsconfig.build.json'
     })
   ],
   build: {

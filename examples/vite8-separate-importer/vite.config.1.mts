@@ -16,14 +16,14 @@ export default defineConfig({
       libs: [
         {
           name: 'antd',
-          importFrom(importer, libName) {
+          resolveModule(importer, libName) {
             const kebab = importer.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
             return {
               es: `${libName}/es/${kebab}`,
               cjs: `${libName}/lib/${kebab}`
             };
           },
-          insertFrom(importer, libName) {
+          insertSideEffect(importer, libName) {
             const kebab = importer.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '');
             return {
               es: `${libName}/es/${kebab}/style`,

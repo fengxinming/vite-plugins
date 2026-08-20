@@ -1,4 +1,4 @@
-import ts from '@rollup/plugin-typescript';
+import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 
@@ -6,8 +6,9 @@ import pkg from './package.json' with { type: 'json' };
 
 export default defineConfig({
   plugins: [
-    ts({
-      tsconfig: './tsconfig.build.json'
+    dts({
+      entryRoot: 'src',
+      include: 'src/**/*.ts'
     }),
     // pluginExternal is only needed for `vite build` (to keep runtime deps
     // out of the published bundle). Restricting it to apply:'build' keeps

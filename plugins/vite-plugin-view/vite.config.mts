@@ -1,4 +1,4 @@
-import ts from '@rollup/plugin-typescript';
+import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 
@@ -22,13 +22,16 @@ const isTest = !!process.env.VITEST;
 export default defineConfig({
   plugins: [
     !isTest
-      ? [pluginExternal({
+      ? [
+        pluginExternal({
         nodeBuiltins: true,
         externalizeDeps: Object.keys(pkg.dependencies)
       }),
-      ts({
-        tsconfig: './tsconfig.build.json'
-      })]
+      dts({
+        entryRoot: 'src',
+        include: 'src/**/*.ts'
+      })
+    ]
       : []
   ],
   build: {

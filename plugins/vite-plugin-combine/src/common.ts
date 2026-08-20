@@ -22,7 +22,7 @@ import { EOL } from 'node:os';
 import { dirname, join, parse, relative } from 'node:path';
 
 import { camelize } from 'camel-kit';
-import type { InputOption } from 'rollup';
+import type { InputOption } from 'rolldown';
 
 import { NameExport } from './types';
 

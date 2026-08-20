@@ -68,7 +68,7 @@ describe('vite-plugin-separate-importer example configs', () => {
     expect(code).toMatch(/["']antd\/es\/input["']/);
     expect(code).toMatch(/["']antd\/es\/select["']/);
 
-    // 样式 import：antd/es/*/style（insertFrom 配置生效）
+    // 样式 import：antd/es/*/style（insertSideEffect 配置生效）
     expect(code).toMatch(/["']antd\/es\/button\/style["']/);
     expect(code).toMatch(/["']antd\/es\/input\/style["']/);
     expect(code).toMatch(/["']antd\/es\/select\/style["']/);

@@ -4,7 +4,7 @@
   "description": "A collection of custom plugins designed to enhance the functionality of the Vite build tool.",
   "private": true,
   "scripts": {
-    "deps": "npm run clean && pnpm install",
+    "deps": "npm run clean && pnpm install --no-lockfile",
     "clean": "rm -rf node_modules ./*/*/node_modules",
     "eslint": "eslint --ext .js,.jsx,.ts,.tsx,.mjs --fix --ignore-path .eslintignore ./",
     "prepare": "husky install",
@@ -37,16 +37,21 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.29.7",
+    "@babel/eslint-plugin": "^7.29.7",
     "@babel/preset-react": "^7.13.13",
     "@commitlint/cli": "^17.6.1",
     "@commitlint/config-conventional": "^17.6.1",
     "@types/node": "^20.17.28",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
     "eslint": "^8.57.1",
     "eslint-config-fe": "^2.1.3",
     "eslint-plugin-react": "^7.24.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-simple-import-sort": "^12.1.0",
     "husky": "^8.0.3",
-    "lint-staged": "^12.5.0"
+    "lint-staged": "^12.5.0",
+    "react": "^19.2.8"
   }
 }

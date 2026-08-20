@@ -1,6 +1,6 @@
 import { builtinModules } from 'node:module';
 
-import ts from '@rollup/plugin-typescript';
+import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
 
 import { dependencies } from './package.json' with { type: 'json' };
@@ -13,8 +13,9 @@ const externals = Object.keys(dependencies)
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    ts({
-      tsconfig: './tsconfig.build.json'
+    dts({
+      entryRoot: 'src',
+      include: 'src/**/*.ts'
     })
   ],
   build: {

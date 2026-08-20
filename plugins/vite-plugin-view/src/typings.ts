@@ -1,4 +1,4 @@
-import type { InputOption, NullValue } from 'rollup';
+import type { InputOption } from 'rolldown';
 import type { ResolvedConfig } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
@@ -49,7 +49,7 @@ export type SupportedTemplateEngines =
 
 export type EngineOptions =
   | Record<string, any>
-  | ((config: ResolvedConfig) => Record<string, any> | NullValue);
+  | ((config: ResolvedConfig) => Record<string, any> | null | undefined);
 
 export interface Options {
   /**

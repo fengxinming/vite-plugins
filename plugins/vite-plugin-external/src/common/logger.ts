@@ -1,5 +1,4 @@
-import type { Logger } from 'base-log-factory';
-import { logFactory } from 'vp-runtime-helper';
+import { logFactory, Logger } from 'vp-runtime-helper';
 
 import { PLUGIN_NAME } from './constants';
 

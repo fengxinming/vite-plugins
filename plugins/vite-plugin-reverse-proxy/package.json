@@ -40,8 +40,9 @@
   },
   "homepage": "https://github.com/fengxinming/vite-plugins#readme",
   "devDependencies": {
-    "@rollup/plugin-typescript": "^12.1.2",
-    "vite": "^8.0.0"
+    "vite": "^8.0.0",
+    "vite-plugin-dts": "^5.0.3",
+    "vite-plugin-external": "workspace:^"
   },
   "files": [
     "dist"

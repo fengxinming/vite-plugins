@@ -40,12 +40,13 @@
   },
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-separate-importer/quick-start",
   "dependencies": {
-    "es-module-lexer": "^1.5.0",
+    "@oxc-project/types": "^0.146.0",
+    "es-module-lexer": "^2.3.2",
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^12.1.2",
     "vite": "^8.0.0",
+    "vite-plugin-dts": "^5.0.3",
     "vite-plugin-external": "workspace:^"
   },
   "files": [

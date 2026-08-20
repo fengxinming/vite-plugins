@@ -6,7 +6,7 @@
 
 | 配置 | 说明 |
 |------|------|
-| `vite.config.1.mts` | antd 按需引入（importFrom + insertFrom） |
+| `vite.config.1.mts` | antd 按需引入（resolveModule + insertSideEffect） |
 | `vite.config.2.mts` | lodash 自定义拆分（手动 kebab-case 转换） |
 
 ## 运行

@@ -29,13 +29,13 @@ export default defineConfig({
       libs: [
         {
           name: 'antd',
-          importFrom(importer, libName) {
+          resolveModule(importer, libName) {
             return {
               es: `${libName}/es/${decamelize(importer)}`,
               cjs: `${libName}/lib/${decamelize(importer)}`
             };
           },
-          insertFrom(importer, libName) {
+          insertSideEffect(importer, libName) {
             return {
               es: `${libName}/es/${decamelize(importer)}/style`,
               cjs: `${libName}/lib/${decamelize(importer)}/style`

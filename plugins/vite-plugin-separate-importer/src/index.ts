@@ -1,6 +1,8 @@
 import { EOL } from 'node:os';
 
-import type { Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, Program } from 'acorn';
+import type {
+  IdentifierName, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier
+} from '@oxc-project/types';
 import { init, parse } from 'es-module-lexer';
 import type { Plugin } from 'vite';
 import { banner } from 'vp-runtime-helper';
@@ -33,12 +35,12 @@ function processLibs(
   specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>,
   lib: LibInfo
 ): string {
-  const { importFrom, insertFrom, cjsTransformers } = lib;
+  const { resolveModule, insertSideEffect, cjsTransformers } = lib;
 
   let newImportDeclarationStr = '';
   const insertSourceFn = (importer: string, libName: string) => {
-    if (typeof insertFrom === 'function') {
-      let importSources = insertFrom(importer, libName);
+    if (typeof insertSideEffect === 'function') {
+      let importSources = insertSideEffect(importer, libName);
       if (typeof importSources === 'string') {
         importSources = [{ es: importSources }];
       }
@@ -76,10 +78,10 @@ function processLibs(
         break;
 
       case 'ImportSpecifier': {
-        const { name: importedName } = specifier.imported as Identifier;
+        const { name: importedName } = specifier.imported as IdentifierName;
         if (importedName) {
-          if (typeof importFrom === 'function') {
-            let source = importFrom(importedName, libName);
+          if (typeof resolveModule === 'function') {
+            let source = resolveModule(importedName, libName);
             if (typeof source === 'string') {
               source = { es: source };
             }
@@ -109,7 +111,6 @@ function processLibs(
  * @example
  * ```js
   import { defineConfig } from 'vite';
-  import ts from '@rollup/plugin-typescript';
   import createExternal from 'vite-plugin-external';
   import separateImporter from 'vite-plugin-separate-importer';
   import { decamelize } from 'camel-kit';
@@ -119,22 +120,17 @@ function processLibs(
       createExternal({
         externalizeDeps: ['react', 'antd']
       }),
-      ts({
-        compilerOptions: {
-          declarationDir: 'dist'
-        }
-      }),
       separateImporter({
         libs: [
           {
             name: 'antd',
-            importFrom(importer, libName) {
+            resolveModule(importer, libName) {
               return {
                 es: `${libName}/es/${decamelize(importer)}`,
                 cjs: `${libName}/lib/${decamelize(importer)}`
               };
             },
-            insertFrom(importer, libName) {
+            insertSideEffect(importer, libName) {
               return {
                 es: `${libName}/es/${decamelize(importer)}/style`,
                 cjs: `${libName}/lib/${decamelize(importer)}/style`
@@ -180,7 +176,7 @@ function pluginSeparateImporter(
 
   const libMap: Record<string, LibInfo> = {};
   for (const lib of libs) {
-    const { name, importFrom } = lib;
+    const { name, resolveModule } = lib;
 
     const makeLibInfo = (n: string) => {
       libMap[n] = {
@@ -190,7 +186,7 @@ function pluginSeparateImporter(
       };
     };
 
-    if (importFrom) {
+    if (resolveModule) {
       if (Array.isArray(name)) {
         name.forEach(makeLibInfo);
       }
@@ -203,7 +199,7 @@ function pluginSeparateImporter(
   return {
     name: PLUGIN_NAME,
     enforce,
-    apply: ('apply' in opts) ? opts.apply : 'build',
+    apply: opts.apply ?? 'build',
 
     async transform(
       code: string,
@@ -232,7 +228,7 @@ function pluginSeparateImporter(
         }
 
         // 抽象语法树对象 AST Node object
-        const ast = this.parse(importStr) as Program;
+        const ast = this.parse(importStr);
 
         const statement = ast.body[0];
 

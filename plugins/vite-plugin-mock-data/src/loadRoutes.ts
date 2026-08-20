@@ -37,7 +37,6 @@ import { readFileSync } from 'node:fs';
 import { unlink, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { join, parse } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import { glob } from 'tinyglobby';
 import { transformWithOxc } from 'vite';
@@ -45,12 +44,7 @@ import { transformWithOxc } from 'vite';
 import { logger, PLUGIN_NAME } from './logger';
 import { RouteConfig } from './types';
 
-// Use import.meta.url (ESM) / __filename (CJS) for createRequire.
-// ESM 模式用 import.meta.url，CJS 模式用 __filename。
-const _url = typeof __filename !== 'undefined'
-  ? pathToFileURL(__filename).href
-  : import.meta.url;
-const require = createRequire(_url);
+const _require = typeof require === 'function' ? require : createRequire(import.meta.url);
 
 /*
  * getRoute — 加载单个 mock 文件并解析为 RouteConfig
@@ -87,7 +81,7 @@ async function getRoute(filename: string): Promise<RouteConfig | undefined> {
   let config: RouteConfig | undefined;
   switch (ext) {
     case '.js':
-      config = require(filename);
+      config = _require(filename);
       break;
     case '.mjs':
       config = (await import(filename)).default;

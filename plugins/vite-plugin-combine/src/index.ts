@@ -34,7 +34,7 @@
 import { existsSync, unlink, writeFileSync } from 'node:fs';
 import { EOL } from 'node:os';
 
-import type { InputOption } from 'rollup';
+import type { InputOption } from 'rolldown';
 import { globSync } from 'tinyglobby';
 import type { Plugin } from 'vite';
 import dts from 'vite-plugin-dts';
@@ -88,7 +88,7 @@ export default function pluginCombine(opts: Options): Plugin | Plugin[] | undefi
   const viteCombine = {
     name: PLUGIN_NAME,
     enforce: ('enforce' in opts) ? opts.enforce : 'post',
-    apply: ('apply' in opts) ? opts.apply : 'build',
+    apply: opts.apply ?? 'build',
 
     /*
      * config 钩子 — 写临时组合文件 + 合并进 build.lib.entry
@@ -179,6 +179,6 @@ export default function pluginCombine(opts: Options): Plugin | Plugin[] | undefi
       Object.assign({
         include: files.concat(absTarget)
       }, dtsOpts)
-    )
+    ) as Plugin
   ];
 }

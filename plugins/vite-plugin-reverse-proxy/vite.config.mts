@@ -1,4 +1,4 @@
-import ts from '@rollup/plugin-typescript';
+import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
 
@@ -11,8 +11,9 @@ export default defineConfig({
       nodeBuiltins: true,
       externalizeDeps
     }),
-    ts({
-      tsconfig: './tsconfig.build.json'
+    dts({
+      entryRoot: 'src',
+      include: 'src/**/*.ts'
     })
   ],
   build: {

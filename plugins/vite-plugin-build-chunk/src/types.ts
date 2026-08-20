@@ -1,4 +1,4 @@
-import { ModuleFormat } from 'rollup';
+import { ModuleFormat } from 'rolldown';
 import type { LibraryFormats, PluginOption } from 'vite';
 import { LogLevel } from 'vp-runtime-helper';
 

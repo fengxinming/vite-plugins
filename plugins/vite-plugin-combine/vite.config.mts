@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [
     dts({
       entryRoot: 'src',
-      include: 'src/*.ts'
+      include: 'src/**/*.ts'
     }),
     pluginExternal({
       nodeBuiltins: true,

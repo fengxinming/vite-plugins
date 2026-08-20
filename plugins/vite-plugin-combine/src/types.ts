@@ -1,4 +1,3 @@
-import type { NullValue } from 'rollup';
 import type { ConfigEnv, UserConfig } from 'vite';
 import type { PluginOptions as DtsPluginOptions } from 'vite-plugin-dts';
 import type { LogLevel } from 'vp-runtime-helper';
@@ -72,7 +71,7 @@ export interface Options {
    *
    * 写入文件前处理代码字符串
    */
-  beforeWrite?: (code: string) => string | NullValue;
+  beforeWrite?: (code: string) => string | null | undefined;
 
   /**
    * Whether to output the banner

@@ -46,13 +46,15 @@
     "fast-replaceall": "^2.0.1",
     "fs-extra": "^11.1.1",
     "tinyglobby": "^0.2.12",
-    "vite-plugin-dts": "^4.5.3",
+    "vite-plugin-dts": "^5.0.3",
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.10",
+    "rolldown": "^1.2.5",
     "vite": "^8.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "vite-plugin-external": "workspace:^"
   },
   "files": [
     "dist"

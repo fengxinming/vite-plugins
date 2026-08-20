@@ -47,11 +47,12 @@
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^12.1.2",
     "@types/fs-extra": "^11.0.4",
     "@vitest/coverage-v8": "^4.1.10",
     "vite": "^8.0.0",
-    "vitest": "^4.1.10"
+    "vite-plugin-dts": "^5.0.3",
+    "vitest": "^4.1.10",
+    "vite-plugin-external": "workspace:^"
   },
   "files": [
     "dist"

@@ -183,7 +183,7 @@ function getOutputFormat(config: UserConfig): string | undefined {
  *                           预取 CDN 模块。
  *
  * 'interop: 'auto'' preserves historical behaviour cleared
- * 'rollupOptions.external' for non-IIFE builds.
+ * 'rolldownOptions.external' for non-IIFE builds.
  *
  * 保留 'interop: 'auto'' 的历史行为：在声明它（或非 IIFE 输出）时，清空
  * build.rolldownOptions.external，强制所有 external 通过 stash 解析路线，
