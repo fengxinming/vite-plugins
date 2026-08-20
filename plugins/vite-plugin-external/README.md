@@ -7,7 +7,7 @@
 [![Node version](https://img.shields.io/node/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 
 > Excludes specified module dependencies from runtime code and built bundles.
-> Vite >= 3.1
+> Vite >= 8.0
 
 
 ## Documentation

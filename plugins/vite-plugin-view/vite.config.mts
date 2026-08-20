@@ -1,5 +1,5 @@
-import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 import pluginExternal from 'vite-plugin-external';
 
 import pkg from './package.json' with { type: 'json' };
@@ -24,14 +24,14 @@ export default defineConfig({
     !isTest
       ? [
         pluginExternal({
-        nodeBuiltins: true,
-        externalizeDeps: Object.keys(pkg.dependencies)
-      }),
-      dts({
-        entryRoot: 'src',
-        include: 'src/**/*.ts'
-      })
-    ]
+          nodeBuiltins: true,
+          externalizeDeps: Object.keys(pkg.dependencies)
+        }),
+        dts({
+          entryRoot: 'src',
+          include: 'src/**/*.ts'
+        })
+      ]
       : []
   ],
   build: {
