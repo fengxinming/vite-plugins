@@ -1,0 +1,18 @@
+{
+  "name": "vite8-mock-data",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build:1": "vite build --config vite.config.1.mts",
+    "build:2": "vite build --config vite.config.2.mts",
+    "build:3": "vite build --config vite.config.3.mts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
+    "vite": "^8.0.0",
+    "vite-plugin-mock-data": "workspace:^",
+    "vitest": "^4.1.10"
+  }
+}

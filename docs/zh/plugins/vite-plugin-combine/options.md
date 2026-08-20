@@ -3,13 +3,6 @@
 ## TypeScript 定义
 
 ```ts
-import type { NullValue } from 'rollup';
-import type { ConfigEnv, UserConfig } from 'vite';
-import type { PluginOptions as DtsPluginOptions } from 'vite-plugin-dts';
-import type { LogLevel } from 'vp-runtime-helper';
-
-export type { LogLevel };
-
 export type NameExport = (name: string, filePath: string) => string;
 
 export interface Options {

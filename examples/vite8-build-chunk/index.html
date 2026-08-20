@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>vite-plugin-build-chunk example</title>
+</head>
+<body>
+  <h1>vite-plugin-build-chunk</h1>
+  <p>构建完成后，除主 ES 产物外，还会额外生成 UMD chunk。</p>
+  <script src="./dist/chunks/my-lib.bundle.js"></script>
+  <script>
+    console.log('MyLib:', typeof MyLib);
+    if (typeof MyLib !== 'undefined') {
+      console.log('add(1, 2):', MyLib.add(1, 2));
+    }
+  </script>
+</body>
+</html>

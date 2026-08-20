@@ -25,8 +25,6 @@ If `true`, these mock routes is matched after internal middlewares are installed
 ## TypeScript Definitions
 
 ```ts
-import { Config as SirvConfig, HTTPVersion, RouteOptions, Handler } from 'find-my-way';
-
 export interface HandleRoute {
   file?: string;
   handler?: any | Handler<HTTPVersion.V1>;
@@ -46,6 +44,22 @@ export interface Options {
   cwd?: string;
 
   /**
+   * Cache directory for compiled files.
+   *
+   * 用于存放 ts 被编译后存放的文件目录。
+   *
+   * @default `${cwd}/node_modules/.vite_mock_data`
+   */
+  cacheDir?: string;
+
+  /**
+   * Log level
+   *
+   * 输出日志等级
+   */
+  logLevel?: LogLevel;
+
+  /**
    * If `true`, these mock routes is matched after internal middlewares are installed.
    * @default `false`
    */
@@ -61,5 +75,12 @@ export interface Options {
    * or specify the directory to define mock routes that should be added to the dev server.
    */
   routes?: RouteConfig | Array<RouteConfig | string> | string;
+
+  /**
+   * Whether to output the banner
+   *
+   * 是否输出 banner
+   */
+  enableBanner?: boolean;
 }
 ```

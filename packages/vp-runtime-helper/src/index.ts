@@ -35,4 +35,4 @@ export * from './hash';
 export * from './logger';
 export * from './time';
 export * from './version';
-export type { LogLevel } from 'base-log-factory';
+export type { Logger, LogLevel } from 'base-log-factory';

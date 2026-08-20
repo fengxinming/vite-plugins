@@ -8,7 +8,7 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-  
+
 env:
   base_url: /vite-plugins/
 
@@ -63,7 +63,7 @@ jobs:
       #     publish_dir: ./docs/.vitepress/dist        # 构建产物目录
       #     keep_files: false                          # 是否保留 gh-pages 现有文件
       #     force_orphan: true                         # 强制清空历史（仅保留最新部署）
-      
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

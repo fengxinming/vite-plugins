@@ -1,0 +1,11 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title= title
+    meta(name="description" content=description)
+  body
+    #app
+      h1= title
+      p This page is rendered by pug via vite-plugin-view.
+    script(type="module" src="/src/index.ts")

@@ -1,5 +1,5 @@
-import { defineConfig } from 'vitepress'
-import { generateAPISidebar } from './shared.mjs'
+import { defineConfig } from 'vitepress';
+import { createNavItems, createSidebar } from './shared.mjs';
 
 // https://vitepress.dev/reference/site-config
 export const zh = defineConfig({
@@ -9,28 +9,19 @@ export const zh = defineConfig({
     // https://vitepress.dev/reference/default-theme-config
     nav: [
       { 
-        text: '指引',
-        link: '/zh/guide/introduction',
+        text: '引言',
+        link: '/zh/guide/',
         activeMatch: '/zh/guide/'
       },
-      { 
-        text: 'APi',
-        link: '/zh/api/entry',
-        activeMatch: '/zh/api/'
+      {
+        text: '模块列表',
+        activeMatch: '/zh/packages/',
+        items: createNavItems('zh/packages', '/zh/packages')
       }
     ],
 
     sidebar: {
-      '/zh/guide/': {
-        base: '/zh/guide/',
-        items: [
-          { text: '介绍', link: 'introduction' },
-        ]
-      },
-      '/zh/api/': {
-        base: '/zh/api/',
-        items: generateAPISidebar('../../zh/api')
-      }
+      ...createSidebar('zh/packages', '/zh/packages')
     },
 
     socialLinks: [

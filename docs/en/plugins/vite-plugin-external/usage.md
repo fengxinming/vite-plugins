@@ -1,6 +1,6 @@
 # Usage Examples
 
-## Basic Usage
+## Basic usage
 
 vite.config.mjs
 ```js
@@ -14,21 +14,21 @@ export default defineConfig({
         jquery: '$',
         react: 'React',
         'react-dom/client': 'ReactDOM',
-        vue: 'Vue'
-      }
-    })
+        vue: 'Vue',
+      },
+    }),
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        format: 'iife'
-      }
-    }
-  }
+        format: 'iife',
+      },
+    },
+  },
 });
 ```
 
-## Dynamic Configuration of Global Variable Names
+## Dynamic global-name resolution
 
 ```js
 import { defineConfig } from 'vite';
@@ -38,28 +38,24 @@ export default defineConfig({
   plugins: [
     pluginExternal({
       externals(libName) {
-        if (libName === 'react') {
-          return 'React';
-        }
-        if (libName === 'react-dom/client') {
-          return 'ReactDOM';
-        }
-      }
-    })
+        if (libName === 'react') return 'React';
+        if (libName === 'react-dom/client') return 'ReactDOM';
+      },
+    }),
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        format: 'iife'
-      }
-    }
-  }
+        format: 'iife',
+      },
+    },
+  },
 });
 ```
 
-## Dynamic Configuration of ESM format CDN
+## Dynamic ESM CDN URLs
 
-> Replace specific CDN links with dynamic configuration, and inject `modulepreload` links into the HTML header.
+> Replaces listed imports with an absolute ESM CDN URL and automatically injects `<link rel="modulepreload">` tags into `index.html`, so the browser starts prefetching the CDN modules on first paint.
 
 ```js
 import react from '@vitejs/plugin-react';
@@ -68,36 +64,33 @@ import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    react({
-      jsxRuntime: 'classic'
-    }),
+    react({ jsxRuntime: 'classic' }),
     pluginExternal({
       externals(libName) {
-        if (libName === 'react') {
-          return 'https://esm.sh/react@18.3.1';
-        }
-        if (libName === 'react-dom/client') {
-          return 'https://esm.sh/react-dom@18.3.1';
-        }
-      }
-    })
-  ]
+        if (libName === 'react') return 'https://esm.sh/react@18.3.1';
+        if (libName === 'react-dom/client') return 'https://esm.sh/react-dom@18.3.1';
+      },
+    }),
+  ],
 });
 ```
 
-## Multi-Environment Configuration
+## Multi-mode Configuration
 
-> Sometimes development and production environments use different CDNs. You can configure `development` and `production` modes for respective external dependencies.
+> Dev (unpkg UMD) and prod (private CDN prefix) often need different global names / URLs. Use the `development` / `production` fields as per-mode `BasicOptions` overrides (see [Options reference → `[mode: string]` index signature](/plugins/vite-plugin-external/options#mode-string-index-signature)).
+>
+> (Developer note: "Multi-mode configuration" vs "per-mode overrides" refer to the same feature; the title chosen here matches the cross-document anchor used from the Options Reference page.)
 
-development `index.html`
+`index.html` for development
 ```html
 <script src="//unpkg.com/react@18.3.1/umd/react.development.js"></script>
-<script src="//unpkg.com/react-dom@18.3.1/umd/react.development.js"></script>
+<script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
 ```
 
-production `index.html`
+`index.html` for production
 ```html
 <script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react.js"></script>
+<script src="//g.alicdn.com/linkdesign/lib/1.0.1/~react-dom.js"></script>
 ```
 
 vite.config.mjs
@@ -108,29 +101,33 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
+      // Production defaults: private CDN prefix $linkdesign.*
       externals: {
-        react: '$linkdesign.React'
+        react: '$linkdesign.React',
+        'react-dom/client': '$linkdesign.ReactDOM',
       },
+      // Development override: unpkg UMD global names
       development: {
         externals: {
-          react: 'React'
-        }
-      }
-    })
-  ]
+          react: 'React',
+          'react-dom/client': 'ReactDOM',
+        },
+      },
+    }),
+  ],
 });
 ```
 
 ## Adjusting Build Strategies
 
-> The plugin uses two strategies during development runtime and build time.  
-> During development runtime, it maps dependencies to `module.exports = ${globalName};`.  
-> During build time, it configures Rollup's `external` and `output` options.  
-> The `interop` option controls whether to use the first strategy.
+> Setting `interop: 'auto'` **clears `build.rolldownOptions.external` during the build phase**, forcing every named external to go through the stash-file CJS shim (`module.exports = <globalName>;`) and be bundled by Rolldown as a normal in-bundle dependency.
+>
+> Use case: you notice the IIFE output still wraps `require('react')` at the top level instead of rewriting it to `$linkdesign.React`. Toggling `interop: 'auto'` makes Rolldown bundle the 1-line CJS shim together with the rest of the app — Rolldown IIFE wrapping has always handled that shape correctly.
+>
+> **Note**: Vite ≤6 used to also route dev through `alias` when `interop` was set. This rewrite removes that behaviour; `interop` now affects the **build phase only**. The old behaviour is archived at [Legacy docs (Vite 1–6) → Packing strategy section](/legacy/plugins/vite-plugin-external/usage#adjust-packing-strategy).
 
-Example configuration:
+vite.config.mjs
 
-`vite.config.mjs`
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
@@ -138,252 +135,68 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
+      interop: 'auto',
       externals: {
         react: '$linkdesign.React',
-        'react-dom': '$linkdesign.ReactDOM',
-        'prop-types': '$linkdesign.PropTypes'
-      }
-    })
+        'react-dom/client': '$linkdesign.ReactDOM',
+        'prop-types': '$linkdesign.PropTypes',
+      },
+    }),
   ],
   build: {
     minify: false,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        format: 'iife'
-      }
-    }
-  }
+        format: 'iife',
+      },
+    },
+  },
 });
 ```
 
-`index.html`
-```html
-<script src="//g.alicdn.com/linkdesign/lib/1.0.1/??babel-polyfill.js,~react.js"></script>
-```
-
-`src/index.jsx`
-
-**Before Build**
-
-```jsx
-import { useState, StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-function App() {
-  const [count, setCount] = useState(0);
-  return (
-    <div className="box">
-      <h1>Count: {count}</h1>
-      <button onClick={() => setCount((prev) => prev + 1)}>Click me</button>
-    </div>
-  );
-}
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
-```
-
-### Setting `interop` to `'auto'`
-
-**After Build**
-
-::: code-group
-
-```js [Vite 6.x]
-(function() {
-  "use strict";
-  function getDefaultExportFromCjs(x) {
-    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
-  }
-  var react;
-  var hasRequiredReact;
-  function requireReact() {
-    if (hasRequiredReact) return react;
-    hasRequiredReact = 1;
-    react = $linkdesign.React;
-    return react;
-  }
-  var reactExports = requireReact();
-  const React = /* @__PURE__ */ getDefaultExportFromCjs(reactExports);
-  var reactDom;
-  var hasRequiredReactDom;
-  function requireReactDom() {
-    if (hasRequiredReactDom) return reactDom;
-    hasRequiredReactDom = 1;
-    reactDom = $linkdesign.ReactDOM;
-    return reactDom;
-  }
-  var reactDomExports = requireReactDom();
-  const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDomExports);
-  function App() {
-    const [count, setCount] = reactExports.useState(0);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, reactExports.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  ReactDOM.render(
-    /* @__PURE__ */ React.createElement(App, null),
-    document.getElementById("root")
-  );
-})();
-```
-
-```js [Vite 5.x]
-(function() {
-  "use strict";
-  function getDefaultExportFromCjs(x) {
-    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
-  }
-  var react = React;
-  const React$1 = /* @__PURE__ */ getDefaultExportFromCjs(react);
-  var reactDom = $linkdesign.ReactDOM;
-  const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDom);
-  function App() {
-    const [count, setCount] = react.useState(0);
-    return /* @__PURE__ */ React$1.createElement(React$1.Fragment, null, /* @__PURE__ */ React$1.createElement("p", null, react.version), /* @__PURE__ */ React$1.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React$1.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  ReactDOM.render(
-    /* @__PURE__ */ React$1.createElement(App, null),
-    document.getElementById("root")
-  );
-})();
-```
-
-```js [Vite 4.x]
-(function() {
-  "use strict";
-  function getDefaultExportFromCjs(x) {
-    return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x["default"] : x;
-  }
-  var react = React;
-  const React$1 = /* @__PURE__ */ getDefaultExportFromCjs(react);
-  var reactDom = $linkdesign.ReactDOM;
-  const ReactDOM = /* @__PURE__ */ getDefaultExportFromCjs(reactDom);
-  function App() {
-    const [count, setCount] = react.useState(0);
-    return /* @__PURE__ */ React$1.createElement(React$1.Fragment, null, /* @__PURE__ */ React$1.createElement("p", null, react.version), /* @__PURE__ */ React$1.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React$1.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  ReactDOM.render(
-    /* @__PURE__ */ React$1.createElement(App, null),
-    document.getElementById("root")
-  );
-})();
-```
-
-```js [Vite 3.x]
-(function() {
-  "use strict";
-  var react = React;
-  var reactDom = $linkdesign.ReactDOM;
-  function App() {
-    const [count, setCount] = react.useState(0);
-    return /* @__PURE__ */ react.createElement(react.Fragment, null, /* @__PURE__ */ react.createElement("p", null, react.version), /* @__PURE__ */ react.createElement("h1", null, "Count: ", count), /* @__PURE__ */ react.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  reactDom.render(
-    /* @__PURE__ */ react.createElement(App, null),
-    document.getElementById("root")
-  );
-})();
-```
-
-:::
-
-### Without Setting `interop`
-
-**After Build**
-
-::: code-group
-```js [Vite 6.x]
-(function(React, ReactDOM) {
-  "use strict";
-  function App() {
-    const [count, setCount] = React.useState(0);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, React.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  ReactDOM.render(
-    /* @__PURE__ */ React.createElement(App, null),
-    document.getElementById("root")
-  );
-})($linkdesign.React, $linkdesign.ReactDOM);
-```
-
-```js [Vite 5.x]
-(function(React, ReactDOM) {
-  "use strict";
-  function App() {
-    const [count, setCount] = React.useState(0);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, React.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  ReactDOM.render(
-    /* @__PURE__ */ React.createElement(App, null),
-    document.getElementById("root")
-  );
-})($linkdesign.React, $linkdesign.ReactDOM);
-```
-
-```js [Vite 4.x]
-(function(React, ReactDOM) {
-  "use strict";
-  function App() {
-    const [count, setCount] = React.useState(0);
-    return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", null, React.version), /* @__PURE__ */ React.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  ReactDOM.render(
-    /* @__PURE__ */ React.createElement(App, null),
-    document.getElementById("root")
-  );
-})($linkdesign.React, $linkdesign.ReactDOM);
-```
-
-```js [Vite 3.x]
-(function(React, ReactDOM) {
-  "use strict";
-  const _interopDefaultLegacy = (e) => e && typeof e === "object" && "default" in e ? e : { default: e };
-  const React__default = /* @__PURE__ */ _interopDefaultLegacy(React);
-  const ReactDOM__default = /* @__PURE__ */ _interopDefaultLegacy(ReactDOM);
-  function App() {
-    const [count, setCount] = React.useState(0);
-    return /* @__PURE__ */ React__default.default.createElement(React__default.default.Fragment, null, /* @__PURE__ */ React__default.default.createElement("p", null, React.version), /* @__PURE__ */ React__default.default.createElement("h1", null, "Count: ", count), /* @__PURE__ */ React__default.default.createElement("button", { onClick: () => setCount((prev) => prev + 1) }, "Click me"));
-  }
-  ReactDOM__default.default.render(
-    /* @__PURE__ */ React__default.default.createElement(App, null),
-    document.getElementById("root")
-  );
-})($linkdesign.React, $linkdesign.ReactDOM);
-```
-:::
-
 ## Solving IIFE Build Issues
 
-> For Vite versions below 6.x, use `rollup-plugin-external-globals` to resolve incomplete mapping.  
-> See https://github.com/rollup/rollup/issues/3188.
+> Even when Rolldown receives a correct `output.globals`, in rare cases the IIFE wrapper still emits a raw `require('react')` at the top that never gets rewritten to a global access (see [rollup/rollup#3188](https://github.com/rollup/rollup/issues/3188)).
+>
+> Use the `externalGlobals` callback: it receives a pre-compiled `globals(id)` resolver (semantically identical to Rolldown `output.globals`) which you forward into `@rolldown/plugin-external-globals` (or its Rollup ancestor). The returned Rolldown plugin is **prepended** to `rolldownOptions.plugins` so its transform runs **before** Rolldown's built-in globals handling.
+>
+> **Important**: The current API is a *function* `(globals) => Rolldown.Plugin`, not a plugin instance directly. Old code that passed the `rollup-plugin-external-globals` instance directly must wrap it in a one-line callback.
+>
+> (Developer note: this section used to bear the longer title "Fixing IIFE top-level require → global rewrite (Rolldown/Rollup Issue #3188)". It was shortened so the Options Reference anchor `#solving-iife-build-issues` lands exactly here.)
 
-vite.config.mjs
 ```js
 import { defineConfig } from 'vite';
 import pluginExternal from 'vite-plugin-external';
-import externalGlobals from 'rollup-plugin-external-globals';
+import externalGlobals from '@rolldown/plugin-external-globals';
 
 export default defineConfig({
   plugins: [
     pluginExternal({
-      externalGlobals,
+      // Required shape: a callback. `globals(id)` behaves exactly like output.globals.
+      externalGlobals: (globals) => externalGlobals(globals),
       externals: {
         react: 'React',
-        'react-dom/client': 'ReactDOM'
-      }
-    })
+        'react-dom/client': 'ReactDOM',
+      },
+    }),
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        format: 'iife'
-      }
-    }
-  }
+        format: 'iife',
+      },
+    },
+  },
 });
 ```
 
 ## Excluding Dependencies During Build
+
+> Typical scenario: authoring a Node.js CLI or a backend library — you want `node_modules` dependencies and Node built-ins *stripped* from the bundle, but you don't need the browser-oriented global names / CDN stashes. Two shortcuts exist:
+> - `nodeBuiltins: true` — also mark all Node built-ins (`fs`, `path`, `node:stream/*`, …) external (build phase only; dev browsers never resolve them anyway).
+> - `externalizeDeps: (string | RegExp)[]` — list every dep that should not be bundled (build phase only; matches are treated as "pure external", no global-name / CDN shim is emitted).
+>
+> (Developer note: this section used to be titled "Build-only deps exclusion (no global name / no stash shim)". It was renamed so the Options Reference anchors `nodeBuiltins` and `externalizeDeps` land on the same section.)
 
 vite.config.mjs
 ```js
@@ -396,18 +209,18 @@ export default defineConfig({
   plugins: [
     pluginExternal({
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(dependencies)
-    })
+      externalizeDeps: Object.keys(dependencies),
+    }),
   ],
   build: {
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: globbySync('src/*.js'),
+      entry: globSync('src/*.js'),
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
-      }
-    }
-  }
+      },
+    },
+  },
 });
 ```

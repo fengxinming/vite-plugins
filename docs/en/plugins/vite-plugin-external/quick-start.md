@@ -2,26 +2,24 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-external.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-external)
 
-> Exclude specified module dependencies from runtime code and built bundles.
-> Supported Vite versions: >= 3.1.
+> Excludes listed modules both at runtime and in production bundles.
+> Target scope: **Vite 8.x** (current rewrite, built on top of the new Rolldown bundler). For Vite 1–6 users see the legacy docs archive.
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 [![Node version](https://img.shields.io/node/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
 
-## Description
+## Overview
 
-### Workflow for Vite 6.x and Earlier
+### How it works in Vite 8 + Rolldown
 
-When the `command` value is `'serve'`, the plugin converts `externals` into `alias` configuration to leverage Vite's file loading capabilities. When `command` is `'build'`, it converts `externals` into `rollupOptions` configuration containing `external` and `output.globals`. However, you can configure `interop` as `'auto'` to uniformly convert `externals` into `alias` configuration, resulting in compatible import code in the bundled output.
+This version is a **full rewrite** targeting Vite 8 and its built-in Rolldown bundler. Regardless of phase (dev serve / build), every user-facing external shape (object map / function / string / RegExp / array / `true`) is first **normalised** to a single decision-hook signature (see [Options Reference → `ExternalFn` type](/plugins/vite-plugin-external/options#externalfn-type)), so the three entry points share the exact same decision logic — no more phase drift:
 
-#### Runtime Flow
+1. **Dev phase — DepsOptimizer pre-bundling**: a custom Rolldown plugin is injected so that "named" externals (e.g. `react → React`, which carry a global name or CDN URL) resolve to on-disk *stash files* the plugin writes. Pure externals (string / regex / `true` / function returning `true`) are simply forwarded to Rolldown's native `external` flag.
+2. **Dev phase — browser request**: resolves proceed through Vite's normal middleware layer.
+3. **Build phase**: all externals are wired into `build.rolldownOptions.external`; for ES-format CDN externals a `<link rel="modulepreload">` is injected via `transformIndexHtml` so the browser starts prefetching the CDN modules on first paint.
 
-![image](https://user-images.githubusercontent.com/6262382/126889725-a5d276ad-913a-4498-8da1-2aa3fd1404ab.png)
-
-### Workflow for Vite 6.x and Later
-
-When `command` is `'serve'`, the plugin prebuilds `externals` and reads Vite cache upon request hits. It supports `externals` as `object` or `function` from v6.1.
+> The old Vite ≤6 dual-path design (`alias` for dev + `rollupOptions` for build + `interop: 'auto'` compatibility switch + `rollback: true` escape hatch) has been archived. If you need the historical implementation please consult the [Legacy archive (Vite 1–6) → vite-plugin-external](/legacy/plugins/vite-plugin-external/quick-start).
 
 ## Installation
 
@@ -39,7 +37,7 @@ yarn add vite-plugin-external
 
 :::
 
-**Build iife format bundle**
+**IIFE build (global variable injected via an HTML `<script>` tag)**
 
 ```js
 import { defineConfig } from 'vite';
@@ -50,25 +48,24 @@ export default defineConfig({
     pluginExternal({
       externals: {
         jquery: '$',
-
         vue: 'Vue',
-
         react: 'React',
-        'react-dom/client': 'ReactDOM'
-      }
-    })
+        'react-dom/client': 'ReactDOM',
+      },
+    }),
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         format: 'iife',
       },
     },
-  }
+  },
 });
 ```
 
-**Dynamic set externals**
+**Function-style externals (dynamic global name resolution)**
+
 ```js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -76,31 +73,26 @@ import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    react({
-      jsxRuntime: 'classic',
-    }),
+    react({ jsxRuntime: 'classic' }),
     pluginExternal({
       externals(libName) {
-        if (libName === 'react') {
-          return 'React';
-        }
-        if (libName === 'react-dom/client') {
-          return 'ReactDOM';
-        }
-      }
-    })
+        if (libName === 'react') return 'React';
+        if (libName === 'react-dom/client') return 'ReactDOM';
+      },
+    }),
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         format: 'iife',
       },
     },
-  }
+  },
 });
 ```
 
-**Build esm format bundle**
+**ESM build (re-export from an absolute CDN ESM URL)**
+
 ```js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -108,41 +100,23 @@ import pluginExternal from 'vite-plugin-external';
 
 export default defineConfig({
   plugins: [
-    react({
-      jsxRuntime: 'classic',
-    }),
+    react({ jsxRuntime: 'classic' }),
     pluginExternal({
       externals: {
         react: 'https://esm.sh/react@18.3.1',
-        'react-dom/client': 'https://esm.sh/react-dom@18.3.1'
-      }
-    })
-  ]
+        'react-dom/client': 'https://esm.sh/react-dom@18.3.1',
+      },
+    }),
+  ],
 });
 ```
 
-## Q&A
+## FAQ
 
-* Q: Page cannot load after modifying `externals`
-* A: The previous dependencies are cached by Vite, you need to manually delete the `./node_modules/.vite/deps` folder
+* Q: After editing `externals` during dev the page no longer loads?
+* A: Named externals stash files are cached under `./node_modules/.vite_external`. Delete that folder to force a cache rebuild (it lives next to Vite's own `.vite` cache, so a one-liner `rm -rf node_modules/.vite*` cleans both).
 
-## Changelog
+## Historical changelog
 
-* **6.2.0**
-  * Support links to external resources
-
-* **6.1.0**
-  * Reimplemented external plugin logic for Vite 6.x compatibility
-  * Added optional `rollback` parameter to revert to previous implementation
-  * Added optional `logLevel` parameter to control logging level (values: "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL" | "OFF")
-  * Support to set `externals` as a function
-
-* **6.0.0**
-  * Added optional `externalGlobals` parameter to fix issue [rollup#3188](https://github.com/rollup/rollup/issues/3188)
-
-* **4.3.1**
-  * `externalizeDeps` configuration supports regex patterns
-
-* **4.3.0**
-  * Previous `mode: false` logic replaced with `interop: 'auto'`
-  * Added `nodeBuiltins` and `externalizeDeps` configurations for Node module bundling
+This Vite-8-compatible rewrite is based on the v6.2.0 codebase but reworks every pipeline for Rolldown + the new DepsOptimizer. Full release notes:
+[GitHub Releases → vite-plugin-external](https://github.com/async3619/vite-plugins/releases?q=vite-plugin-external)

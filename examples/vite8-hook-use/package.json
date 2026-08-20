@@ -1,0 +1,16 @@
+{
+  "name": "vite8-hook-use",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build:1": "vite build --config vite.config.1.mts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
+    "vite": "^8.0.0",
+    "vite-plugin-hook-use": "workspace:^",
+    "vitest": "^4.1.10"
+  }
+}

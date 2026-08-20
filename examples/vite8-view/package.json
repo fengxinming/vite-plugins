@@ -1,0 +1,26 @@
+{
+  "name": "vite8-view",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build:1": "vite build --config vite.config.1.mts",
+    "build:2": "vite build --config vite.config.2.mts",
+    "build:3": "vite build --config vite.config.3.mts",
+    "build:4": "vite build --config vite.config.4.mts",
+    "build:5": "vite build --config vite.config.5.mts",
+    "build:6": "vite build --config vite.config.6.mts",
+    "build:7": "vite build --config vite.config.7.mts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
+    "ejs": "^3.1.10",
+    "handlebars": "^4.7.8",
+    "nunjucks": "^3.2.4",
+    "pug": "^3.0.3",
+    "vite": "^8.0.0",
+    "vite-plugin-view": "workspace:^",
+    "vitest": "^4.1.10"
+  }
+}

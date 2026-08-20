@@ -103,6 +103,75 @@ export default defineConfig({
 
 ---
 
+## 多页面应用 (MPA) 示例
+
+Vite 8 起支持通过 `entry` 对象配置多页面应用。以下示例使用 EJS 模板引擎配置两个页面：
+
+**vite.config.js：**
+
+```javascript
+import { defineConfig } from 'vite';
+import { view } from 'vite-plugin-view';
+
+export default defineConfig({
+  plugins: [
+    view({
+      engine: 'ejs',
+      entry: {
+        index: 'index.ejs',
+        home: 'home.ejs'
+      }
+    })
+  ],
+  build: {
+    // MPA + IIFE 输出必须开启代码分割，否则 Rolldown 抛出 INVALID_OPTION
+    rolldownOptions: {
+      output: {
+        codeSplitting: true
+      }
+    }
+  }
+});
+```
+
+**index.ejs（首页模板）：**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>首页</title>
+</head>
+<body>
+  <h1>欢迎来到首页</h1>
+  <a href="/home.html">前往 Home 页</a>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
+```
+
+**home.ejs（Home 页模板）：**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+</head>
+<body>
+  <h1>Home 页面</h1>
+  <a href="/index.html">返回首页</a>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
+```
+
+构建后会生成 `dist/index.html` 和 `dist/home.html` 两个独立的 HTML 文件。
+
+> **注意**：当使用 MPA 且构建输出格式为 IIFE 时，必须设置 `build.rolldownOptions.output.codeSplitting: true`，否则 Rolldown（Vite 8 打包器）会抛出 `INVALID_OPTION` 错误。
+
+---
+
 ## 注意事项
 1. 确保已安装所选模板引擎的依赖包（如 `npm install pug`）
 2. 模板文件需放置在 Vite 可识别的路径中（默认入口为 `index.${extension}`）

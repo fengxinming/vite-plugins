@@ -104,9 +104,77 @@ To add global variables/filters to template engines, refer to:
 
 ---
 
+## Multi-page (MPA) example
+
+Starting with Vite 8, you can configure multi-page applications using the object form of `entry`. Below is an example using the EJS template engine with two pages:
+
+**vite.config.js:**
+
+```javascript
+import { defineConfig } from 'vite';
+import { view } from 'vite-plugin-view';
+
+export default defineConfig({
+  plugins: [
+    view({
+      engine: 'ejs',
+      entry: {
+        index: 'index.ejs',
+        home: 'home.ejs'
+      }
+    })
+  ],
+  build: {
+    // MPA + IIFE output requires code splitting, otherwise Rolldown throws INVALID_OPTION
+    rolldownOptions: {
+      output: {
+        codeSplitting: true
+      }
+    }
+  }
+});
+```
+
+**index.ejs (index page template):**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Index</title>
+</head>
+<body>
+  <h1>Welcome to the Index Page</h1>
+  <a href="/home.html">Go to Home Page</a>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
+```
+
+**home.ejs (home page template):**
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home</title>
+</head>
+<body>
+  <h1>Home Page</h1>
+  <a href="/index.html">Back to Index</a>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
+```
+
+After building, two separate HTML files will be generated: `dist/index.html` and `dist/home.html`.
+
+> **Note**: When using MPA with IIFE output format, you must set `build.rolldownOptions.output.codeSplitting: true`, otherwise Rolldown (Vite 8's bundler) throws an `INVALID_OPTION` error.
+
+---
+
 ## Important Notes
 1. Ensure the selected template engine dependency is installed (e.g., `npm install pug`).
 2. Place template files in Vite-accessible paths (default entry: `index.${extension}`).
 3. Some engines (e.g., `pug`) may have specific requirements for beautification (`pretty` option).
 4. Always test configurations with your chosen template engine.
-```

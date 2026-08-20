@@ -21,13 +21,13 @@ export default defineConfig({
       libs: [
         {
           name: 'antd',
-          importFrom(importer, libName) {
+          resolveModule(importer, libName) {
             return {
               es: `${libName}/es/${decamelize(importer)}`,
               cjs: `${libName}/lib/${decamelize(importer)}`
             };
           },
-          insertFrom(importer, libName) {
+          insertSideEffect(importer, libName) {
             return {
               es: `${libName}/es/${decamelize(importer)}/style`,
               cjs: `${libName}/lib/${decamelize(importer)}/style`
@@ -81,6 +81,6 @@ export {
 
 ### Explanation
 1. The plugin transforms batch imports into individual file imports.
-2. The `importFrom` function specifies the new module paths.
-3. The `insertFrom` function adds style imports automatically.
+2. The `resolveModule` function specifies the new module paths.
+3. The `insertSideEffect` function adds style imports automatically.
 4. The compiled output shows separated imports for `antd` components and their styles.

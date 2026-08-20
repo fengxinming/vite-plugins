@@ -1,8 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "include": [
-    "./src/**/*.ts",
-    "./test/*.ts",
+    "./packages/**/*.ts",
     "./docs/.vitepress/**/*.ts",
     "./docs/.vitepress/**/*.mts",
     "./node_modules/vite/client.d.ts",
