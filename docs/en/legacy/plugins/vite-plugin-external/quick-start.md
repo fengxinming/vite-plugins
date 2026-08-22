@@ -13,9 +13,9 @@
 > Exclude specified module dependencies from runtime code and built bundles.
 > Supported Vite versions: >= 3.1.
 
-[![NPM version](https://img.shields.io/npm/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
+[![NPM version](https://img.shields.io/npm/v/vite-plugin-external/latest-6)](https://npmjs.org/package/vite-plugin-external)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
-[![Node version](https://img.shields.io/node/v/vite-plugin-external.svg?style=flat)](https://npmjs.org/package/vite-plugin-external)
+[![Node version](https://img.shields.io/node/v/vite-plugin-external/latest-6)](https://npmjs.org/package/vite-plugin-external)
 
 ## Description
 

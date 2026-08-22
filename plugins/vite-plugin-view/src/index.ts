@@ -5,7 +5,7 @@ import { banner, toAbsolutePath } from 'vp-runtime-helper';
 import Engine from './Engine';
 import { installIndexHtmlMiddleware } from './indexHtml';
 import { logger, PLUGIN_NAME } from './logger';
-import { Options } from './typings';
+import { DelegateWrittenMap, Options } from './typings';
 
 /**
  * Shows the usage of the hook function of the `vite` plugin.
@@ -30,7 +30,8 @@ function view(opts: Options): Plugin | undefined {
   const {
     entry,
     logLevel,
-    enableBanner
+    enableBanner,
+    strategy = 'intercept'
   } = opts;
 
   if (enableBanner) {
@@ -48,6 +49,26 @@ function view(opts: Options): Plugin | undefined {
   // 虚拟 `.html` id → 磁盘上真实 `.<engine>` 模板路径的映射。
   // resolveId 写入，load 读取。
   const tpl2html = new Map<string, string>();
+
+  /**
+   * Per-plugin-instance record of `.html` files emitted by the `delegate`
+   * strategy. Lives alongside `tpl2html` at the same scope level so it
+   * survives HMR restarts of configureServer/configurePreviewServer.
+   * When this Map is passed into the middleware, the middleware writes each
+   * rendered template to a sibling `.html` file on disk, records the write
+   * entry here, and hands off to the downstream pipeline. Entries are used
+   * on process exit to delete generated files and restore any `.bak_*`
+   * backups to their original names.
+   *
+   * 每个插件实例在 `delegate` 策略下写入的 `.html` 文件记录。
+   * 与 `tpl2html` 定义在同一作用域层级，这样在 configureServer /
+   * configurePreviewServer 的 HMR 重启过程中数据能保留。
+   * 当此 Map 被传入中间件时，中间件会将每个渲染后的模板写入
+   * 同目录下的 `.html` 磁盘文件，将写入条目记录于此，
+   * 再转交给下游流水线处理。进程退出时根据记录删除生成的文件，
+   * 并将任何 `.bak_*` 备份还原为原文件名。
+   */
+  const delegateWritten: DelegateWrittenMap = new Map();
 
   return {
     name: PLUGIN_NAME,
@@ -138,21 +159,37 @@ function view(opts: Options): Plugin | undefined {
     },
 
     configureServer(server) {
-      // installIndexHtmlMiddleware PREPENDS to the middleware stack so it runs
-      // before Vite's spaFallbackMiddleware — otherwise multi-page URLs like
-      // /home.html get rewritten to /index.html before we see them.
-      // installIndexHtmlMiddleware 会 PREPEND 到中间件栈，先于 Vite 的
-      // spaFallbackMiddleware 跑——否则 /home.html 这种多页面 URL 在
-      // 我们看到之前就被改写成 /index.html 了。
-      return () => installIndexHtmlMiddleware(engine, resolvedConfig.root, server);
+      // installIndexHtmlMiddleware PREPENDS to the middleware stack so the
+      // template-matching logic runs first on the original incoming URL.
+      // installIndexHtmlMiddleware 会 PREPEND 到中间件栈最顶端，
+      // 让模板匹配逻辑在原始请求 URL 上最先执行。
+      //
+      // When strategy is set to `'delegate'`, pass the writable `delegateWritten`
+      // Map to the middleware. The middleware will record every generated
+      // `.html` file path and (if created) the `.bak_*` backup path in this Map.
+      // 当 strategy 设为 `'delegate'` 时，将可写的 `delegateWritten` Map
+      // 传入中间件。中间件会把每个生成的 `.html` 文件路径与（如创建的话）
+      // `.bak_*` 备份路径记录到该 Map 中。
+      return () => installIndexHtmlMiddleware(
+        engine,
+        resolvedConfig.root,
+        server,
+        strategy === 'delegate' ? delegateWritten : undefined
+      );
     },
 
     configurePreviewServer(server) {
-      // Mirror configureServer for `vite preview` so dynamic template rendering
-      // works in preview mode too (e.g. running the rendered dist against the
-      // original templates during local verification).
-      // 与 configureServer 对称，让 `vite preview` 模式也能动态渲染模板
-      // （比如本地验证时用原始模板跑构建产物）。
+      // Register the middleware in `vite preview` as well, so preview mode
+      // supports dynamic template rendering against the original source
+      // templates on disk (without requiring a re-build on every change).
+      // 在 `vite preview` 中同样注册中间件，使 preview 模式能基于磁盘上的
+      // 原始模板文件进行动态渲染（无需每次改动都重新构建）。
+      //
+      // Preview mode serves files from the built output directory via a
+      // static-file server. The middleware therefore always renders templates
+      // in memory and sends the response directly.
+      // preview 模式通过静态文件服务器从构建输出目录提供文件。
+      // 因此中间件始终在内存中渲染模板并直接返回响应。
       return () => installIndexHtmlMiddleware(engine, resolvedConfig.root, server);
     }
   } as Plugin;

@@ -57,7 +57,7 @@ import v8, { cleanupCache } from './v8';
  *             插件配置项，默认为 '{}'。
  * @returns a vite plugin — Vite 插件实例。
  */
-export default function pluginExternal(opts: Options = {} as Options): Plugin {
+function pluginExternal(opts: Options = {} as Options): Plugin {
   if (opts.enableBanner) {
     banner(pkg.name);
   }
@@ -92,5 +92,6 @@ export default function pluginExternal(opts: Options = {} as Options): Plugin {
  * DepsOptimizer metadata 里的 external 条目。极少需要，但为了历史 API
  * 兼容性保留。
  */
-export { cleanupCache };
+export { cleanupCache, pluginExternal };
 export * from './typings';
+export default pluginExternal;

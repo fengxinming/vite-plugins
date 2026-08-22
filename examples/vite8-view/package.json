@@ -11,6 +11,7 @@
     "build:5": "vite build --config vite.config.5.mts",
     "build:6": "vite build --config vite.config.6.mts",
     "build:7": "vite build --config vite.config.7.mts",
+    "build:8": "vite build --config vite.config.8.mts",
     "test": "vitest run"
   },
   "devDependencies": {

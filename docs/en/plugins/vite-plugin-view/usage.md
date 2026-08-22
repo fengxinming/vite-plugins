@@ -354,3 +354,127 @@ export default defineConfig({
   </body>
 </html>
 ```
+
+---
+
+## Delegating requests to Vite's native pipeline with `strategy: 'delegate'`
+
+### When to use it
+Use `strategy: 'delegate'` when you want the dev server request path to match exactly
+what Vite 8 does with a static `.html` file — e.g. to investigate HMR differences
+or to debug Vite's built-in middleware:
+
+- The plugin renders the template to a sibling `.html` file next to the source template
+- Any pre-existing user `.html` is backed up to `.bak_<timestamp>`
+- `next()` is called so Vite's native HTML stack (`htmlFallbackMiddleware` →
+  `indexHtmlMiddleware` → `transformIndexHtml`) processes the URL end-to-end
+- Generated files are removed and backups are restored when the process exits
+  (SIGINT / SIGTERM / uncaught exceptions)
+
+### Installation
+
+::: code-group
+
+```bash [npm]
+npm add vite-plugin-view ejs
+```
+```bash [pnpm]
+pnpm add vite-plugin-view ejs
+```
+```bash [yarn]
+yarn add vite-plugin-view ejs
+```
+
+:::
+
+### Configuration
+
+Configure EJS + MPA + `strategy: 'delegate'` in `vite.config.mjs`:
+
+```js
+import { defineConfig } from 'vite';
+import { view } from 'vite-plugin-view';
+
+export default defineConfig({
+  plugins: [
+    view({
+      engine: 'ejs',
+      extension: '.ejs',
+      // Delegate to Vite's native HTML middleware stack after writing to disk
+      strategy: 'delegate',
+      // MPA entry object: key = output HTML filename, value = template file
+      entry: {
+        index: 'index.ejs',
+        home:  'home.ejs',
+      },
+      engineOptions: {
+        title: 'EJS Delegate Example',
+        items: ['Alpha', 'Beta', 'Gamma'],
+        pageTitle: 'Home (delegate)',
+      },
+    }),
+  ],
+  build: {
+    // IIFE builds require enabling code splitting explicitly
+    rolldownOptions: {
+      output: {
+        codeSplitting: true,
+      },
+    },
+  },
+});
+```
+
+### Template examples
+
+`index.ejs`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+</head>
+<body>
+  <h1><%= title %></h1>
+  <ul>
+    <% items.forEach(function(item) { %>
+      <li><%= item %></li>
+    <% }); %>
+  </ul>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>
+```
+
+`home.ejs`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Page: <%= title %></title>
+</head>
+<body>
+  <h1>Multi-Page Example · <%= pageTitle %></h1>
+  <p data-page="home">Home page rendered via vite-plugin-view middleware.</p>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>
+```
+
+### Runtime behavior
+
+1. On the first request to `/`:
+   - Render `index.ejs` and write a sibling `index.html`
+   - If a user-owned `index.html` already exists, back it up to `index.html.bak_<timestamp>`
+   - Call `next()` so Vite's native `htmlFallbackMiddleware` → `indexHtmlMiddleware` processes the URL
+2. On the first request to `/home`: render `home.ejs` → write `home.html` → native pipeline takes over
+3. Subsequent visits to the same URL are skipped via the `delegateWritten` Map keyed on URL
+4. On process exit (Ctrl+C / kill / crash): backups are restored and generated files are cleaned up
+
+> The `strategy` option only affects the dev server. Build output is identical to the default `'intercept'` behavior.
+
+
