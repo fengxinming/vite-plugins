@@ -136,3 +136,5 @@ dist
 .pnp.*
 
 .DS_Store
+
+.npmrc

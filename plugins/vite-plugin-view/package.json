@@ -1,15 +1,13 @@
 {
   "name": "vite-plugin-view",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "description": "Dynamically render pages using custom template engines instead of the static `index.html` entry file.",
+  "type": "module",
   "types": "./dist/index.d.ts",
-  "module": "./dist/index.mjs",
-  "main": "./dist/index.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
     }
   },
   "engines": {

@@ -118,6 +118,9 @@ export default defineConfig({
 
 ## Historical changelog
 
+* **8.0.2**
+  * Added `"type": "module"` to package.json
+
 * **8.0.1**
   * Removed deprecated `rollback` option, updated docs
 
