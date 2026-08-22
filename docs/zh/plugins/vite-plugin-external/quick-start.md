@@ -118,6 +118,9 @@ export default defineConfig({
 
 ## 历史变更记录
 
+* **8.0.2**
+  * 在 package.json 中添加 `"type": "module"`
+
 * **8.0.1**
   * 删除旧版 `rollback` 配置，修改文档
 
