@@ -195,8 +195,6 @@ export interface BasicOptions {
  *     production / any custom mode as a BasicOptions override.
  *     索引签名允许 opts.development / opts.production 等特定模式字段
  *     （BasicOptions 覆盖）。
- *   - rollback 是历史遗留字段，Vite 8 合并为单一实现后已无实现。
- *     保留是因为公共配置发布过，用户可能仍写在 vite.config 里，空值不影响运行。
  *   - externalGlobals is the escape-hatch plugin for fixing Rolldown/Rollup
  *     Issue #3188 (IIFE top-level require not rewritten to a global).
  */
@@ -209,16 +207,6 @@ export interface Options {
    * 自有 CDN 全局变量前缀）。
    */
   [mode: string]: BasicOptions | any;
-
-  /**
-   * @deprecated No-op since the Vite 8 unification. Kept purely for
-   * backward-compat with old vite.config files that still set it.
-   *
-   * 已废弃：Vite 8 版本将两套实现（alias + depsOptimizer）合并为单一的
-   * DepsOptimizer + resolveId 路线，不再有"回退"分支。保留字段空壳只为兼容
-   * 历史上写了 rollback: true 的 vite.config。
-   */
-  rollback?: boolean;
 
   /**
    * Interop escape hatch — preserved behaviour from pre-Vite-8 versions.
@@ -374,12 +362,6 @@ export interface ResolvedOptions {
 
 解决 IIFE 打包问题（[Rollup Issue #3188](https://github.com/rollup/rollup/issues/3188)）。注意 Vite 8 底层已从 Rollup 切换为 Rolldown，类型从 `rollup.Plugin` 改为 `Rolldown.Plugin`，通过 `import type { Rolldown } from 'vite'` 获取。[示例](/zh/plugins/vite-plugin-external/usage#解决-iife-格式的打包问题)
 
-## `rollback`
-* 类型：`boolean`
-* 必填：`false`
-
-是否回退到旧版实现。已废弃，Vite 8 合并实现后无效。
-
 ## `interop`
 * 类型：`"auto" | undefined`
 * 必填：`false`
@@ -473,12 +455,6 @@ export interface Options extends BasicOptions {
    * 按模式配置的外部依赖项
    */
   [mode: string]: BasicOptions | any;
-
-  /**
-   * 回退到旧版实现（已废弃，Vite 8 合并实现后无效）
-   * @deprecated
-   */
-  rollback?: boolean;
 
   /**
    * 控制 Vite 的默认行为

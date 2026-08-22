@@ -118,4 +118,8 @@ export default defineConfig({
 
 ## 历史变更记录
 
-本版本（Vite 8 兼容版）是在 v6.2.2 代码基础上针对 Rolldown + DepsOptimizer 做的完整重写。
+* **8.0.1**
+  * 删除旧版 `rollback` 配置，修改文档
+
+* **8.0.0**
+  * 本版本（Vite 8 兼容版）是在 v6.2.2 代码基础上针对 Rolldown + DepsOptimizer 做的完整重写。

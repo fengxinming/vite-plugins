@@ -114,6 +114,34 @@ export interface Options {
    * 是否输出 banner
    */
   enableBanner?: boolean;
+
+  /**
+   * Request handling strategy for the dev server.
+   *
+   * - `'intercept'` — Plugin intercepts the request, renders template in memory,
+   *   runs `transformIndexHtml`, and sends the response directly. No temporary
+   *   `.html` file is written to disk.
+   *
+   * - `'delegate'`  — Plugin renders the template to a sibling `.html` file on
+   *   disk, then calls `next()` to hand the same URL off to Vite's native HTML
+   *   pipeline for end-to-end processing. Pre-existing `.html` files are
+   *   backed up to `.bak_<timestamp>` before the write and automatically
+   *   restored when the dev process terminates (SIGINT / SIGTERM / uncaught
+   *   exceptions).
+   *
+   * dev server 下的请求处理策略。
+   *
+   * - `'intercept'` — 拦截请求，在内存中渲染模板，调用 `transformIndexHtml`
+   *   后直接返回响应。不会向磁盘写入任何临时 `.html` 文件。
+   *
+   * - `'delegate'`  — 将模板渲染为模板文件同目录下的 `.html` 磁盘文件，
+   *   随后 `next()` 交由 Vite 原生 HTML 流水线端到端地处理该 URL。
+   *   已存在的 `.html` 文件在写入前会先备份为 `.bak_<时间戳>`，
+   *   进程结束时（SIGINT / SIGTERM / 未捕获异常）自动还原备份。
+   *
+   * @default `'intercept'`
+   */
+  strategy?: 'intercept' | 'delegate';
 }
 ```
 
@@ -130,6 +158,7 @@ Core configuration options for the plugin:
 | logLevel          | `LogLevel`                    | Control log level output.                                                                                             | -                           |
 | enableBanner      | `boolean`                     | Whether to print the startup banner.                                                                                  | `true`                      |
 | enforce           | `'pre' | 'post'`              | Plugin execution order. Vite 8 defaults to `'pre'` because Rolldown skips resolveId for on-disk entries.              | `'pre'` (Vite 8)            |
+| strategy          | `'intercept' | 'delegate'`    | Dev-server request handling strategy. `'intercept'` renders in-memory and sends directly; `'delegate'` writes `.html` to disk and hands off to Vite's native pipeline, cleaning up on process exit. | `'intercept'`               |
 
 ---
 
@@ -231,6 +260,32 @@ export default defineConfig({
 
 ### Why default `enforce: 'pre'`
 Vite 8 uses Rolldown as its bundler. For on-disk entry files, Rolldown skips the plugin chain's `resolveId` hook. Therefore vite-plugin-view must run in `'pre'` order to intercept template file resolution before Rolldown, rendering `.ejs`, `.pug`, etc. into HTML.
+
+### `strategy` — request handling modes (`intercept` / `delegate`)
+Available in Vite 8+, the `strategy` option controls how template requests are handled in the dev server:
+
+- **`'intercept'` (default)**: the plugin renders the template in memory, applies `transformIndexHtml`, and sends the response directly to the client. No temporary `.html` file is written to disk. Suitable for standard day-to-day development.
+- **`'delegate'`**: the plugin renders the template to a sibling `.html` file next to the source template, then calls `next()` so Vite's native HTML middleware stack takes over the same URL end-to-end. Any pre-existing `.html` at that path is backed up to `.bak_<timestamp>` first; backups are restored and generated files are removed when the dev process exits (SIGINT / SIGTERM / uncaught exceptions).
+
+Configuration example:
+
+```typescript
+view({
+  engine: 'ejs',
+  strategy: 'delegate',
+  entry: {
+    index: 'index.ejs',
+    home:  'home.ejs',
+  },
+  engineOptions: {
+    title: 'EJS Delegate Example',
+    items: ['Alpha', 'Beta', 'Gamma'],
+    pageTitle: 'Home (delegate)',
+  },
+})
+```
+
+Under this configuration, a request to `/` produces a generated `index.html` in the project root (with the user's original `index.html` archived as `index.html.bak_<timestamp>`), and a request to `/home` produces a sibling `home.html`. Both files are then processed end-to-end through Vite's native `htmlFallbackMiddleware` → `indexHtmlMiddleware` → `transformIndexHtml` pipeline.
 
 ---
 
@@ -347,5 +402,33 @@ export interface Options {
    * @default 'pre'
    */
   enforce?: 'pre' | 'post';
+
+  /**
+   * Request handling strategy for the dev server.
+   *
+   * - `'intercept'` — Plugin intercepts the request, renders template in memory,
+   *   runs `transformIndexHtml`, and sends the response directly. No temporary
+   *   `.html` file is written to disk.
+   *
+   * - `'delegate'`  — Plugin renders the template to a sibling `.html` file on
+   *   disk, then calls `next()` to hand the same URL off to Vite's native HTML
+   *   pipeline for end-to-end processing. Pre-existing `.html` files are
+   *   backed up to `.bak_<timestamp>` before the write and automatically
+   *   restored when the dev process terminates (SIGINT / SIGTERM / uncaught
+   *   exceptions).
+   *
+   * dev server 下的请求处理策略。
+   *
+   * - `'intercept'` — 拦截请求，在内存中渲染模板，调用 `transformIndexHtml`
+   *   后直接返回响应。不会向磁盘写入任何临时 `.html` 文件。
+   *
+   * - `'delegate'`  — 将模板渲染为模板文件同目录下的 `.html` 磁盘文件，
+   *   随后 `next()` 交由 Vite 原生 HTML 流水线端到端地处理该 URL。
+   *   已存在的 `.html` 文件在写入前会先备份为 `.bak_<时间戳>`，
+   *   进程结束时（SIGINT / SIGTERM / 未捕获异常）自动还原备份。
+   *
+   * @default `'intercept'`
+   */
+  strategy?: 'intercept' | 'delegate';
 }
 ```

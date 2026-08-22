@@ -345,3 +345,122 @@ export default defineConfig({
   </body>
 </html>
 ```
+
+---
+
+## 使用 `strategy: 'delegate'` 将请求交给 Vite 原生流水线处理
+
+### 适用场景
+当你需要保证 dev server 的请求处理路径与 Vite 8 原生处理静态 `.html` 文件完全一致时（例如排查 HMR 行为差异、调试 Vite 内置中间件），可以将 `strategy` 设置为 `'delegate'`：
+
+- 插件将模板渲染为模板文件同目录下的 `.html` 磁盘文件
+- 用户原有的 `.html` 会被自动备份为 `.bak_<时间戳>`
+- 调用 `next()` 交由 Vite 原生 HTML 流水线（`htmlFallbackMiddleware` → `indexHtmlMiddleware` → `transformIndexHtml`）端到端处理
+- 进程退出（SIGINT / SIGTERM / 未捕获异常）时自动删除生成文件并还原备份
+
+### 安装
+
+::: code-group
+
+```bash [npm]
+npm add vite-plugin-view ejs
+```
+```bash [pnpm]
+pnpm add vite-plugin-view ejs
+```
+```bash [yarn]
+yarn add vite-plugin-view ejs
+```
+
+:::
+
+### 配置
+
+在 `vite.config.mjs` 中配置 EJS 模板 + MPA 多页面 + `strategy: 'delegate'`：
+
+```js
+import { defineConfig } from 'vite';
+import { view } from 'vite-plugin-view';
+
+export default defineConfig({
+  plugins: [
+    view({
+      engine: 'ejs',
+      extension: '.ejs',
+      // 使用 delegate 策略，模板先写磁盘再交给 Vite 原生流水线
+      strategy: 'delegate',
+      // 多页面入口对象：key = 输出 HTML 文件名, value = 模板文件路径
+      entry: {
+        index: 'index.ejs',
+        home:  'home.ejs',
+      },
+      engineOptions: {
+        title: 'EJS Delegate Example',
+        items: ['Alpha', 'Beta', 'Gamma'],
+        pageTitle: 'Home (delegate)',
+      },
+    }),
+  ],
+  build: {
+    // IIFE 打包下需要显式开启代码分割
+    rolldownOptions: {
+      output: {
+        codeSplitting: true,
+      },
+    },
+  },
+});
+```
+
+### 模板文件示例
+
+`index.ejs`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+</head>
+<body>
+  <h1><%= title %></h1>
+  <ul>
+    <% items.forEach(function(item) { %>
+      <li><%= item %></li>
+    <% }); %>
+  </ul>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>
+```
+
+`home.ejs`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Page: <%= title %></title>
+</head>
+<body>
+  <h1>Multi-Page Example · <%= pageTitle %></h1>
+  <p data-page="home">Home page rendered via vite-plugin-view middleware.</p>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>
+```
+
+### 运行行为
+
+1. 开发服务器启动后，首次访问 `/`：
+   - 插件渲染 `index.ejs`，写入同目录下的 `index.html`
+   - 如果用户原有的 `index.html` 存在，先备份为 `index.html.bak_<时间戳>`
+   - 调用 `next()`，交给 Vite 原生 `htmlFallbackMiddleware` → `indexHtmlMiddleware` 处理
+2. 首次访问 `/home`：渲染 `home.ejs` → `home.html` → Vite 原生流水线处理
+3. 同 URL 的二次访问：由于插件内已记录该 URL 于 `delegateWritten` Map，直接跳过磁盘写
+4. 进程结束（Ctrl+C / kill / 崩溃）：自动恢复备份并删除生成文件
+
+> 构建阶段 `strategy` 参数不生效，构建输出与默认 `intercept` 策略完全一致。
+

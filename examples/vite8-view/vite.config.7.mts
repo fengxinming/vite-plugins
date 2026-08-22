@@ -26,7 +26,7 @@ export default defineConfig({
       // rollup `input` 选项的 MPA 写法形状一致）。
       entry: {
         index: 'index.ejs',
-        home:  'home.ejs',
+        home: 'home.ejs'
       },
       // Per-template options: index page keeps the "items" demo, home page has
       // its own title + a marker the build test can assert on.
@@ -36,19 +36,19 @@ export default defineConfig({
       engineOptions: {
         title: 'EJS Example',
         items: ['Apple', 'Banana', 'Cherry'],
-        pageTitle: 'Home',
-      },
-    }),
+        pageTitle: 'Home'
+      }
+    })
   ],
   server: {
-    host: '127.0.0.1',
+    host: '127.0.0.1'
   },
   build: {
     outDir: 'dist/7',
     rollupOptions: {
       output: {
-        format: 'iife',
-      },
+        format: 'iife'
+      }
     },
     // Vite 8 / Rolldown defaults codeSplitting to false for IIFE output, but
     // Rolldown's multi-entry MPA mode requires codeSplitting=true (otherwise
@@ -60,8 +60,8 @@ export default defineConfig({
     // INVALID_OPTION。这里显式补回来。
     rolldownOptions: {
       output: {
-        codeSplitting: true,
-      },
-    },
-  },
+        codeSplitting: true
+      }
+    }
+  }
 });

@@ -118,5 +118,8 @@ export default defineConfig({
 
 ## Historical changelog
 
-This Vite-8-compatible rewrite is based on the v6.2.0 codebase but reworks every pipeline for Rolldown + the new DepsOptimizer. Full release notes:
-[GitHub Releases → vite-plugin-external](https://github.com/async3619/vite-plugins/releases?q=vite-plugin-external)
+* **8.0.1**
+  * Removed deprecated `rollback` option, updated docs
+
+* **8.0.0**
+  * This Vite-8-compatible rewrite is based on the v6.2.0 codebase but reworks every pipeline for Rolldown + the new DepsOptimizer.
