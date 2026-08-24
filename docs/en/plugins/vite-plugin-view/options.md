@@ -116,49 +116,104 @@ export interface Options {
   enableBanner?: boolean;
 
   /**
-   * Request handling strategy for the dev server.
+   * Strategy configuration covering both the dev server and the build phase.
    *
-   * - `'intercept'` — Plugin intercepts the request, renders template in memory,
-   *   runs `transformIndexHtml`, and sends the response directly. No temporary
-   *   `.html` file is written to disk.
+   * - `dev` controls how the dev server handles template requests.
+   * - `build` controls what the build phase outputs.
    *
-   * - `'delegate'`  — Plugin renders the template to a sibling `.html` file on
-   *   disk, then calls `next()` to hand the same URL off to Vite's native HTML
-   *   pipeline for end-to-end processing. Pre-existing `.html` files are
-   *   backed up to `.bak_<timestamp>` before the write and automatically
-   *   restored when the dev process terminates (SIGINT / SIGTERM / uncaught
-   *   exceptions).
+   * 覆盖开发服务器与构建阶段的策略配置。
    *
-   * dev server 下的请求处理策略。
+   * - `dev` 控制开发服务器如何处理模板请求。
+   * - `build` 控制构建阶段输出什么产物。
    *
-   * - `'intercept'` — 拦截请求，在内存中渲染模板，调用 `transformIndexHtml`
-   *   后直接返回响应。不会向磁盘写入任何临时 `.html` 文件。
-   *
-   * - `'delegate'`  — 将模板渲染为模板文件同目录下的 `.html` 磁盘文件，
-   *   随后 `next()` 交由 Vite 原生 HTML 流水线端到端地处理该 URL。
-   *   已存在的 `.html` 文件在写入前会先备份为 `.bak_<时间戳>`，
-   *   进程结束时（SIGINT / SIGTERM / 未捕获异常）自动还原备份。
-   *
-   * @default `'intercept'`
+   * @default `{ dev: 'intercept', build: 'html' }`
    */
-  strategy?: 'intercept' | 'delegate';
+  strategy?: {
+    /**
+     * Dev server request handling strategy.
+     *
+     * - `'intercept'` — render template in memory, apply
+     *   `transformIndexHtml`, and send the response directly.
+     * - `'delegate'`  — render template to a sibling `.html` file on disk,
+     *   back up any pre-existing `.html` to `.bak_<timestamp>`, then call
+     *   `next()` so Vite's native HTML pipeline handles the URL end-to-end.
+     *   Backups are restored and generated files are cleaned up on process
+     *   exit (SIGINT / SIGTERM / uncaught exceptions).
+     *
+     * 开发服务器请求处理策略。
+     *
+     * - `'intercept'` — 内存渲染模板，调用 `transformIndexHtml` 后直接返回响应。
+     * - `'delegate'`  — 将模板渲染为同目录下的 `.html` 磁盘文件，
+     *   已存在的 `.html` 先备份为 `.bak_<时间戳>`，再 `next()` 交给
+     *   Vite 原生 HTML 流水线端到端处理。进程退出时自动还原备份。
+     *
+     * @default `'intercept'`
+     */
+    dev?: 'intercept' | 'delegate';
+
+    /**
+     * Build output strategy.
+     *
+     * - `'html'`      — compile templates to `.html` files (current behavior).
+     * - `'template'`  — keep original template syntax (e.g. `<%= title %>`,
+     *   `#{variable}`), inject generated `<script>` / `<link>` asset tags
+     *   into the template source, and output the template file (`.ejs` /
+     *   `.pug` / …) to `dist`. No `.html` is produced.
+     * - `'both'`      — output both the compiled `.html` and the template
+     *   file with injected asset tags.
+     *
+     * 构建产出策略。
+     *
+     * - `'html'`      — 将模板编译为 `.html` 文件（现有行为）。
+     * - `'template'`  — 保留原始模板语法（如 `<%= title %>`、`#{variable}`），
+     *   将生成的 `<script>` / `<link>` 资源标签注入模板源码，
+     *   输出模板文件（`.ejs` / `.pug` / …）到 `dist`。不产出 `.html`。
+     * - `'both'`      — 同时产出编译后的 `.html` 和注入了资源标签的模板文件。
+     *
+     * @default `'html'`
+     */
+    build?: 'html' | 'template' | 'both';
+  };
+
+  /**
+   * Placeholder string in the template that will be replaced with generated
+   * `<script>` and `<link>` asset tags during build (only effective when
+   * `strategy.build` is `'template'` or `'both'`).
+   *
+   * If specified, the plugin searches for this exact string in the template
+   * source and replaces the first occurrence with the asset tags. If the
+   * placeholder is not found, or if this option is omitted, asset tags are
+   * injected before `</head>` (matching Vite's native `injectToHead` behavior).
+   *
+   * 构建时模板中的占位符字符串，插件会将其替换为生成的
+   * `<script>` 和 `<link>` 资源标签（仅在 `strategy.build` 为
+   * `'template'` 或 `'both'` 时生效）。
+   *
+   * 指定后，插件在模板源码中搜索该字符串，将首个匹配处替换为资源标签。
+   * 如果未找到占位符或未指定此选项，资源标签注入到 `</head>` 前
+   * （与 Vite 原生 `injectToHead` 行为一致）。
+   *
+   * @default undefined (inject before `</head>`)
+   */
+  injectPlaceholder?: string;
 }
 ```
 
 ## Options Configuration Interface
 Core configuration options for the plugin:
 
-| Property          | Type                          | Description                                                                                                           | Default Value               |
-|-------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------|-----------------------------|
-| **engine**        | `SupportedTemplateEngines`    | **Mandatory** - Specify the template engine name.                                                                     | -                           |
-| entry             | `InputOption`                 | Entry file configuration. Vite 8+ accepts objects like `{ index: 'index.ejs', home: 'home.ejs' }` for multi-page MPA. | `index${extension}`         |
-| extension         | `string`                      | File extension to process (defaults to the engine name if unspecified).                                                | `.${engine}`                |
-| engineOptions     | `EngineOptions`               | Configuration options for the template engine.                                                                        | -                           |
-| pretty            | `boolean`                     | Force code beautification (some engines like Pug may not recommend this).                                             | `false`                     |
-| logLevel          | `LogLevel`                    | Control log level output.                                                                                             | -                           |
-| enableBanner      | `boolean`                     | Whether to print the startup banner.                                                                                  | `true`                      |
-| enforce           | `'pre' | 'post'`              | Plugin execution order. Vite 8 defaults to `'pre'` because Rolldown skips resolveId for on-disk entries.              | `'pre'` (Vite 8)            |
-| strategy          | `'intercept' | 'delegate'`    | Dev-server request handling strategy. `'intercept'` renders in-memory and sends directly; `'delegate'` writes `.html` to disk and hands off to Vite's native pipeline, cleaning up on process exit. | `'intercept'`               |
+| Property              | Type                                                                       | Description                                                                                                                                       | Default Value                                |
+|-----------------------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------|
+| **engine**            | `SupportedTemplateEngines`                                                 | **Mandatory** - Specify the template engine name.                                                                                                 | -                                            |
+| entry                 | `InputOption`                                                              | Entry file configuration. Vite 8+ accepts objects like `{ index: 'index.ejs', home: 'home.ejs' }` for multi-page MPA.                             | `index${extension}`                          |
+| extension             | `string`                                                                   | File extension to process (defaults to the engine name if unspecified).                                                                           | `.${engine}`                                 |
+| engineOptions         | `EngineOptions`                                                            | Configuration options for the template engine.                                                                                                    | -                                            |
+| pretty                | `boolean`                                                                  | Force code beautification (some engines like Pug may not recommend this).                                                                         | `false`                                      |
+| logLevel              | `LogLevel`                                                                 | Control log level output.                                                                                                                         | -                                            |
+| enableBanner          | `boolean`                                                                  | Whether to print the startup banner.                                                                                                              | `true`                                       |
+| enforce               | `'pre' | 'post'`                                                           | Plugin execution order. Vite 8 defaults to `'pre'` because Rolldown skips resolveId for on-disk entries.                                          | `'pre'` (Vite 8)                             |
+| strategy              | `{ dev?: 'intercept' \| 'delegate'; build?: 'html' \| 'template' \| 'both' }` | Dev + build strategy object. `dev` controls dev-server request handling; `build` controls whether build emits `.html`, original templates, or both. | `{ dev: 'intercept', build: 'html' }`        |
+| injectPlaceholder     | `string`                                                                   | Build-time placeholder for asset-tag injection (only with `strategy.build: 'template' | 'both'`). Falls back to `</head>` injection.              | `undefined`                                  |
 
 ---
 
@@ -261,31 +316,54 @@ export default defineConfig({
 ### Why default `enforce: 'pre'`
 Vite 8 uses Rolldown as its bundler. For on-disk entry files, Rolldown skips the plugin chain's `resolveId` hook. Therefore vite-plugin-view must run in `'pre'` order to intercept template file resolution before Rolldown, rendering `.ejs`, `.pug`, etc. into HTML.
 
-### `strategy` — request handling modes (`intercept` / `delegate`)
-Available in Vite 8+, the `strategy` option controls how template requests are handled in the dev server:
+### `strategy` — Dev + Build strategy object (`{ dev, build }`)
+Starting with Vite 8, `strategy` becomes an object that controls the dev-server request handling **and** the build output shape independently:
 
+```typescript
+strategy?: {
+  dev?:   'intercept' | 'delegate';     // dev-server request handling
+  build?: 'html' | 'template' | 'both'; // build output strategy
+}
+```
+
+#### `strategy.dev` — Dev server request handling
 - **`'intercept'` (default)**: the plugin renders the template in memory, applies `transformIndexHtml`, and sends the response directly to the client. No temporary `.html` file is written to disk. Suitable for standard day-to-day development.
 - **`'delegate'`**: the plugin renders the template to a sibling `.html` file next to the source template, then calls `next()` so Vite's native HTML middleware stack takes over the same URL end-to-end. Any pre-existing `.html` at that path is backed up to `.bak_<timestamp>` first; backups are restored and generated files are removed when the dev process exits (SIGINT / SIGTERM / uncaught exceptions).
 
-Configuration example:
+#### `strategy.build` — Build output strategy
+- **`'html'` (default)**: compiles templates into `.html` files and emits them to `dist` (identical to legacy behavior).
+- **`'template'`**: **does NOT compile templates**. Preserves original template syntax (e.g. EJS `<%= title %>`, Pug `#{variable}`), injects the Vite-generated `<script type="module" crossorigin>` / `<link rel="stylesheet" crossorigin>` asset tags into the template source, and outputs the raw template files (`.ejs` / `.pug` / …) to `dist`. No `.html` files are produced. Useful when a Node backend will re-render the templates at runtime with dynamic data.
+- **`'both'`**: emits **both** the compiled `.html` files **and** the original template files with injected asset tags.
+
+#### `injectPlaceholder` — Build injection placeholder (only used with `strategy.build: 'template' | 'both'`)
+When a template's structure makes it awkward to inject tags right before `</head>`, place a custom placeholder string (e.g. `<!-- VITE_ASSETS -->`) in the template and pass it via `injectPlaceholder`. The plugin replaces the first match with the generated asset tags. If the placeholder is not found in the template, or if `injectPlaceholder` is omitted, tags fall back to injection before `</head>` (matching Vite's native `injectToHead` behavior).
+
+#### Example: `dev: 'delegate'` + `build: 'template'`
 
 ```typescript
 view({
   engine: 'ejs',
-  strategy: 'delegate',
+  extension: '.ejs',
+  strategy: {
+    dev:   'delegate',
+    build: 'template'
+  },
+  injectPlaceholder: '<!-- VITE_ASSETS -->',
   entry: {
     index: 'index.ejs',
     home:  'home.ejs',
   },
   engineOptions: {
-    title: 'EJS Delegate Example',
+    title: 'EJS Delegate + Build Template Example',
     items: ['Alpha', 'Beta', 'Gamma'],
-    pageTitle: 'Home (delegate)',
+    pageTitle: 'Home (delegate + template)',
   },
 })
 ```
 
-Under this configuration, a request to `/` produces a generated `index.html` in the project root (with the user's original `index.html` archived as `index.html.bak_<timestamp>`), and a request to `/home` produces a sibling `home.html`. Both files are then processed end-to-end through Vite's native `htmlFallbackMiddleware` → `indexHtmlMiddleware` → `transformIndexHtml` pipeline.
+**Dev phase**: a request to `/` writes a sibling `index.html` in the project root (the user's pre-existing `index.html` is archived to `index.html.bak_<timestamp>`), and a request to `/home` writes `home.html`. Both are then processed end-to-end through Vite's native `htmlFallbackMiddleware` → `indexHtmlMiddleware` → `transformIndexHtml` pipeline.
+
+**Build phase**: emits `dist/index.ejs` and `dist/home.ejs` with EJS syntax preserved and built JS/CSS asset tags injected at the placeholder (or `</head>`). A Node backend can consume these `.ejs` files and re-render them with dynamic data (user info, i18n, etc.).
 
 ---
 
@@ -395,6 +473,16 @@ export interface Options {
   enableBanner?: boolean;
 
   /**
+   * Apply the plugin only for serve or build, or on certain conditions.
+   *
+   * 只在 serve 或 build 时生效，或者某些条件。
+   */
+  apply?:
+    | 'serve'
+    | 'build'
+    | ((this: void, config: UserConfig, env: ConfigEnv) => boolean);
+
+  /**
    * Plugin execution order: "pre" (before other plugins) or "post" (after).
    * Defaults to "pre" in Vite 8 because Rolldown skips resolveId for on-disk entries;
    * a "pre" plugin must intercept first.
@@ -404,31 +492,85 @@ export interface Options {
   enforce?: 'pre' | 'post';
 
   /**
-   * Request handling strategy for the dev server.
+   * Strategy configuration covering both the dev server and the build phase.
    *
-   * - `'intercept'` — Plugin intercepts the request, renders template in memory,
-   *   runs `transformIndexHtml`, and sends the response directly. No temporary
-   *   `.html` file is written to disk.
+   * - `dev` controls how the dev server handles template requests.
+   * - `build` controls what the build phase outputs.
    *
-   * - `'delegate'`  — Plugin renders the template to a sibling `.html` file on
-   *   disk, then calls `next()` to hand the same URL off to Vite's native HTML
-   *   pipeline for end-to-end processing. Pre-existing `.html` files are
-   *   backed up to `.bak_<timestamp>` before the write and automatically
-   *   restored when the dev process terminates (SIGINT / SIGTERM / uncaught
-   *   exceptions).
+   * 覆盖开发服务器与构建阶段的策略配置。
    *
-   * dev server 下的请求处理策略。
+   * - `dev` 控制开发服务器如何处理模板请求。
+   * - `build` 控制构建阶段输出什么产物。
    *
-   * - `'intercept'` — 拦截请求，在内存中渲染模板，调用 `transformIndexHtml`
-   *   后直接返回响应。不会向磁盘写入任何临时 `.html` 文件。
-   *
-   * - `'delegate'`  — 将模板渲染为模板文件同目录下的 `.html` 磁盘文件，
-   *   随后 `next()` 交由 Vite 原生 HTML 流水线端到端地处理该 URL。
-   *   已存在的 `.html` 文件在写入前会先备份为 `.bak_<时间戳>`，
-   *   进程结束时（SIGINT / SIGTERM / 未捕获异常）自动还原备份。
-   *
-   * @default `'intercept'`
+   * @default `{ dev: 'intercept', build: 'html' }`
    */
-  strategy?: 'intercept' | 'delegate';
+  strategy?: {
+    /**
+     * Dev server request handling strategy.
+     *
+     * - `'intercept'` — render template in memory, apply
+     *   `transformIndexHtml`, and send the response directly.
+     * - `'delegate'`  — render template to a sibling `.html` file on disk,
+     *   back up any pre-existing `.html` to `.bak_<timestamp>`, then call
+     *   `next()` so Vite's native HTML pipeline handles the URL end-to-end.
+     *   Backups are restored and generated files are cleaned up on process
+     *   exit (SIGINT / SIGTERM / uncaught exceptions).
+     *
+     * 开发服务器请求处理策略。
+     *
+     * - `'intercept'` — 内存渲染模板，调用 `transformIndexHtml` 后直接返回响应。
+     * - `'delegate'`  — 将模板渲染为同目录下的 `.html` 磁盘文件，
+     *   已存在的 `.html` 先备份为 `.bak_<时间戳>`，再 `next()` 交给
+     *   Vite 原生 HTML 流水线端到端处理。进程退出时自动还原备份。
+     *
+     * @default `'intercept'`
+     */
+    dev?: 'intercept' | 'delegate';
+
+    /**
+     * Build output strategy.
+     *
+     * - `'html'`      — compile templates to `.html` files (current behavior).
+     * - `'template'`  — keep original template syntax (e.g. `<%= title %>`,
+     *   `#{variable}`), inject generated `<script>` / `<link>` asset tags
+     *   into the template source, and output the template file (`.ejs` /
+     *   `.pug` / …) to `dist`. No `.html` is produced.
+     * - `'both'`      — output both the compiled `.html` and the template
+     *   file with injected asset tags.
+     *
+     * 构建产出策略。
+     *
+     * - `'html'`      — 将模板编译为 `.html` 文件（现有行为）。
+     * - `'template'`  — 保留原始模板语法（如 `<%= title %>`、`#{variable}`），
+     *   将生成的 `<script>` / `<link>` 资源标签注入模板源码，
+     *   输出模板文件（`.ejs` / `.pug` / …）到 `dist`。不产出 `.html`。
+     * - `'both'`      — 同时产出编译后的 `.html` 和注入了资源标签的模板文件。
+     *
+     * @default `'html'`
+     */
+    build?: 'html' | 'template' | 'both';
+  };
+
+  /**
+   * Placeholder string in the template that will be replaced with generated
+   * `<script>` and `<link>` asset tags during build (only effective when
+   * `strategy.build` is `'template'` or `'both'`).
+   *
+   * If specified, the plugin searches for this exact string in the template
+   * source and replaces the first occurrence with the asset tags. If the
+   * placeholder is not found, or if this option is omitted, asset tags are
+   * injected before `</head>` (matching Vite's native `injectToHead` behavior).
+   *
+   * 构建时模板中的占位符字符串，插件会将其替换为生成的
+   * `<script>` 和 `<link>` 资源标签（仅在 `strategy.build` 为
+   * `'template'` 或 `'both'` 时生效）。
+   *
+   * 指定后，插件在模板源码中搜索该字符串，将首个匹配处替换为资源标签。
+   * 如果未找到占位符或未指定此选项，资源标签注入到 `</head>` 前
+   * （与 Vite 原生 `injectToHead` 行为一致）。
+   *
+   * @default undefined (inject before `</head>`)
+   */
+  injectPlaceholder?: string;
 }
 ```

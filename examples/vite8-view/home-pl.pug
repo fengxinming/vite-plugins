@@ -1,0 +1,11 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title Multi-Page: #{title}
+    //- VITE_ASSETS
+    meta(name="placeholder-marker" content="home-after-vite-assets-pug")
+  body
+    h1 Multi-Page Example · #{pageTitle}
+    p(data-page="home") Home page rendered via vite-plugin-view Pug + placeholder.
+    script(type="module" src="/src/index.ts")

@@ -47,7 +47,7 @@ export default defineConfig({
     })
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         format: 'iife'
       }
@@ -81,6 +81,8 @@ html(lang='en')
     script(src='./src/main.ts' type='module')
 ```
 
+---
+
 ## EJS 模板使用示例
 
 ### 安装
@@ -104,7 +106,7 @@ yarn add vite-plugin-view ejs
 在 `vite.config.mjs` 中配置：
 ```js
 import react from '@vitejs/plugin-react';
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 import { view } from 'vite-plugin-view';
 
@@ -130,7 +132,7 @@ export default defineConfig({
     })
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         format: 'iife'
       }
@@ -164,6 +166,8 @@ export default defineConfig({
 </html>
 ```
 
+---
+
 ## Nunjucks 模板使用示例
 
 ### 安装
@@ -188,7 +192,7 @@ yarn add vite-plugin-view nunjucks
 ```js
 import react from '@vitejs/plugin-react';
 import nunjucks from 'nunjucks';
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 import { engineSource, view } from 'vite-plugin-view';
 
@@ -223,7 +227,7 @@ export default defineConfig({
     })
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         format: 'iife'
       }
@@ -257,6 +261,8 @@ export default defineConfig({
 </html>
 ```
 
+---
+
 ## Handlebars 模板使用示例
 
 ### 安装
@@ -281,7 +287,7 @@ yarn add vite-plugin-view handlebars
 ```js
 import react from '@vitejs/plugin-react';
 import Handlebars from 'handlebars';
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vitePluginExternal from 'vite-plugin-external';
 import { view } from 'vite-plugin-view';
 
@@ -312,7 +318,7 @@ export default defineConfig({
     })
   ],
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         format: 'iife'
       }
@@ -348,10 +354,10 @@ export default defineConfig({
 
 ---
 
-## 使用 `strategy: 'delegate'` 将请求交给 Vite 原生流水线处理
+## 使用 `strategy: { dev: 'delegate' }` 将请求交给 Vite 原生流水线处理
 
 ### 适用场景
-当你需要保证 dev server 的请求处理路径与 Vite 8 原生处理静态 `.html` 文件完全一致时（例如排查 HMR 行为差异、调试 Vite 内置中间件），可以将 `strategy` 设置为 `'delegate'`：
+当你需要保证 dev server 的请求处理路径与 Vite 8 原生处理静态 `.html` 文件完全一致时（例如排查 HMR 行为差异、调试 Vite 内置中间件），可以将 `strategy.dev` 设置为 `'delegate'`：
 
 - 插件将模板渲染为模板文件同目录下的 `.html` 磁盘文件
 - 用户原有的 `.html` 会被自动备份为 `.bak_<时间戳>`
@@ -376,7 +382,7 @@ yarn add vite-plugin-view ejs
 
 ### 配置
 
-在 `vite.config.mjs` 中配置 EJS 模板 + MPA 多页面 + `strategy: 'delegate'`：
+在 `vite.config.mjs` 中配置 EJS 模板 + MPA 多页面 + `strategy.dev: 'delegate'`：
 
 ```js
 import { defineConfig } from 'vite';
@@ -387,8 +393,10 @@ export default defineConfig({
     view({
       engine: 'ejs',
       extension: '.ejs',
-      // 使用 delegate 策略，模板先写磁盘再交给 Vite 原生流水线
-      strategy: 'delegate',
+      // 以对象形式传入 strategy，dev 子项单独控制开发服务器策略
+      strategy: {
+        dev: 'delegate'
+      },
       // 多页面入口对象：key = 输出 HTML 文件名, value = 模板文件路径
       entry: {
         index: 'index.ejs',
@@ -462,5 +470,175 @@ export default defineConfig({
 3. 同 URL 的二次访问：由于插件内已记录该 URL 于 `delegateWritten` Map，直接跳过磁盘写
 4. 进程结束（Ctrl+C / kill / 崩溃）：自动恢复备份并删除生成文件
 
-> 构建阶段 `strategy` 参数不生效，构建输出与默认 `intercept` 策略完全一致。
+> 构建阶段的输出形态由 `strategy.build` 独立控制（默认值为 `'html'`），见下一节。
+
+---
+
+## 使用 `strategy: { build: 'template' }` 输出原始模板 + 注入资源标签
+
+### 适用场景
+当前后端分离架构中，Node 后端需要在运行时用动态数据（如用户信息、i18n、A/B 实验变量）渲染模板时，不希望 Vite 构建把模板编译成"死 HTML"，而是希望：
+- dist 中产出 `.ejs` / `.pug` 等**原始模板**文件（保留 `<%= %>` / `#{ }` 语法）
+- Vite 构建出来的 JS/CSS 资源标签被正确注入模板，路径与构建产物中的 chunk 文件对齐
+- 构建阶段不产出 `.html`（或同时产出，按需选择）
+
+此时可以将 `strategy.build` 设为 `'template'` 或 `'both'`。
+
+### 安装（同上，不再重复）
+
+### 配置
+
+在 `vite.config.mjs` 中配置 EJS + MPA + `strategy.build: 'template'`，配合可选的 `injectPlaceholder` 精确控制资源标签注入位置：
+
+```js
+import { defineConfig } from 'vite';
+import { view } from 'vite-plugin-view';
+
+export default defineConfig({
+  plugins: [
+    view({
+      engine: 'ejs',
+      extension: '.ejs',
+      strategy: {
+        // dev 用默认 'intercept'，内存渲染直接返回响应
+        // build 输出原始模板文件，不生成 .html
+        build: 'template'
+      },
+      // 资源标签注入到模板中的自定义占位符位置；不填则默认注入到 </head> 前
+      injectPlaceholder: '<!-- VITE_ASSETS -->',
+      entry: {
+        index: 'index.ejs',
+        home:  'home.ejs',
+      },
+      engineOptions: {
+        title: 'EJS Build Template Example',
+        items: ['Alpha', 'Beta', 'Gamma'],
+        pageTitle: 'Home (template)',
+      },
+    }),
+  ],
+  build: {
+    outDir: 'dist',
+    rolldownOptions: {
+      output: {
+        codeSplitting: true,
+      },
+    },
+  },
+});
+```
+
+### 模板中放置占位符（可选）
+
+如果希望 Vite 注入的资源标签不进入默认的 `</head>` 前位置，而是进入自定义位置，可以在模板中放置占位符：
+
+`index.ejs`
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <!-- VITE_ASSETS -->
+  <%# 服务端注入的其他 head 标签放在这里 %>
+</head>
+<body>
+  <h1><%= title %></h1>
+  <ul>
+    <% items.forEach(function(item) { %>
+      <li><%= item %></li>
+    <% }); %>
+  </ul>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>
+```
+
+构建后 `dist/index.ejs` 中的 `<!-- VITE_ASSETS -->` 会被替换为：
+
+```html
+<script type="module" crossorigin src="/assets/index-abc123.js"></script>
+<link rel="stylesheet" crossorigin href="/assets/index-def456.css">
+```
+
+而 `<%= title %>`、`<% items.forEach(...) %>` 等 EJS 语法会原封不动保留，供后端运行时二次渲染。
+
+### Pug 模板示例
+
+Pug 是缩进式语法，不能直接塞 HTML 标签。插件会自动把 Vite 生成的 `<script>` / `<link>` 标签转换为 Pug 原生语法（如 `script(type="module", crossorigin, src="...")`），再注入模板。
+
+配置（Pug + `strategy.build: 'template'` + `injectPlaceholder`）：
+
+```js
+import { defineConfig } from 'vite';
+import { view } from 'vite-plugin-view';
+
+export default defineConfig({
+  plugins: [
+    view({
+      engine: 'pug',
+      strategy: {
+        build: 'template'
+      },
+      // Pug 模板中用 //- 注释作为占位符，替换后占位符消失
+      injectPlaceholder: '//- VITE_ASSETS',
+      entry: {
+        index: 'index.pug'
+      },
+      engineOptions: {
+        title: 'Pug Build Template Example'
+      }
+    })
+  ],
+  build: {
+    outDir: 'dist',
+    rolldownOptions: {
+      output: {
+        codeSplitting: true
+      }
+    }
+  }
+});
+```
+
+`index.pug`：
+
+```pug
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title= title
+    //- VITE_ASSETS
+  body
+    h1= title
+    #root
+    script(src='./src/main.ts' type='module')
+```
+
+构建后 `dist/index.pug`（占位符被替换为 Pug 原生标签，模板语法 `= title` / `#root` 保留，原入口 `script(src='./src/main.ts' ...)` 被移除）：
+
+```pug
+doctype html
+html(lang='en')
+  head
+    meta(charset='UTF-8')
+    title= title
+    script(type="module", crossorigin, src="/assets/index-abc123.js")
+    link(rel="stylesheet", crossorigin, href="/assets/index-def456.css")
+  body
+    h1= title
+    #root
+```
+
+> 如果未设置 `injectPlaceholder`，插件会自动定位 `head` 声明行，以子节点同级缩进插入转换后的 Pug 标签。
+
+### `strategy.build` 三档行为对比
+
+| `strategy.build` 值 | dist 中产出 `.html` | dist 中产出原始模板（带资源标签） | 适用场景 |
+|---------------------|----------------------|------------------------------------|---------|
+| `'html'`（默认）    | ✅                   | ❌                                | 纯前端静态部署（与旧版行为一致） |
+| `'template'`        | ❌                   | ✅ `.ejs` / `.pug` / ...          | 后端二次渲染（SSR / 模板代理） |
+| `'both'`            | ✅                   | ✅                                | 同时部署静态站点和后端模板的场景 |
 

@@ -1,5 +1,5 @@
 import type { InputOption } from 'rolldown';
-import type { ResolvedConfig } from 'vite';
+import type { ConfigEnv, ResolvedConfig, UserConfig } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
 export type SupportedTemplateEngines =
@@ -114,32 +114,96 @@ export interface Options {
   enableBanner?: boolean;
 
   /**
-   * Request handling strategy for the dev server.
+   * Apply the plugin only for serve or build, or on certain conditions.
    *
-   * - `'intercept'` — Plugin intercepts the request, renders template in memory,
-   *   runs `transformIndexHtml`, and sends the response directly. No temporary
-   *   `.html` file is written to disk.
-   *
-   * - `'delegate'`  — Plugin renders the template to a sibling `.html` file on
-   *   disk, then calls `next()` to hand the same URL off to Vite's native HTML
-   *   pipeline for end-to-end processing. Pre-existing `.html` files are
-   *   backed up to `.bak_<timestamp>` before the write and automatically
-   *   restored when the dev process terminates (SIGINT / SIGTERM / uncaught
-   *   exceptions).
-   *
-   * dev server 下的请求处理策略。
-   *
-   * - `'intercept'` — 拦截请求，在内存中渲染模板，调用 `transformIndexHtml`
-   *   后直接返回响应。不会向磁盘写入任何临时 `.html` 文件。
-   *
-   * - `'delegate'`  — 将模板渲染为模板文件同目录下的 `.html` 磁盘文件，
-   *   随后 `next()` 交由 Vite 原生 HTML 流水线端到端地处理该 URL。
-   *   已存在的 `.html` 文件在写入前会先备份为 `.bak_<时间戳>`，
-   *   进程结束时（SIGINT / SIGTERM / 未捕获异常）自动还原备份。
-   *
-   * @default `'intercept'`
+   * 只在 serve 或 build 时生效，或者某些条件。
    */
-  strategy?: 'intercept' | 'delegate';
+  apply?:
+    | 'serve'
+    | 'build'
+    | ((this: void, config: UserConfig, env: ConfigEnv) => boolean);
+
+  /**
+   * Strategy configuration covering both the dev server and the build phase.
+   *
+   * - `dev` controls how the dev server handles template requests.
+   * - `build` controls what the build phase outputs.
+   *
+   * 覆盖开发服务器与构建阶段的策略配置。
+   *
+   * - `dev` 控制开发服务器如何处理模板请求。
+   * - `build` 控制构建阶段输出什么产物。
+   *
+   * @default `{ dev: 'intercept', build: 'html' }`
+   */
+  strategy?: {
+    /**
+     * Dev server request handling strategy.
+     *
+     * - `'intercept'` — render template in memory, apply
+     *   `transformIndexHtml`, and send the response directly.
+     * - `'delegate'`  — render template to a sibling `.html` file on disk,
+     *   back up any pre-existing `.html` to `.bak_<timestamp>`, then call
+     *   `next()` so Vite's native HTML pipeline handles the URL end-to-end.
+     *   Backups are restored and generated files are cleaned up on process
+     *   exit (SIGINT / SIGTERM / uncaught exceptions).
+     *
+     * 开发服务器请求处理策略。
+     *
+     * - `'intercept'` — 内存渲染模板，调用 `transformIndexHtml` 后直接返回响应。
+     * - `'delegate'`  — 将模板渲染为同目录下的 `.html` 磁盘文件，
+     *   已存在的 `.html` 先备份为 `.bak_<时间戳>`，再 `next()` 交给
+     *   Vite 原生 HTML 流水线端到端处理。进程退出时自动还原备份。
+     *
+     * @default `'intercept'`
+     */
+    dev?: 'intercept' | 'delegate';
+
+    /**
+     * Build output strategy.
+     *
+     * - `'html'`      — compile templates to `.html` files (current behavior).
+     * - `'template'`  — keep original template syntax (e.g. `<%= title %>`,
+     *   `#{variable}`), inject generated `<script>` / `<link>` asset tags
+     *   into the template source, and output the template file (`.ejs` /
+     *   `.pug` / …) to `dist`. No `.html` is produced.
+     * - `'both'`      — output both the compiled `.html` and the template
+     *   file with injected asset tags.
+     *
+     * 构建产出策略。
+     *
+     * - `'html'`      — 将模板编译为 `.html` 文件（现有行为）。
+     * - `'template'`  — 保留原始模板语法（如 `<%= title %>`、`#{variable}`），
+     *   将生成的 `<script>` / `<link>` 资源标签注入模板源码，
+     *   输出模板文件（`.ejs` / `.pug` / …）到 `dist`。不产出 `.html`。
+     * - `'both'`      — 同时产出编译后的 `.html` 和注入了资源标签的模板文件。
+     *
+     * @default `'html'`
+     */
+    build?: 'html' | 'template' | 'both';
+  };
+
+  /**
+   * Placeholder string in the template that will be replaced with generated
+   * `<script>` and `<link>` asset tags during build (only effective when
+   * `strategy.build` is `'template'` or `'both'`).
+   *
+   * If specified, the plugin searches for this exact string in the template
+   * source and replaces the first occurrence with the asset tags. If the
+   * placeholder is not found, or if this option is omitted, asset tags are
+   * injected before `</head>` (matching Vite's native `injectToHead` behavior).
+   *
+   * 构建时模板中的占位符字符串，插件会将其替换为生成的
+   * `<script>` 和 `<link>` 资源标签（仅在 `strategy.build` 为
+   * `'template'` 或 `'both'` 时生效）。
+   *
+   * 指定后，插件在模板源码中搜索该字符串，将首个匹配处替换为资源标签。
+   * 如果未找到占位符或未指定此选项，资源标签注入到 `</head>` 前
+   * （与 Vite 原生 `injectToHead` 行为一致）。
+   *
+   * @default undefined (inject before `</head>`)
+   */
+  injectPlaceholder?: string;
 }
 
 /**
