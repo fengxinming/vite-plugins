@@ -8,17 +8,7 @@ import { cleanUrl, FS_PREFIX, fsPathFromId, isDevServer } from 'vp-runtime-helpe
 
 import Engine from './Engine';
 import { logger } from './logger';
-
-/**
- * Shared record type for `.html` files emitted by the `delegate` strategy.
- * Matches `DelegateWrittenMap` in index.ts at the value level so the two can
- * be passed by reference without importing types back and forth.
- *
- * `delegate` 策略写入的 `.html` 文件记录的共享类型。
- * 与 index.ts 中的 `DelegateWrittenMap` 值结构完全一致，便于在两处
- * 通过引用传递，不需要互相 import 类型。
- */
-type DelegateWrittenMap = Map<string, { htmlPath: string, bakPath: string | null }>;
+import { DelegateWrittenMap } from './typings';
 
 /**
  * Idempotent guard for installing process-exit restore hooks.

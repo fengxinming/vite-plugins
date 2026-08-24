@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-view",
-  "version": "8.0.2",
+  "version": "8.1.0",
   "description": "Dynamically render pages using custom template engines instead of the static `index.html` entry file.",
   "type": "module",
   "types": "./dist/index.d.ts",

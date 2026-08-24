@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <!-- VITE_ASSETS -->
+  <meta name="placeholder-marker" content="after-vite-assets">
+</head>
+<body>
+  <h1><%= title %></h1>
+  <ul>
+    <% items.forEach(function(item) { %>
+      <li><%= item %></li>
+    <% }); %>
+  </ul>
+  <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

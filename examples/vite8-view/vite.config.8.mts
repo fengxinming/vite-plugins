@@ -2,12 +2,12 @@ import { defineConfig } from 'vite';
 import { view } from 'vite-plugin-view';
 
 /**
- * Example 8: Multi-page MPA with `strategy: 'delegate'`
+ * Example 8: Multi-page MPA with `strategy: { dev: 'delegate', build: 'template' }`
  *
- * Same multi-page entry shape as config 7 (index + home EJS templates),
- * but uses the `delegate` request-handling strategy instead of the default
- * `intercept`:
+ * Same multi-page entry shape as config 7 (index + home EJS templates).
+ * Uses the `delegate` dev strategy AND the `template` build strategy:
  *
+ * Dev (strategy.dev: 'delegate'):
  *   - On dev-server request `/` or `/home` the middleware RENDERS the
  *     template to a SIBLING `.html` file on disk
  *       (index.ejs → index.html, home.ejs → home.html)
@@ -19,19 +19,19 @@ import { view } from 'vite-plugin-view';
  *   - On process termination generated .html files are cleaned up and
  *     .bak_* backups restored to their original names.
  *
- * Use this strategy when you want absolute behavioural parity with Vite 8's
- * native request pipeline — for example, to debug a difference in HMR
- * behaviour between `intercept` in-memory rendering and Vite's native
- * pipeline reading static .html files from disk.
+ * Build (strategy.build: 'template'):
+ *   - The build does NOT compile templates to `.html`. Instead, the original
+ *     template source (with `<%= title %>` etc. preserved) is output to dist
+ *     with generated `<script>` / `<link>` asset tags injected before
+ *     `</head>`. This lets a Node backend render the template at runtime with
+ *     dynamic data.
  *
- * Build output is identical to config 7 because `strategy` only affects the
- * dev-server middleware path.
+ * 示例 8：MPA 多页面 + `strategy: { dev: 'delegate', build: 'template' }`
  *
- * 示例 8：MPA 多页面 + `strategy: 'delegate'`
+ * 入口形态与示例 7 相同（index + home 两个 EJS 模板 MPA）。
+ * 使用 `delegate` dev 策略和 `template` build 策略：
  *
- * 入口形态与示例 7 相同（index + home 两个 EJS 模板 MPA），但请求处理策略
- * 从默认的 `intercept` 切换为 `delegate`：
- *
+ * Dev（strategy.dev: 'delegate'）：
  *   - 开发态访问 `/` 或 `/home` 时，中间件把模板渲染为同目录下的
  *     兄弟 `.html` 文件
  *       （index.ejs → index.html，home.ejs → home.html）
@@ -40,18 +40,21 @@ import { view } from 'vite-plugin-view';
  *     indexHtmlMiddleware 流水线端到端处理（与原生 Vite 8 1:1 对齐）。
  *   - 进程退出时清理生成的 .html，`.bak_*` 备份恢复原名。
  *
- * 当你要求与 Vite 8 原生请求流水线**行为完全一致**时（例如需要排查
- * `intercept` 内存渲染与 Vite 原生读磁盘静态 .html 在 HMR 行为上的差异）
- * 使用本策略。
- *
- * 构建产物与示例 7 完全相同，因为 `strategy` 只影响开发态中间件路径。
+ * Build（strategy.build: 'template'）：
+ *   - 构建时不把模板编译为 `.html`。而是输出原始模板源码
+ *     （保留 `<%= title %>` 等语法）到 dist，并在 `</head>` 前注入
+ *     生成的 `<script>` / `<link>` 资源标签。这样 Node 后端可以在
+ *     运行时用动态数据渲染模板。
  */
 export default defineConfig({
   plugins: [
     view({
       engine: 'ejs',
       extension: '.ejs',
-      strategy: 'delegate',
+      strategy: {
+        dev: 'delegate',
+        build: 'template'
+      },
       entry: {
         index: 'index.ejs',
         home: 'home.ejs'

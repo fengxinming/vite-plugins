@@ -74,7 +74,12 @@ export default class Engine {
    * Design: Vite requests index.html by default; we swap extension to find the real template.
    */
   getTemplate(filePath: string): string | undefined {
-    const templatePath = filePath.replace('.html', this.extension);
+    if (!filePath.endsWith('.html')) {
+      return undefined;
+    }
+    // 只替换末尾的 .html 扩展名（.replace('.html', …) 会误伤路径中
+    // 其他位置出现的 .html 子串，例如目录名）
+    const templatePath = `${filePath.slice(0, -5)}${this.extension}`;
     if (existsSync(templatePath)) {
       return templatePath;
     }

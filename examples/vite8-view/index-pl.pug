@@ -1,0 +1,13 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title= title
+    //- VITE_ASSETS
+    meta(name="placeholder-marker" content="after-vite-assets-pug")
+    meta(name="description" content=description)
+  body
+    #app
+      h1= title
+      p This page is rendered by pug via vite-plugin-view with PLACEHOLDER injection.
+    script(type="module" src="/src/index.ts")
