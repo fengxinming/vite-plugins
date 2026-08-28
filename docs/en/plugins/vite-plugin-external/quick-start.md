@@ -117,6 +117,8 @@ export default defineConfig({
 * A: Named externals stash files are cached under `./node_modules/.vite_external`. Delete that folder to force a cache rebuild (it lives next to Vite's own `.vite` cache, so a one-liner `rm -rf node_modules/.vite*` cleans both).
 
 ## Historical changelog
+* **8.0.3**
+  * Support for two configuration attributes `'nodeBuiltins'` and `'externalizeDeps'` to be overridden multiple times in the specified mode
 
 * **8.0.2**
   * Added `"type": "module"` to package.json

@@ -117,6 +117,8 @@ export default defineConfig({
 * 答: 本插件会把命名 external 的 stash 文件缓存到 `./node_modules/.vite_external`，修改配置后删除该目录让缓存重建即可（它和 Vite 自己的 `.vite` 目录放在一起，一键清理可以 `rm -rf node_modules/.vite*`）。
 
 ## 历史变更记录
+* **8.0.3**
+  * 在指定模式下，支持多覆盖两个配置属性`'nodeBuiltins'`和`'externalizeDeps'`
 
 * **8.0.2**
   * 在 package.json 中添加 `"type": "module"`

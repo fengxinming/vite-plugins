@@ -225,4 +225,19 @@ describe('vite-plugin-external example configs', () => {
     // 与 Config.1 类似：IIFE 参数形式注入 React/ReactDOM
     expect(code).toMatch(/\}\)\s*\(\s*React\s*,\s*ReactDOM\s*\)\s*;?\s*$/m);
   }, 60000);
+
+  it('config 12: per-mode override — externalizeDeps concat + nodeBuiltins on', () => {
+    build(12);
+    expect(existsSync(join(root, 'dist/12/my-lib.js'))).toBe(true);
+    const code = read('dist/12/my-lib.js');
+
+    // 根配置 externalizeDeps: ['lodash'] → 顶层 import 保留
+    expect(code).toMatch(/^import\s+.*\s+from\s+"lodash"/m);
+    // production 模式追加 externalizeDeps: ['dayjs']（数组 concat + 去重）→ 同样顶层 import
+    expect(code).toMatch(/^import\s+.*\s+from\s+"dayjs"/m);
+    // production 模式开启 nodeBuiltins → node:path 顶层 import 保留
+    expect(code).toMatch(/^import\s+.*\s+from\s+"node:path"/m);
+    // @babel/core 不在任何列表中 → 被打包进产物，不留顶层 import
+    expect(code).not.toMatch(/^import\s+.*\s+from\s+"@babel\/core"/m);
+  }, 60000);
 });

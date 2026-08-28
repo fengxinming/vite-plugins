@@ -100,6 +100,177 @@ export default defineConfig({
 });
 ```
 
+**Array of strings and regex**
+```js
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      externals: ['lodash', /^@babel\//]
+    })
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        format: 'es',
+      },
+    },
+  }
+});
+```
+
+**externalizeDeps - pure external without shim**
+```js
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      externalizeDeps: ['lodash', 'dayjs', /^@babel\//]
+    })
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        format: 'es',
+      },
+    },
+  }
+});
+```
+
+**Multi-environment configuration**
+```js
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      externals: {
+        react: 'React',
+        'react-dom': 'ReactDOM'
+      },
+      production: {
+        externals: {
+          react: '$linkdesign.React',
+          'react-dom': '$linkdesign.ReactDOM'
+        }
+      }
+    })
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        format: 'iife',
+      },
+    },
+  }
+});
+```
+
+**interop: 'auto' - Fix IIFE require wrapping**
+```js
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      interop: 'auto',
+      externals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+        'react-dom/client': 'ReactDOM'
+      }
+    })
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        format: 'iife',
+      },
+    },
+  }
+});
+```
+
+**externalGlobals - Fix Rolldown/Rollup #3188**
+```js
+import externalGlobalsLib from 'rollup-plugin-external-globals';
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      externalGlobals: externalGlobalsLib,
+      externals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+        'react-dom/client': 'ReactDOM'
+      }
+    })
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        format: 'iife',
+      },
+    },
+  }
+});
+```
+
+**nodeBuiltins + externalizeDeps for Node.js libraries**
+```js
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      nodeBuiltins: true,
+      externalizeDeps: ['lodash', 'dayjs']
+    })
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        format: 'es',
+      },
+    },
+  }
+});
+```
+
+**Vue framework externalization**
+```js
+import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
+
+export default defineConfig({
+  plugins: [
+    pluginExternal({
+      externals: {
+        vue: 'Vue'
+      }
+    })
+  ],
+  build: {
+    rolldownOptions: {
+      output: {
+        format: 'iife',
+        name: 'MyVueApp'
+      },
+    },
+  }
+});
+```
+
 ## Q&A
 
 * Q: Page cannot load after modifying `externals`

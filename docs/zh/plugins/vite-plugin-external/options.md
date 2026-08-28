@@ -78,57 +78,6 @@ export type ModuleNameFn = ((id: string) => string);
 export type ModuleNameMap = Record<string, string> | ModuleNameFn;
 
 /**
- * A resolved stash entry for an IIFE-style global ({ react: React }).
- *
- * Design rationale：当用户写 react → React 时，我们不能只把 react 标
- * external，因为 dev（DepsOptimizer 预打包）和 build（走 stash 的路径）都
- * 需要一个**真实存在的 JS 文件**作为 import 的目标，否则产物里会残留裸引用
- * import "react"。所以我们写 stash 文件，内容是：
- *   module.exports = React;
- *
- * We cannot simply mark such a lib as external because:
- *   - Dev: DepsOptimizer pre-bundling needs a real file on disk to scan;
- *   - Build (non-IIFE): Rolldown produces a bare import "react" for
- *     pure-externals with no stash backing;
- *   - IIFE output: the global-name mapping is needed for output.globals
- *     reverse lookup (setOutputGlobals reads the name field via the
- *     populated globalObject map during setExternals).
- *
- * Fields：
- *   - name       ：global variable name（e.g. React），output.globals 反查用
- *   - external   ：bare import name（e.g. react），日志和 metadata 清理用
- *   - resolvedId ：stash 文件的绝对路径（= DepsOptimizer / Rolldown resolve 的目标）
- *   - format     ：iife 标签，和 ES 格式区分
- */
-export interface ExternalIIFE {
-  format: 'iife';
-  name: string;
-  external: string;
-  resolvedId: string;
-  link?: string;
-}
-
-/**
- * A resolved stash entry for an ESM-style CDN import
- * ({ react: https://esm.sh/react@18.3.1 }).
- *
- * 和 IIFE 全局变量的区别（Differences from IIFE）：
- *   1. Stash file is "export { default } from <link>; export * from <link>;"
- *      instead of a CJS shim. The browser itself loads the absolute ESM URL.
- *      stash 文件内容改为从 CDN 重导出，浏览器直接加载那个 ESM 模块。
- *   2. transformIndexHtml iterates stashMap and injects a
- *      <link rel="modulepreload" href="link"> so the browser starts
- *      prefetching the CDN module on first paint.
- *      dev/build 时注入 modulepreload，首屏就开始预取 CDN 模块。
- */
-export interface ExternalES {
-  format: 'es';
-  external: string;
-  resolvedId: string;
-  link: string;
-}
-
-/**
  * Options that are valid for both the root Options and any per-mode
  * override (opts.development / opts.production).
  *
