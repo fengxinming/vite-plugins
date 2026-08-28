@@ -4,7 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { Resolver, stash } from '../../src/common/Resolver';
+import { Resolver, stashToDisk } from '../../src/common/Resolver';
 
 function makeTempDir(): string {
   return mkdtempSync(join(tmpdir(), 'vpe-test-'));
@@ -14,14 +14,14 @@ describe('common/Resolver / stash', () => {
   describe('stash (low-level helper)', () => {
     it('writes a CJS shim for an IIFE global and returns ExternalIIFE info', async () => {
       const cacheDir = makeTempDir();
-      const info = await stash('react', 'React', cacheDir);
+      const info = await stashToDisk('react', 'React', cacheDir);
 
       expect(info.format).toBe('iife');
-      expect((info as any).name).toBe('React');
-      expect(info.external).toBe('react');
-      expect(info.resolvedId).toBe(join(cacheDir, 'react.js'));
+      expect(info.globalName).toBe('React');
+      expect(info.moduleId).toBe('react');
+      expect(info.stashPath).toBe(join(cacheDir, 'react.js'));
 
-      const code = readFileSync(info.resolvedId, 'utf-8');
+      const code = readFileSync(info.stashPath, 'utf-8');
       // CJS shim shape — see makeCjsExternalCode comment in Resolver.ts.
       // CJS shim 形态——见 Resolver.ts 中 makeCjsExternalCode 注释。
       expect(code).toBe('module.exports = React;');
@@ -29,24 +29,24 @@ describe('common/Resolver / stash', () => {
 
     it('writes an ESM re-export shim for an absolute-URL external and returns ExternalES info', async () => {
       const cacheDir = makeTempDir();
-      const link = 'https://esm.sh/react@18.3.1';
-      const info = await stash('react', link, cacheDir);
+      const cdnUrl = 'https://esm.sh/react@18.3.1';
+      const info = await stashToDisk('react', cdnUrl, cacheDir);
 
       expect(info.format).toBe('es');
-      expect((info as any).link).toBe(link);
-      expect(info.resolvedId).toBe(join(cacheDir, 'react.js'));
+      expect(info.cdnUrl).toBe(cdnUrl);
+      expect(info.stashPath).toBe(join(cacheDir, 'react.js'));
 
-      const code = readFileSync(info.resolvedId, 'utf-8');
-      expect(code).toContain(`export { default } from '${link}'`);
-      expect(code).toContain(`export * from '${link}'`);
+      const code = readFileSync(info.stashPath, 'utf-8');
+      expect(code).toContain(`export { default } from '${cdnUrl}'`);
+      expect(code).toContain(`export * from '${cdnUrl}'`);
     });
 
     it('flattens subpaths into a single filename via flattenId', async () => {
       const cacheDir = makeTempDir();
-      const info = await stash('react-dom/client', 'ReactDOM', cacheDir);
+      const info = await stashToDisk('react-dom/client', 'ReactDOM', cacheDir);
       // flattenId converts '/' → '_' so we don't create nested dirs.
       // flattenId 会把 '/' 转成 '_'，避免生成嵌套目录。
-      expect(info.resolvedId).toBe(join(cacheDir, 'react-dom_client.js'));
+      expect(info.stashPath).toBe(join(cacheDir, 'react-dom_client.js'));
     });
   });
 
@@ -70,7 +70,7 @@ describe('common/Resolver / stash', () => {
       // overwrite it because the cache hit skips disk IO.
       // 把文件内容改成哨兵值——第二次 stash() 不应该再写磁盘。
       const { writeFileSync } = await import('node:fs');
-      const sentinelPath = (await resolver.stash('react', 'React')).resolvedId;
+      const sentinelPath = (await resolver.stash('react', 'React')).stashPath;
       writeFileSync(sentinelPath, 'SENTINEL');
       await resolver.stash('react', 'React');
       expect(readFileSync(sentinelPath, 'utf-8')).toBe('SENTINEL');
@@ -98,7 +98,7 @@ describe('common/Resolver / stash', () => {
       const info = await resolver.resolve('react', undefined, false);
       expect(info).not.toBe(false);
       expect((info as any).format).toBe('iife');
-      expect((info as any).name).toBe('React');
+      expect((info as any).globalName).toBe('React');
     });
 
     it('iterates hooks in order — first truthy wins', async () => {
@@ -110,7 +110,7 @@ describe('common/Resolver / stash', () => {
         .useHook(() => 'NeverReaching'); // would also match, but unreachable
 
       const info = await resolver.resolve('react', undefined, false);
-      expect((info as any).name).toBe('React');
+      expect((info as any).globalName).toBe('React');
     });
 
     it('returns the cached info when called a second time (no second hook iteration needed)', async () => {

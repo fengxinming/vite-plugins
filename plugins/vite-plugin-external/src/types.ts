@@ -40,7 +40,7 @@ export type ExternalFn = (
   isResolved: boolean,
 ) => string | boolean | NullValue;
 
-export type ModuleNameFn = ((id: string) => string);
+export type ModuleNameFn = (id: string) => string;
 
 /**
  * Globals resolver accepted by Rolldown output.globals (either static map
@@ -50,56 +50,6 @@ export type ModuleNameFn = ((id: string) => string);
  */
 export type ModuleNameMap = Record<string, string> | ModuleNameFn;
 
-/**
- * A resolved stash entry for an IIFE-style global ({ react: React }).
- *
- * Design rationale：当用户写 react → React 时，我们不能只把 react 标
- * external，因为 dev（DepsOptimizer 预打包）和 build（走 stash 的路径）都
- * 需要一个**真实存在的 JS 文件**作为 import 的目标，否则产物里会残留裸引用
- * import "react"。所以我们写 stash 文件，内容是：
- *   module.exports = React;
- *
- * We cannot simply mark such a lib as external because:
- *   - Dev: DepsOptimizer pre-bundling needs a real file on disk to scan;
- *   - Build (non-IIFE): Rolldown produces a bare import "react" for
- *     pure-externals with no stash backing;
- *   - IIFE output: the global-name mapping is needed for output.globals
- *     reverse lookup (setOutputGlobals reads the name field via the
- *     populated globalObject map during setExternals).
- *
- * Fields：
- *   - name       ：global variable name（e.g. React），output.globals 反查用
- *   - external   ：bare import name（e.g. react），日志和 metadata 清理用
- *   - resolvedId ：stash 文件的绝对路径（= DepsOptimizer / Rolldown resolve 的目标）
- *   - format     ：iife 标签，和 ES 格式区分
- */
-export interface ExternalIIFE {
-  format: 'iife';
-  name: string;
-  external: string;
-  resolvedId: string;
-  link?: string;
-}
-
-/**
- * A resolved stash entry for an ESM-style CDN import
- * ({ react: https://esm.sh/react@18.3.1 }).
- *
- * 和 IIFE 全局变量的区别（Differences from IIFE）：
- *   1. Stash file is "export { default } from <link>; export * from <link>;"
- *      instead of a CJS shim. The browser itself loads the absolute ESM URL.
- *      stash 文件内容改为从 CDN 重导出，浏览器直接加载那个 ESM 模块。
- *   2. transformIndexHtml iterates stashMap and injects a
- *      <link rel="modulepreload" href="link"> so the browser starts
- *      prefetching the CDN module on first paint.
- *      dev/build 时注入 modulepreload，首屏就开始预取 CDN 模块。
- */
-export interface ExternalES {
-  format: 'es';
-  external: string;
-  resolvedId: string;
-  link: string;
-}
 
 export type { LogLevel } from 'vp-runtime-helper';
 
@@ -109,12 +59,16 @@ export type { LogLevel } from 'vp-runtime-helper';
  *
  * 设计背景（Design rationale）：
  * 多环境配置场景：开发环境 react → React（unpkg 的 umd），生产环境 react
- * → $linkdesign.React（自有 CDN）。为了让用户只覆盖 externals/cacheDir 等
- * 业务字段，不覆盖 enforce/enableBanner 这种插件级字段，将选项拆成两个接口。
+ * → $linkdesign.React（自有 CDN）。为了让用户按模式覆盖业务字段
+ * （externals / externalizeDeps / nodeBuiltins / cacheDir / cwd / logLevel），
+ * 不覆盖 enforce / enableBanner / interop / apply 这种插件级字段，将选项拆层。
  *
  * We split "field overrides per mode" from "global plugin options" so users
  * can write "development: { externals: {...} }" without accidentally
- * overriding enforce, enableBanner, or the build-time helpers.
+ * overriding interop, apply, enableBanner, or the build-time escape hatches
+ * — those are consumed at plugin-factory time or are global behavioral
+ * switches, so a per-mode override would either be impossible (apply /
+ * enableBanner are read before the mode is known) or misleading.
  */
 export interface BasicOptions {
   /**
@@ -160,29 +114,76 @@ export interface BasicOptions {
    * .vite 缓存，方便 rm -rf node_modules/.vite* 一键清理。
    */
   cacheDir?: string;
+
+  /**
+   * Shortcut: also treat Node built-ins (fs, path, node:stream/*…)
+   * as external during command === build. No-op in dev because Node
+   * built-ins never resolve in-browser anyway.
+   *
+   * 快捷开关：把所有 Node.js 内置模块（fs、path、node:stream 等）也作为
+   * external。只在 build 阶段生效（dev 阶段浏览器里 Node 内置模块本来就不会
+   * 被 resolve，没必要多此一举）。
+   */
+  nodeBuiltins?: boolean;
+
+  /**
+   * Shortcut: treat these libraries (strings or regexes) as pure externals
+   * — they are not bundled, but no global-name / CDN shim is provided for
+   * them. Only active during command === build.
+   *
+   * 快捷开关：这些依赖（字符串或正则）一律不打包进产物。不提供全局名 / CDN shim，
+   * 等价于对每个 dep 调用 externalHook.use 匹配命中即 true。只在 build 阶段生效。
+   */
+  externalizeDeps?: Array<string | RegExp>;
+}
+
+/**
+ * Per-mode override blocks. The four common Vite modes are declared
+ * explicitly so they get full type-checking and IDE completion; any
+ * custom mode (--mode staging, --mode alpha…) falls through to the
+ * string index signature, which is intentionally `unknown` rather
+ * than `BasicOptions | any`:
+ *
+ *   - `BasicOptions` would violate TS2411 (root-level fields like
+ *     `externals: string | RegExp | …` are not assignable to it).
+ *   - `any` (the old hack) silently accepted *anything* — a typo or a
+ *     plugin-level field in a mode block was swallowed without a word.
+ *   - `unknown` satisfies TS2411 (everything is assignable to unknown)
+ *     while runtime buildOptions() warns when it meets a key that is
+ *     not part of BasicOptions.
+ *
+ * 按模式覆盖的配置块。四个常用 Vite 模式显式声明，获得完整的类型检查与
+ * IDE 补全；自定义模式（--mode staging 等）落入 string 索引签名兜底。
+ * 索引值类型故意用 unknown 而不是 BasicOptions | any：
+ *   - BasicOptions 会触发 TS2411（根级 externals 等字段类型不兼容）。
+ *   - any（旧临时方案）什么都收，mode 块里写错字段会被静默吞掉。
+ *   - unknown 既满足 TS2411，运行时 buildOptions 又会对非 BasicOptions
+ *     字段打 warn 提示。
+ */
+export interface ModeOptions {
+  /** Custom modes fall through here. 自定义模式兜底。 */
+  [mode: string]: unknown;
+
+  development?: BasicOptions;
+  production?: BasicOptions;
+  test?: BasicOptions;
+  staging?: BasicOptions;
 }
 
 /**
  * Full user-facing options shape.
  *
  * Notes：
- *   - The [mode: string] index signature accepts development /
- *     production / any custom mode as a BasicOptions override.
- *     索引签名允许 opts.development / opts.production 等特定模式字段
- *     （BasicOptions 覆盖）。
  *   - externalGlobals is the escape-hatch plugin for fixing Rolldown/Rollup
  *     Issue #3188 (IIFE top-level require not rewritten to a global).
+ *
+ * 完整的用户配置形态。
+ * 注意：Options 必须以「接口继承 BasicOptions + ModeOptions」的方式组合，
+ * 不能改成 BasicOptions & ModeOptions 交叉类型——交叉会把 ModeOptions 的
+ * 索引签名叠加到根级字段上，导致 externals: {react: 'React'} 这类对象字面量
+ * 被误判为多余属性而报错。
  */
-export interface Options extends BasicOptions {
-  /**
-   * External dependencies for specific mode
-   * (e.g. development: { externals: { react: React } })
-   *
-   * 针对指定模式覆盖 BasicOptions 字段（例如开发模式用 unpkg 全局、生产模式用
-   * 自有 CDN 全局变量前缀）。
-   */
-  [mode: string]: BasicOptions | any;
-
+export interface Options extends BasicOptions, ModeOptions {
   /**
    * Interop escape hatch — preserved behaviour from pre-Vite-8 versions.
    *
@@ -237,27 +238,6 @@ export interface Options extends BasicOptions {
     | ((this: void, config: UserConfig, env: ConfigEnv) => boolean);
 
   /**
-   * Shortcut: also treat Node built-ins (fs, path, node:stream/*…)
-   * as external during command === build. No-op in dev because Node
-   * built-ins never resolve in-browser anyway.
-   *
-   * 快捷开关：把所有 Node.js 内置模块（fs、path、node:stream 等）也作为
-   * external。只在 build 阶段生效（dev 阶段浏览器里 Node 内置模块本来就不会
-   * 被 resolve，没必要多此一举）。
-   */
-  nodeBuiltins?: boolean;
-
-  /**
-   * Shortcut: treat these libraries (strings or regexes) as pure externals
-   * — they are not bundled, but no global-name / CDN shim is provided for
-   * them. Only active during command === build.
-   *
-   * 快捷开关：这些依赖（字符串或正则）一律不打包进产物。不提供全局名 / CDN shim，
-   * 等价于对每个 dep 调用 externalHook.use 匹配命中即 true。只在 build 阶段生效。
-   */
-  externalizeDeps?: Array<string | RegExp>;
-
-  /**
    * Fixes https://github.com/rollup/rollup/issues/3188
    *
    * Receives a resolver (id) => string | undefined that answers the same
@@ -282,19 +262,3 @@ export interface Options extends BasicOptions {
   enableBanner?: boolean;
 }
 
-/**
- * Post-processed options carried through every downstream step.
- *
- * Produced by buildOptions() which: merges per-mode overrides, defaults
- * cwd/cacheDir, sets logger level, and spreads ConfigEnv (mode, command,
- * ssrBuild…) onto the result so downstream code never has to carry two
- * parameters around.
- *
- * 内部"最终版选项"形态。由 buildOptions() 生成：合并模式 override、补齐
- * cwd/cacheDir 默认值、设置日志级别、再把 ConfigEnv（mode、command 等）扩展
- * 字段一起挂上去。这样下游判断"现在是 build 还是 serve"不用再单独传 ConfigEnv。
- */
-export interface ResolvedOptions extends Options, ConfigEnv {
-  cwd: string;
-  cacheDir: string;
-}

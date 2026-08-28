@@ -11,7 +11,8 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
-      externals: ['lodash', /^@babel\//]
+      externals: ['lodash', /^@babel\//],
+      nodeBuiltins: true
     })
   ],
   build: {

@@ -6,8 +6,7 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "jsx": "react-jsx",
-    "outDir": "dist"
+    "jsx": "react-jsx"
   },
   "include": ["src", "node_modules/vite/client.d.ts"]
 }

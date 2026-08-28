@@ -31,7 +31,7 @@ export default defineConfig({
  *
  * @returns a vite plugin
  */
-function view(opts: Options): Plugin | Plugin[] {
+export default function view(opts: Options): Plugin | Plugin[] {
   const {
     entry,
     logLevel,
@@ -213,4 +213,4 @@ function view(opts: Options): Plugin | Plugin[] {
   return buildStrategy === 'html' ? mainPlugin : [mainPlugin, buildPlugin];
 }
 
-export { engineSource, view };
+export { engineSource, view, view as vitePluginView };

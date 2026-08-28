@@ -15,12 +15,12 @@ export default defineConfig({
         react: 'React',
         'react-dom': 'ReactDOM'
       },
-      development: {
-        externals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
-        }
-      },
+      // development: {
+      //   externals: {
+      //     react: 'React',
+      //     'react-dom': 'ReactDOM'
+      //   }
+      // },
       production: {
         externals: {
           react: '$linkdesign.React',
