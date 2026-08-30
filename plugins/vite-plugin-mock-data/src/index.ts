@@ -6,7 +6,7 @@ import pkg from '../package.json' with { type: 'json' };
 import { configureServer } from './configureServer';
 import loadRoutes from './loadRoutes';
 import { logger, PLUGIN_NAME } from './logger';
-import { Options, RouteConfig } from './types';
+import type { Options, RouteConfig } from './types';
 
 export * from './types';
 
@@ -38,7 +38,7 @@ export default function pluginMockDate(opts: Options): Plugin {
 
   const {
     isAfter,
-    routerOptions,
+    fastifyOptions,
     routes,
     logLevel,
     cwd = process.cwd()
@@ -54,16 +54,21 @@ export default function pluginMockDate(opts: Options): Plugin {
     name: PLUGIN_NAME,
 
     async configureServer(server: ViteDevServer) {
+      // 先清空再重建：vite 可能多次调用本 hook（dev 模式 createServer/restart、
+      // 测试多次 start 复用同一插件实例）。allRoutes 是插件闭包数组，
+      // 不清空会重复 push → 同一批路由注册两次 → FST_ERR_DUPLICATED_ROUTE。
+      allRoutes.length = 0;
+
       if (typeof routes === 'string') {
         logger.debug('Load routes from', routes);
-        await loadRoutes(toAbsolutePath(routes, cwd), allRoutes);
+        await loadRoutes(toAbsolutePath(routes, cwd), allRoutes, cwd);
       }
       else if (Array.isArray(routes)) {
         for (const route of routes) {
           logger.debug('Load routes from', route);
 
           if (typeof route === 'string') {
-            await loadRoutes(toAbsolutePath(route, cwd), allRoutes);
+            await loadRoutes(toAbsolutePath(route, cwd), allRoutes, cwd);
           }
           else {
             allRoutes.push(route);
@@ -76,8 +81,8 @@ export default function pluginMockDate(opts: Options): Plugin {
       }
 
       return isAfter
-        ? () => configureServer(server, routerOptions, allRoutes, cwd)
-        : configureServer(server, routerOptions, allRoutes, cwd);
+        ? () => configureServer(server, fastifyOptions, allRoutes, cwd)
+        : configureServer(server, fastifyOptions, allRoutes, cwd);
     }
   };
 }

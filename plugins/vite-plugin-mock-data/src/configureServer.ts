@@ -1,194 +1,125 @@
-import { IncomingMessage, OutgoingHttpHeaders, ServerResponse } from 'node:http';
-import { parse } from 'node:path';
-
-import getRouter, { Config as SirvConfig, Handler, HTTPMethod, HTTPVersion, RouteOptions } from 'find-my-way';
+import fastifyFormbody from '@fastify/formbody';
+import fastifyStatic from '@fastify/static';
+import fastify, {
+  type FastifyInstance,
+  type FastifyServerOptions,
+  type HTTPMethods,
+  type RouteHandlerMethod
+} from 'fastify';
 import { isObject } from 'is-what-type';
-import sirv, { type Options as SirvOptions } from 'sirv';
-import { send, ViteDevServer } from 'vite';
-import { toAbsolutePath } from 'vp-runtime-helper';
+import { ViteDevServer } from 'vite';
 
-import { HandleRoute, RouteConfig } from './types';
+import type { MockData, MockRequest, RouteConfig, RouteValue } from './types';
 
 /**
- * Simple request body parser for JSON / urlencoded payloads.
- * Populates `req.body` so that route handlers can read it directly,
- * matching the documented handler signature `(req) => req.body`.
+ * 解析路由 key：`"METHOD /path"`，支持 `METHOD1/METHOD2 /path` 与 `:param`。
+ * 缺省 METHOD 时默认 GET。
  */
-function readJsonBody(req: IncomingMessage): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    req.on('data', (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
-    req.on('end', () => {
-      const raw = Buffer.concat(chunks).toString('utf8');
-      if (!raw) {
-        resolve(undefined);
-        return;
-      }
-      const type = (req.headers['content-type'] || '').toLowerCase();
-      try {
-        if (type.includes('application/json')) {
-          resolve(JSON.parse(raw));
-        }
-        else if (type.includes('application/x-www-form-urlencoded')) {
-          const out: Record<string, string> = {};
-          for (const [k, v] of new URLSearchParams(raw)) {
-            out[k] = v;
-          }
-          resolve(out);
-        }
-        else {
-          resolve(raw);
-        }
-      }
-      catch (e) {
-        reject(e);
-      }
-    });
-    req.on('error', reject);
-  });
+function parseRouteKey(xpath: string): { methods: HTTPMethods[], pathname: string } {
+  const [first, second] = xpath.split(' ');
+  const pathname = second ?? first;
+  const methods = (second ? first : 'GET').toUpperCase().split('/') as HTTPMethods[];
+  return { methods, pathname };
 }
 
-function sendResult(
-  req: IncomingMessage,
-  res: ServerResponse,
-  ret: unknown,
-  defaultHeaders: OutgoingHttpHeaders | undefined
-) {
-  if (res.headersSent || ret === undefined) {
-    return;
-  }
-  send(
-    req,
-    res,
-    typeof ret !== 'string' ? JSON.stringify(ret) : ret,
-    isObject(ret) ? 'json' : 'html',
-    { headers: defaultHeaders }
-  );
-}
-export function sirvOptions(headers?: OutgoingHttpHeaders): SirvOptions {
-  return {
-    dev: true,
-    etag: true,
-    extensions: [],
-    setHeaders(res, pathname) {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      if (/\.[tj]sx?$/.test(pathname)) {
-        res.setHeader('Content-Type', 'application/javascript');
-      }
-      if (headers) {
-        Object.entries(headers).forEach(([key, val]) => {
-          if (val) {
-            res.setHeader(key, val);
-          }
-        });
-      }
-    }
+/**
+ * 静态数据发送 handler：
+ *   - 对象 / 数组（isObject 为真，数组也是 object）→ `reply.send(data)`，fastify 序列化为 JSON；
+ *   - 其他（string / number / boolean / null）→ `String()` 转成字符串按文本发送
+ *     （fastify 对 string 默认 Content-Type: text/plain）。
+ */
+function createStaticHandler(data: MockData): RouteHandlerMethod {
+  return (_request, reply) => {
+    reply.send(isObject(data) ? data : String(data));
   };
 }
 
-export function configureServer(
+/**
+ * 在 fastify 实例上注册单条 mock 路由。
+ *
+ * 路由值只分两种（与 types.ts 的 RouteValue 一一对应）：
+ *   - 函数 → 原样透传，它就是 fastify 的 handler
+ *     （fastify 原生处理两种响应方式：async 返回值自动发送 / 内部 reply.send()）；
+ *   - 其他一切（对象 / 数组 / string / number / boolean / null）→ 静态数据，
+ *     由 createStaticHandler 生成 handler 发送。
+ */
+function registerMockRoute(
+  app: FastifyInstance,
+  xpath: string,
+  raw: RouteValue
+) {
+  const { methods, pathname } = parseRouteKey(xpath);
+
+  app.route({
+    method: methods,
+    url: pathname,
+    handler: typeof raw === 'function' ? raw : createStaticHandler(raw)
+  });
+}
+
+/**
+ * Mounts mock routes on the Vite dev server via a fastify instance.
+ *
+ * fastify is embedded as a connect middleware using its internal
+ * `routing(req, res)` API, so the plugin keeps the exact middleware
+ * semantics of the previous find-my-way based implementation:
+ *   - matched mock routes are answered by fastify;
+ *   - unmatched requests fall through to the next middleware via
+ *     `setNotFoundHandler` + `reply.hijack()` + `next()`.
+ *
+ * Route config contract (unchanged from before):
+ *   key = "METHOD /path", supports `METHOD1/METHOD2 /path` and `:param`.
+ */
+export async function configureServer(
   server: ViteDevServer,
-  routerOpts: SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2> | undefined,
+  fastifyOptions: FastifyServerOptions | undefined,
   routes: RouteConfig[],
   cwd: string
 ) {
-  const router = getRouter(routerOpts);
-  if (Array.isArray(routes)) {
-    routes.forEach((route) => {
-      Object.keys(route).forEach((xpath) => {
-        let [methods, pathname] = xpath.split(' ');
-        if (!pathname) {
-          pathname = methods;
-          methods = 'GET';
-        }
-        methods = methods.toUpperCase();
+  const app = fastify({ logger: false, ...fastifyOptions });
 
-        let routeConfig = route[xpath] as HandleRoute;
-        if (!isObject(routeConfig)) {
-          routeConfig = { handler: routeConfig };
-        }
+  void app.register(fastifyFormbody);
 
-        let handler: Handler<HTTPVersion.V1> | undefined;
-        let opts: RouteOptions | undefined;
+  // Register @fastify/static so user handlers can call `reply.sendFile()`
+  // to serve files from disk (the `file` route config field was removed —
+  // this capability now lives entirely in user function handlers).
+  void app.register(fastifyStatic, {
+    root: cwd,
+    setHeaders(reply, pathname) {
+      reply.header('Access-Control-Allow-Origin', '*');
+      if (/\.[tj]sx?$/.test(pathname)) {
+        reply.header('Content-Type', 'application/javascript');
+      }
+      const headers = server.config.server.headers;
+      if (headers) {
+        for (const [key, val] of Object.entries(headers)) {
+          if (val) {
+            reply.header(key, val);
+          }
+        }
+      }
+    }
+  });
 
-        if (typeof routeConfig.file === 'string') {
-          handler = (req, res) => {
-            const parsedPath = parse(toAbsolutePath(routeConfig.file as string, cwd));
-            const serve = sirv(parsedPath.dir, sirvOptions(server.config.server.headers));
-            req.url = `/${parsedPath.base}`;
-            serve(req, res);
-          };
-        }
-        else if (typeof routeConfig.handler !== 'function') {
-          const ret = routeConfig.handler;
-          const retType =  typeof ret;
-          handler = (req, res) => {
-            send(
-              req,
-              res,
-              retType !== 'string' ? JSON.stringify(ret) : ret,
-              isObject(ret) ? 'json' : 'html',
-              {
-                headers: server.config.server.headers
-              }
-            );
-          };
-        }
-        else {
-          // Handler is a user-defined function. Wrap it so that:
-          //   - JSON / urlencoded request bodies are parsed into `req.body`;
-          //   - find-my-way route params are exposed as `req.params`;
-          //   - the handler's return value is auto-sent as JSON;
-          //   - async handlers are awaited;
-          //   - any thrown error becomes a 500 response.
-          const userHandler = routeConfig.handler;
-          const methodsList = methods.toUpperCase().split('/');
-          const needsBody = methodsList.some((m) =>
-            ['POST', 'PUT', 'PATCH', 'DELETE'].includes(m)
-          );
-          handler = async (req: any, res, params: any) => {
-            req.params = params ?? {};
-            try {
-              if (needsBody) {
-                req.body = await readJsonBody(req);
-              }
-            }
-            catch (e) {
-              res.statusCode = 400;
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ error: 'Invalid request body', detail: String(e) }));
-              return;
-            }
-            try {
-              const ret = await userHandler(req, res);
-              sendResult(req, res, ret, server.config.server.headers);
-            }
-            catch (e) {
-              server.config.logger.error(`[mock-data] handler error on ${methods} ${pathname}: ${e}`);
-              if (!res.headersSent) {
-                res.statusCode = 500;
-                res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ error: 'Mock handler error', detail: String(e) }));
-              }
-            }
-          };
-        }
+  // Let unmatched requests fall through to Vite's middleware chain.
+  app.setNotFoundHandler((request, reply) => {
+    reply.hijack();
+    const raw = request.raw as MockRequest;
+    const next = raw.__mockNext;
+    delete raw.__mockNext;
+    next?.();
+  });
 
-        if (handler) {
-          router.on(
-            methods.split('/') as HTTPMethod[],
-            pathname,
-            opts || {},
-            handler,
-            routeConfig.store
-          );
-        }
-      });
-    });
-  }
+  routes.forEach((route) => {
+    for (const [key, val] of Object.entries(route)) {
+      registerMockRoute(app, key, val);
+    }
+  });
+
+  await app.ready();
 
   server.middlewares.use((req, res, next) => {
-    (router as any).defaultRoute = () => next();
-    router.lookup(req, res);
+    (req as MockRequest).__mockNext = next;
+    app.routing(req, res);
   });
 }

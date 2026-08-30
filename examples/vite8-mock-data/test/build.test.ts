@@ -75,6 +75,12 @@ describe('vite-plugin-mock-data example configs', () => {
       await build({ ...(cfg.default ?? cfg), logLevel: 'error' });
       expect(existsSync(resolve(dist, '3'))).toBe(true);
     }, 60000);
+
+    it('config 4: builds successfully with file route', async () => {
+      const cfg = await import(resolve(root, 'vite.config.4.mts'));
+      await build({ ...(cfg.default ?? cfg), logLevel: 'error' });
+      expect(existsSync(resolve(dist, '4'))).toBe(true);
+    }, 60000);
   });
 
   describe('dev server: mock endpoints actually serve correct data', () => {
@@ -150,6 +156,67 @@ describe('vite-plugin-mock-data example configs', () => {
       });
       expect(echo.res.ok).toBe(true);
       expect(echo.data).toEqual(payload);
+    }, 60000);
+
+    it('config 3: static data top-level shapes (str/num/bool/null/arr/obj/wrap)', async () => {
+      const { baseUrl } = await start('3');
+
+      // string → 文本（fastify 默认 text/plain）
+      const page = await fetch(`${baseUrl}/api/str`);
+      expect(page.status).toBe(200);
+      expect(page.headers.get('content-type') ?? '').toContain('text/plain');
+      expect(await page.text()).toBe('<h1>mock page</h1>');
+
+      // number / boolean → String() 文本
+      const num = await fetch(`${baseUrl}/api/num`);
+      expect(await num.text()).toBe('123');
+      const bool = await fetch(`${baseUrl}/api/bool`);
+      expect(await bool.text()).toBe('true');
+
+      // null → String() 为 "null" 文本（JSON.parse("null") 后仍为 null）
+      const nil = await jsonFetch(`${baseUrl}/api/nil`);
+      expect(nil.res.ok).toBe(true);
+      expect(nil.data).toBe(null);
+
+      // 数组 → JSON
+      const arr = await jsonFetch(`${baseUrl}/api/arr`);
+      expect(arr.data).toEqual([1, 2, 3]);
+
+      // 纯数据对象 → JSON
+      const obj = await jsonFetch(`${baseUrl}/api/obj`);
+      expect(obj.data).toEqual({ data: { nested: true } });
+
+      // 通用返回包装 → JSON
+      const wrap = await jsonFetch(`${baseUrl}/api/wrap`);
+      expect(wrap.data).toEqual({ code: 0, data: { ok: true } });
+    }, 60000);
+
+    it('config 3: top-level function handler passthrough', async () => {
+      const { baseUrl } = await start('3');
+
+      // 顶层函数 handler → 透传 fastify（async 返回值自动发送）
+      const fn = await jsonFetch(`${baseUrl}/api/fn`);
+      expect(fn.data).toEqual({ via: 'top-level-fn' });
+    }, 60000);
+
+    it('config 4: sendFile handler serves static file; unmatched path falls through to Vite', async () => {
+      const { baseUrl } = await start('4');
+
+      // sendFile handler：/package.json 由函数里 reply.sendFile() 从磁盘服务
+      const pkgRes = await fetch(`${baseUrl}/package.json`);
+      expect(pkgRes.status).toBe(200);
+      const pkg = await pkgRes.json();
+      expect(pkg.name).toBe('vite8-mock-data');
+
+      // 普通 handler 路由仍工作
+      const ver = await jsonFetch(`${baseUrl}/api/version`);
+      expect(ver.res.ok).toBe(true);
+      expect(ver.data).toMatchObject({ version: '4.x' });
+
+      // 未匹配路径 → fastify 404 → hijack + next() → Vite SPA fallback 返回 index.html
+      const nf = await fetch(`${baseUrl}/no/such/mock`);
+      expect(nf.status).toBe(200);
+      expect(nf.headers.get('content-type') ?? '').toContain('text/html');
     }, 60000);
   });
 });
