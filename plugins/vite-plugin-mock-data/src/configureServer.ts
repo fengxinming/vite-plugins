@@ -85,6 +85,7 @@ export async function configureServer(
   // this capability now lives entirely in user function handlers).
   void app.register(fastifyStatic, {
     root: cwd,
+    serve: false,
     setHeaders(reply, pathname) {
       reply.header('Access-Control-Allow-Origin', '*');
       if (/\.[tj]sx?$/.test(pathname)) {
