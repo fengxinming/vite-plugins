@@ -1,131 +1,112 @@
 # 配置选项参考
 
+## `routes`
 
-> Type definitions copied verbatim from the plugin TypeScript source:
->
+- **类型**：`RouteConfig | Array<RouteConfig | string> | string`
+- **必填**：`false`
+
+要添加到开发服务器的 mock 路由，支持三种形态：
+
+- 目录路径 —— 目录下每个 `.ts` / `.js` / `.mjs` 文件都会被加载，其默认导出合并进路由；
+- 数组 —— 可混合目录路径与内联 `RouteConfig` 对象；
+- 内联 `RouteConfig` 对象。
+
 ```ts
-export interface HandleRoute {
-  file?: string;
-  handler?: any | Handler<HTTPVersion.V1>;
-  options?: RouteOptions;
-  store?: any;
-}
-
-export interface RouteConfig {
-  [route: string]: string | Handler<HTTPVersion.V1> | HandleRoute;
-}
-
-export interface Options {
-  /**
-   * The directory to serve files from.
-   * @default `process.cwd()`
-   */
-  cwd?: string;
-
-  /**
-   * Cache directory for compiled files.
-   *
-   * 用于存放 ts 被编译后存放的文件目录。
-   *
-   * @default `${cwd}/node_modules/.vite_mock_data`
-   */
-  cacheDir?: string;
-
-  /**
-   * Log level
-   *
-   * 输出日志等级
-   */
-  logLevel?: LogLevel;
-
-  /**
-   * If `true`, these mock routes is matched after internal middlewares are installed.
-   * @default `false`
-   */
-  isAfter?: boolean;
-
-  /**
-   * Initial options of `find-my-way`. see more at https://github.com/delvedor/find-my-way#findmywayoptions
-   */
-  routerOptions?: SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2>;
-
-  /**
-   * Initial list of mock routes that should be added to the dev server
-   * or specify the directory to define mock routes that should be added to the dev server.
-   */
-  routes?: RouteConfig | Array<RouteConfig | string> | string;
-
-  /**
-   * Whether to output the banner
-   *
-   * 是否输出 banner
-   */
-  enableBanner?: boolean;
-}
+routes: './mock'
+routes: ['./mock', './mock2']
+routes: { '/api/x': { ok: true } }
 ```
 
-## `routes`
-* **类型**：`RouteConfig | Array<RouteConfig | string> | string`
-  * `RouteConfig | Array<RouteConfig | string>` - 需要添加到开发服务器的初始模拟路由列表。
-  * `string` - 指定定义模拟路由的目录路径。
-* **必填**：`false`
+## `fastifyOptions`
 
-## `routerOptions`
-* **类型**：`SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2>`
-* **必填**：`false`
-  * `find-my-way` 库的初始配置选项，[详情见文档](https://github.com/delvedor/find-my-way#findmywayoptions)。
+- **类型**：`FastifyServerOptions`
+- **必填**：`false`
+
+传给底层 fastify 实例的初始配置（日志、body 大小限制等）。详见 [fastify Server 参考文档](https://fastify.dev/docs/latest/Reference/Server/)。
+
+```ts
+mockData({
+  fastifyOptions: { logger: true }
+})
+```
 
 ## `cwd`
-* **类型**：`string`
-* **必填**：`false`
-* **默认值**：`process.cwd()`  
-  当前工作目录。
+
+- **类型**：`string`
+- **必填**：`false`
+- **默认值**：`process.cwd()`
+
+工作目录。用于解析路由文件中的相对路径，并作为 `@fastify/static`（即 `reply.sendFile()` 能力）的根目录。
+
+## `cacheDir`
+
+- **类型**：`string`
+- **必填**：`false`
+- **默认值**：`${cwd}/node_modules/.vite_mock_data`
+
+插件写入编译后路由文件的目录（路由文件在加载时会被转译）。
+
+## `logLevel`
+
+- **类型**：`LogLevel`
+- **必填**：`false`
+
+插件的日志输出等级。
 
 ## `isAfter`
-* **类型**：`boolean`
-* **必填**：`false`
-  * 如果设为 `true`，这些模拟路由将在内部中间件安装完成后才进行匹配。
 
----
+- **类型**：`boolean`
+- **必填**：`false`
+- **默认值**：`false`
+
+若设为 `true`，mock 路由将在 Vite 内部中间件安装完成**之后**才进行匹配，反之则在之前。
+
+## `enableBanner`
+
+- **类型**：`boolean`
+- **必填**：`false`
+
+启动时是否输出插件 banner。
 
 ## TypeScript 类型定义
 
-```typescript
-import { Config as SirvConfig, HTTPVersion, RouteOptions, Handler } from 'find-my-way';
+```ts
+import type { FastifyServerOptions, RouteHandlerMethod } from 'fastify';
+import type { LogLevel } from 'vp-runtime-helper';
 
-export interface HandleRoute {
-  file?: string;
-  handler?: any | Handler<HTTPVersion.V1>;
-  options?: RouteOptions;
-  store?: any;
-}
+/** fastify 风格的函数 handler `(request, reply)`，原样透传。 */
+export type MockHandler = RouteHandlerMethod;
+
+/** 任意可 JSON 序列化的静态数据，可直接写在路由顶层。 */
+export type MockData =
+  | string
+  | number
+  | boolean
+  | null
+  | MockData[]
+  | { [key: string]: MockData };
+
+/** 路由值：函数 handler 或静态数据。 */
+export type RouteValue = MockHandler | MockData;
 
 export interface RouteConfig {
-  [route: string]: string | Handler<HTTPVersion.V1> | HandleRoute;
+  [route: string]: RouteValue;
 }
 
 export interface Options {
-  /**
-   * 需要提供文件的目录路径。
-   * @default `process.cwd()`
-   */
+  /** 需要提供文件的目录路径。@default `process.cwd()` */
   cwd?: string;
-
-  /**
-   * 如果设为 `true`，这些模拟路由将在内部中间件安装完成后匹配。
-   * @default `false`
-   */
+  /** 编译后文件的缓存目录。@default `${cwd}/node_modules/.vite_mock_data` */
+  cacheDir?: string;
+  /** 日志输出等级。 */
+  logLevel?: LogLevel;
+  /** 若为 `true`，mock 路由在内部中间件安装完成后才匹配。@default `false` */
   isAfter?: boolean;
-
-  /**
-   * `find-my-way` 的初始配置选项。[详情见文档](https://github.com/delvedor/find-my-way#findmywayoptions)
-   */
-  routerOptions?: SirvConfig<HTTPVersion.V1> | SirvConfig<HTTPVersion.V2>;
-
-  /**
-   * 需要添加到开发服务器的初始模拟路由列表，
-   * 或指定定义模拟路由的目录路径。
-   */
+  /** `fastify` 的初始配置选项。 */
+  fastifyOptions?: FastifyServerOptions;
+  /** 需要添加的 mock 路由列表，或目录 / 目录列表。 */
   routes?: RouteConfig | Array<RouteConfig | string> | string;
+  /** 是否输出 banner。 */
+  enableBanner?: boolean;
 }
 ```
