@@ -68,7 +68,7 @@ export interface Options {
    *
    * 用于存放 ts 被编译后存放的文件目录。
    *
-   * @default `${cwd}/node_modules/.vite_mock_data`
+   * @default `${cwd}/node_modules/.vite-plugin-mock-data`
    */
   cacheDir?: string;
 

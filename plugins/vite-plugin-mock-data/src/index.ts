@@ -41,6 +41,7 @@ export default function pluginMockDate(opts: Options): Plugin {
     fastifyOptions,
     routes,
     logLevel,
+    cacheDir,
     cwd = process.cwd()
   } = opts;
 
@@ -61,14 +62,14 @@ export default function pluginMockDate(opts: Options): Plugin {
 
       if (typeof routes === 'string') {
         logger.debug('Load routes from', routes);
-        await loadRoutes(toAbsolutePath(routes, cwd), allRoutes, cwd);
+        await loadRoutes(toAbsolutePath(routes, cwd), allRoutes, cwd, cacheDir);
       }
       else if (Array.isArray(routes)) {
         for (const route of routes) {
           logger.debug('Load routes from', route);
 
           if (typeof route === 'string') {
-            await loadRoutes(toAbsolutePath(route, cwd), allRoutes, cwd);
+            await loadRoutes(toAbsolutePath(route, cwd), allRoutes, cwd, cacheDir);
           }
           else {
             allRoutes.push(route);

@@ -18,12 +18,12 @@ export default defineConfig({
       routes: [
         {
           // ── 顶层静态数据 ─────────────────────────────────────────
-          'GET /api/str': '<h1>mock page</h1>',        // string → 文本（text/plain）
-          'GET /api/num': 123,                          // number → String() 文本
-          'GET /api/bool': true,                        // boolean → String() 文本
-          'GET /api/nil': null,                         // null → "null" 文本
-          'GET /api/arr': [1, 2, 3],                    // 数组 → JSON
-          'GET /api/obj': { data: { nested: true } },   // 纯数据对象 → JSON
+          'GET /api/str': '<h1>mock page</h1>', // string → 文本（text/plain）
+          'GET /api/num': 123, // number → String() 文本
+          'GET /api/bool': true, // boolean → String() 文本
+          'GET /api/nil': null, // null → "null" 文本
+          'GET /api/arr': [1, 2, 3], // 数组 → JSON
+          'GET /api/obj': { data: { nested: true } }, // 纯数据对象 → JSON
           'GET /api/wrap': { code: 0, data: { ok: true } }, // 通用返回包装 → JSON
 
           // ── 函数 handler：直接透传 fastify ──────────────────────

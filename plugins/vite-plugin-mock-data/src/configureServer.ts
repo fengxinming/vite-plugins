@@ -83,8 +83,19 @@ export async function configureServer(
   // Register @fastify/static so user handlers can call `reply.sendFile()`
   // to serve files from disk (the `file` route config field was removed —
   // this capability now lives entirely in user function handlers).
+  //
+  // `serve: false` is mandatory here: by default @fastify/static registers
+  // a `GET/HEAD *` wildcard route that serves every REAL file under `root`
+  // (= project root) straight from disk — index.html without Vite's injected
+  // client script, raw untransformed /src/main.tsx, etc. In a real app (React,
+  // Vue...) that bypasses Vite's transform pipeline entirely and the page
+  // blows up. `wildcard: false` is not an option either — it globs the whole
+  // project at startup and registers one route per file. With `serve: false`
+  // the reply.sendFile()/download() decorators are still installed (they are
+  // independent of route registration) and NO route is hijacked.
   void app.register(fastifyStatic, {
     root: cwd,
+    serve: false,
     setHeaders(reply, pathname) {
       reply.header('Access-Control-Allow-Origin', '*');
       if (/\.[tj]sx?$/.test(pathname)) {
