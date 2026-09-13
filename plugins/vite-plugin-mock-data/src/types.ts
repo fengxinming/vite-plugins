@@ -1,4 +1,5 @@
-import type { FastifyServerOptions, RouteHandlerMethod } from 'fastify';
+import type { FastifyReply, FastifyRequest, FastifyServerOptions, RouteHandlerMethod } from 'fastify';
+import type { Connect } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
 /**
@@ -54,7 +55,9 @@ export interface RouteConfig {
  * configureServer 在 middleware 里先把 `next` 挂到 `request.raw.__mockNext`，
  * 404 handler 取出并调用，让请求落回 Vite 的中间件链（配合 reply.hijack()）。
  */
-export interface MockRequest { __mockNext?: () => void }
+export type ViteRequest = Connect.IncomingMessage & { __mockNext?: () => void };
+export type MockRequest = FastifyRequest;
+export type MockReply = FastifyReply;
 
 export interface Options {
   /**

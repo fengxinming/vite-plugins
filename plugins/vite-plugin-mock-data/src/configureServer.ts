@@ -9,7 +9,7 @@ import fastify, {
 import { isObject } from 'is-what-type';
 import { ViteDevServer } from 'vite';
 
-import type { MockData, MockRequest, RouteConfig, RouteValue } from './types';
+import type { MockData, RouteConfig, RouteValue, ViteRequest } from './types';
 
 /**
  * 解析路由 key：`"METHOD /path"`，支持 `METHOD1/METHOD2 /path` 与 `:param`。
@@ -115,7 +115,7 @@ export async function configureServer(
   // Let unmatched requests fall through to Vite's middleware chain.
   app.setNotFoundHandler((request, reply) => {
     reply.hijack();
-    const raw = request.raw as MockRequest;
+    const raw = request.raw as ViteRequest;
     const next = raw.__mockNext;
     delete raw.__mockNext;
     next?.();
@@ -130,7 +130,7 @@ export async function configureServer(
   await app.ready();
 
   server.middlewares.use((req, res, next) => {
-    (req as MockRequest).__mockNext = next;
+    (req as ViteRequest).__mockNext = next;
     app.routing(req, res);
   });
 }
