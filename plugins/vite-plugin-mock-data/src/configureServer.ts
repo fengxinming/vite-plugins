@@ -9,7 +9,7 @@ import fastify, {
 import { isObject } from 'is-what-type';
 import { ViteDevServer } from 'vite';
 
-import type { MockData, MockRequest, RouteConfig, RouteValue } from './types';
+import type { MockData, RouteConfig, RouteValue, ViteRequest } from './types';
 
 /**
  * 解析路由 key：`"METHOD /path"`，支持 `METHOD1/METHOD2 /path` 与 `:param`。
@@ -83,6 +83,16 @@ export async function configureServer(
   // Register @fastify/static so user handlers can call `reply.sendFile()`
   // to serve files from disk (the `file` route config field was removed —
   // this capability now lives entirely in user function handlers).
+  //
+  // `serve: false` is mandatory here: by default @fastify/static registers
+  // a `GET/HEAD *` wildcard route that serves every REAL file under `root`
+  // (= project root) straight from disk — index.html without Vite's injected
+  // client script, raw untransformed /src/main.tsx, etc. In a real app (React,
+  // Vue...) that bypasses Vite's transform pipeline entirely and the page
+  // blows up. `wildcard: false` is not an option either — it globs the whole
+  // project at startup and registers one route per file. With `serve: false`
+  // the reply.sendFile()/download() decorators are still installed (they are
+  // independent of route registration) and NO route is hijacked.
   void app.register(fastifyStatic, {
     root: cwd,
     serve: false,
@@ -105,7 +115,7 @@ export async function configureServer(
   // Let unmatched requests fall through to Vite's middleware chain.
   app.setNotFoundHandler((request, reply) => {
     reply.hijack();
-    const raw = request.raw as MockRequest;
+    const raw = request.raw as ViteRequest;
     const next = raw.__mockNext;
     delete raw.__mockNext;
     next?.();
@@ -120,7 +130,7 @@ export async function configureServer(
   await app.ready();
 
   server.middlewares.use((req, res, next) => {
-    (req as MockRequest).__mockNext = next;
+    (req as ViteRequest).__mockNext = next;
     app.routing(req, res);
   });
 }

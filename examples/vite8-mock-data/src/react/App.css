@@ -1,0 +1,17 @@
+.app {
+  font-family: system-ui, -apple-system, sans-serif;
+  max-width: 640px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  line-height: 1.6;
+}
+
+.app code {
+  background: #f3f3f3;
+  padding: 0 0.25rem;
+  border-radius: 4px;
+}
+
+.error {
+  color: #d33;
+}

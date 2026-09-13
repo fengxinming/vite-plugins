@@ -6,7 +6,7 @@ import pkg from '../package.json' with { type: 'json' };
 import { configureServer } from './configureServer';
 import loadRoutes from './loadRoutes';
 import { logger, PLUGIN_NAME } from './logger';
-import type { Options, RouteConfig } from './types';
+import type { Options, RouteConfig, RouteValue } from './types';
 
 export * from './types';
 
@@ -17,11 +17,11 @@ export * from './types';
  * @example
  * ```js
  * import { defineConfig } from 'vite';
- * import pluginMockDate from 'vite-plugin-mock-data';
+ * import pluginMockData from 'vite-plugin-mock-data';
  *
  * export default defineConfig({
  *   plugins: [
- *     pluginMockDate({
+ *     pluginMockData({
  *       routes: './mock'
  *     })
  *   ]
@@ -31,7 +31,7 @@ export * from './types';
  * @param opts Options
  * @returns a vite plugin
  */
-export default function pluginMockDate(opts: Options): Plugin {
+export default function pluginMockData(opts: Options): Plugin {
   if (opts.enableBanner) {
     banner(pkg.name);
   }
@@ -41,6 +41,7 @@ export default function pluginMockDate(opts: Options): Plugin {
     fastifyOptions,
     routes,
     logLevel,
+    cacheDir,
     cwd = process.cwd()
   } = opts;
 
@@ -61,14 +62,14 @@ export default function pluginMockDate(opts: Options): Plugin {
 
       if (typeof routes === 'string') {
         logger.debug('Load routes from', routes);
-        await loadRoutes(toAbsolutePath(routes, cwd), allRoutes, cwd);
+        await loadRoutes(toAbsolutePath(routes, cwd), allRoutes, cwd, cacheDir);
       }
       else if (Array.isArray(routes)) {
         for (const route of routes) {
           logger.debug('Load routes from', route);
 
           if (typeof route === 'string') {
-            await loadRoutes(toAbsolutePath(route, cwd), allRoutes, cwd);
+            await loadRoutes(toAbsolutePath(route, cwd), allRoutes, cwd, cacheDir);
           }
           else {
             allRoutes.push(route);
@@ -86,3 +87,13 @@ export default function pluginMockDate(opts: Options): Plugin {
     }
   };
 }
+
+export function defineRouteValue(value: RouteValue): RouteValue {
+  return value;
+}
+
+export function defineRouteConfig(config: RouteConfig): RouteConfig {
+  return config;
+}
+
+export { pluginMockData };

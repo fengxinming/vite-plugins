@@ -68,8 +68,8 @@ const _require = typeof require === 'function' ? require : createRequire(import.
  * Kept under node_modules so `rm -rf node_modules` cleans it up along with everything
  * else, and git ignores it by default.
  */
-function getTempDir(cwd: string): string {
-  return join(cwd, 'node_modules', '.vite-plugin-mock-data');
+function getTempDir(cwd: string, cacheDir?: string): string {
+  return cacheDir ?? join(cwd, 'node_modules', '.vite-plugin-mock-data');
 }
 
 /*
@@ -128,18 +128,25 @@ async function getRoute(filename: string, tmpDir: string): Promise<RouteConfig |
  * loadRoutes — 入口函数：递归加载 dir 下所有 mock 路由配置，写入传入的 routes 数组
  * loadRoutes — Entry point: recursively loads all mock route configs under dir, appends to routes array
  *
- * @param dir    mock 文件所在的目录（相对路径基于 process.cwd()）
- *               Directory containing mock files (relative paths resolve against process.cwd())
- * @param routes 调用方传入的数组，所有解析成功的 RouteConfig 会 push 进去
- *               Caller-provided array to which all resolved RouteConfig objects are pushed
- * @param cwd    项目根目录，用于定位临时文件缓存目录（默认 process.cwd()）
- *               Project root used to locate the temp-file cache dir (defaults to process.cwd())
+ * @param dir      mock 文件所在的目录（相对路径基于 process.cwd()）
+ *                 Directory containing mock files (relative paths resolve against process.cwd())
+ * @param routes   调用方传入的数组，所有解析成功的 RouteConfig 会 push 进去
+ *                 Caller-provided array to which all resolved RouteConfig objects are pushed
+ * @param cwd      项目根目录，用于定位临时文件缓存目录（默认 process.cwd()）
+ *                 Project root used to locate the temp-file cache dir (defaults to process.cwd())
+ * @param cacheDir 可选的自定义缓存目录，覆盖默认的 node_modules/.vite-plugin-mock-data
+ *                 Optional custom cache dir, overrides the default node_modules/.vite-plugin-mock-data
  *
  * 并发策略：Promise.all 并行处理所有匹配文件（IO 密集型，并发加速加载）
  * Concurrency: Promise.all processes every matched file in parallel (IO-bound, concurrent load speeds up)
  */
-export default async function loadRoutes(dir: string, routes: RouteConfig[], cwd = process.cwd()): Promise<void> {
-  const tmpDir = getTempDir(cwd);
+export default async function loadRoutes(
+  dir: string,
+  routes: RouteConfig[],
+  cwd = process.cwd(),
+  cacheDir?: string
+): Promise<void> {
+  const tmpDir = getTempDir(cwd, cacheDir);
   const paths = await glob(`${dir}/**/*.{js,mjs,json,ts,mts}`, {
     absolute: true,
     // Never pick up transpiled temp files left behind by older plugin versions.
