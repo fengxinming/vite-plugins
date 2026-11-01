@@ -1,13 +1,17 @@
-import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { cleanDist, runBuild } from '../../shared/example-testkit';
+
 const root = join(__dirname, '..');
 
-function build(n: number) {
-  execSync(`pnpm run build:${n}`, { cwd: root, stdio: 'pipe' });
+async function build(n: number) {
+  const { code, stdout } = await runBuild(root, 'build', n);
+  if (code !== 0) {
+    throw new Error(`build:${n} failed (code=${code})\n${stdout}`);
+  }
 }
 
 function read(...segments: string[]) {
@@ -15,25 +19,28 @@ function read(...segments: string[]) {
 }
 
 afterEach(() => {
-  const p = join(root, 'dist');
-  if (existsSync(p)) {
-    rmSync(p, { recursive: true, force: true });
-  }
+  cleanDist(root);
 });
 
 /**
  * 从构建好的 JS 代码中提取被内联的 CSS 字符串（即 textContent = "..." 赋值里引号中的内容）。
  * 避免 CSS 属性顺序差异导致断言失败：同时允许 minified 格式。
+ *
+ * 收集**全部** textContent 块再拼接：插件若把每个 CSS 文件注入成独立 <style>，
+ * 只取第一个会让后续块的内容永远不被检查（换成多块注入也照样"通过"）。
+ * Collect every block, not just the first one.
  */
 function extractInlineCss(code: string): string {
-  // vite-plugin-include-css 典型输出： ... n.textContent="<css>" ...
-  const m = /textContent\s*=\s*"([^"]*)"/.exec(code);
-  return m ? m[1] : '';
+  const blocks = Array.from(
+    code.matchAll(/textContent\s*=\s*"([^"]*)"/g),
+    (match) => match[1]
+  );
+  return blocks.join('\n');
 }
 
 describe('vite-plugin-include-css example configs', () => {
-  it('config 1: style.css + reset.css BOTH truly inlined via <style> injection', () => {
-    build(1);
+  it('config 1: style.css + reset.css BOTH truly inlined via <style> injection', async () => {
+    await build(1);
     expect(existsSync(join(root, 'dist/1/my-component.js'))).toBe(true);
     const code = read('dist/1/my-component.js');
 
@@ -60,8 +67,8 @@ describe('vite-plugin-include-css example configs', () => {
     expect(css).toMatch(/body\s*\{[^}]*font-family\s*:\s*system-ui/);
   }, 60000);
 
-  it('config 2: both formats (es + cjs) inlined, and CSS from BOTH files present', () => {
-    build(2);
+  it('config 2: both formats (es + cjs) inlined, and CSS from BOTH files present', async () => {
+    await build(2);
     // 两个输出文件都要存在（formats: ['es', 'cjs']）
     const cjsPath = join(root, 'dist/2/index.js');
     const esmPath = join(root, 'dist/2/index.mjs');

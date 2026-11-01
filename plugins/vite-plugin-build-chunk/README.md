@@ -16,6 +16,9 @@ npm install vite-plugin-build-chunk --save-dev
 
 ## Usage
 
+`build` accepts a single chunk config or an array of them (each entry triggers one
+secondary lib-mode build after the main build, running in parallel):
+
 ```js
 import { defineConfig } from 'vite';
 import pluginBuildChunk from 'vite-plugin-build-chunk';
@@ -23,11 +26,24 @@ import pluginBuildChunk from 'vite-plugin-build-chunk';
 export default defineConfig({
   plugins: [
     pluginBuildChunk({
-      chunk: 'index.mjs',
-      name: 'MyLib',
-      format: 'umd',
-      minify: false
+      build: {
+        // `chunk` is the file name inside the main build's outDir
+        chunk: 'index.js',
+        name: 'MyLib',
+        format: 'umd',
+        minify: false
+      }
     })
+  ]
+});
+```
+
+```js
+// multiple outputs from one main build
+pluginBuildChunk({
+  build: [
+    { chunk: 'index.js', name: 'MyLib', format: 'umd' },
+    { chunk: 'index.js', name: 'MyLib', format: 'cjs', minify: true }
   ]
 });
 ```

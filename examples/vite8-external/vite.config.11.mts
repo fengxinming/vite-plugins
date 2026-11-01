@@ -11,7 +11,7 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
-      cacheDir: '.external-cache',
+      cacheDir: './node_modules/.external-cache',
       externals: {
         react: 'React',
         'react-dom': 'ReactDOM',

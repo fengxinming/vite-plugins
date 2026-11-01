@@ -53,9 +53,9 @@ export default class ExternalHook {
     // case 2: 用户自定义函数，原样转发，额外过滤 \0 虚拟模块前缀。
     else if (ensureType<ExternalFn>(arg, type === 'function')) {
       hook = (
-        id: string,
-        importer: string | undefined,
-        isResolved: boolean,
+        id,
+        importer,
+        isResolved,
       ) => (!id.startsWith('\0') && arg(id, importer, isResolved)) || false;
     }
 
@@ -79,7 +79,12 @@ export default class ExternalHook {
           ids.add(value);
         }
       }
-      hook = (id: string) => ids.has(id) || matchers.some((matcher) => matcher.test(id));
+      hook = (id: string) => ids.has(id) || matchers.some((matcher) => {
+        // 带 g / y 标志的正则，test() 会推进 lastIndex，同一个 id 连续判断会交替命中；
+        // 匹配前把手标归零，保证每次都是完整匹配。
+        matcher.lastIndex = 0;
+        return matcher.test(id);
+      });
     }
 
     // case 5: null / false / '' 等 falsy 值 → 永远不命中。

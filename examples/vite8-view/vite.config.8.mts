@@ -56,8 +56,8 @@ export default defineConfig({
         build: 'template'
       },
       entry: {
-        index: 'index.ejs',
-        home: 'home.ejs'
+        delegate: 'delegate.ejs',
+        delegateHome: 'delegateHome.ejs'
       },
       engineOptions: {
         title: 'EJS Delegate Example',

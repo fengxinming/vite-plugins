@@ -35,7 +35,7 @@ async function doCopy(config: Target, cwd: string, globOptions: GlobOptions, cop
       // check if 'source' is directory
       isNotFlatten = statSync(absSource).isDirectory() && !flatten;
     }
-    catch (e) {
+    catch {
       // 'source' is not a file or directory
     }
 

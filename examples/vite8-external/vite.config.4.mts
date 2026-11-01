@@ -11,20 +11,24 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
+      // logLevel: 'TRACE',
       externals: {
         react: 'React',
-        'react-dom': 'ReactDOM'
+        'react-dom': 'ReactDOM',
+        'react-dom/client': 'ReactDOM'
       },
       // development: {
       //   externals: {
       //     react: 'React',
-      //     'react-dom': 'ReactDOM'
+      //     'react-dom': 'ReactDOM',
+      //     'react-dom/client': 'ReactDOM'
       //   }
       // },
       production: {
         externals: {
           react: '$linkdesign.React',
-          'react-dom': '$linkdesign.ReactDOM'
+          'react-dom': '$linkdesign.ReactDOM',
+          'react-dom/client': '$linkdesign.ReactDOM'
         }
       }
     })

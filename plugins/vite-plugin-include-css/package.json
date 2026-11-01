@@ -14,9 +14,7 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build",
-    "release": "pnpm publish --no-git-checks",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "release": "pnpm publish --no-git-checks"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0",

@@ -1,11 +1,11 @@
 import { builtinModules } from 'node:module';
 
-import dts from 'vite-plugin-dts';
 import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
 
-import { dependencies } from './package.json' with { type: 'json' };
+import pkg from './package.json' with { type: 'json' };
 
-const externals = Object.keys(dependencies)
+const externals = Object.keys(pkg.dependencies)
   .concat(builtinModules, 'vite')
   .map((n) => new RegExp(`^${n}/?`))
   .concat(/^node:/);

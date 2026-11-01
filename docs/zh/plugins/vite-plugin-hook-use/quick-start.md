@@ -8,7 +8,7 @@
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-hook-use.svg?style=flat)](https://npmjs.org/package/vite-plugin-hook-use)
 [![Node version](https://img.shields.io/node/v/vite-plugin-hook-use.svg?style=flat)](https://npmjs.org/package/vite-plugin-hook-use)
 
-## Installation
+## 安装
 
 ::: code-group
 
@@ -24,7 +24,7 @@ yarn add vite-plugin-hook-use
 
 :::
 
-## Usage
+## 用法
 
 ```js
 import { defineConfig } from 'vite';
@@ -35,4 +35,18 @@ export default defineConfig({
     vitePluginHookUse()
   ]
 });
+```
+
+## 配置选项
+
+### `enableBanner`
+
+- **类型**：`boolean`
+- **必填**：`false`
+- **默认值**：`true`
+
+启动时是否输出插件 banner。
+
+```js
+vitePluginHookUse({ enableBanner: false })
 ```

@@ -1,8 +1,9 @@
 import { isAbsolute, join } from 'node:path';
 
-import { isPlainObject } from 'is-what-type';
+import { isAsyncFunction, isPlainObject } from 'is-what-type';
 import type { ConfigEnv } from 'vite';
 
+import { PLUGIN_NAME } from '../common/constants';
 import { logger } from '../common/logger';
 import type { ResolvedOptions } from '../internal-types';
 import type { BasicOptions, Options } from '../types';
@@ -107,16 +108,11 @@ export function buildOptions(
           }
           break;
         case 'externals':
-          if (isPlainObject<Record<string, string>>(value)) {
+          if (isPlainObject<Record<string, string>>(externals) && isPlainObject<Record<string, string>>(value)) {
             externals = Object.assign({}, externals, value);
           }
-          else if (Array.isArray(value)) {
-            if (Array.isArray(externals)) {
-              externals = Array.from(new Set(externals.concat(value)));
-            }
-            else {
-              externals = value;
-            }
+          else if (Array.isArray(value) && Array.isArray(externals)) {
+            externals = Array.from(new Set(externals.concat(value)));
           }
           else {
             externals = value;
@@ -141,6 +137,18 @@ export function buildOptions(
     });
 
     delete rest[mode];
+  }
+
+  // externals 回调必须是同步函数：resolveHook 的三个消费点
+  // （rolldownOptions.external、output.globals 反查、预打包 resolve）
+  // 都是同步边界，async 函数返回的 Promise 会被当成 truthy →
+  // 每个 id 都被误判为"纯 external"且丢失全局名映射，灾难性且难查。
+  // 需要异步数据请先在 vite.config 顶层 await 备好，再传同步结果。
+  if (typeof externals === 'function' && isAsyncFunction(externals)) {
+    throw new Error(
+      `[${PLUGIN_NAME}] "externals" callback must be synchronous, but an async function was given. `
+      + 'Prepare your data with top-level await in vite.config and pass a sync callback (or the object/array forms).',
+    );
   }
 
   if (logLevel != null) {

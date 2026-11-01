@@ -16,6 +16,8 @@
     "build:10": "vite build --config vite.config.10.mts",
     "build:11": "vite build --config vite.config.11.mts",
     "build:12": "vite build --config vite.config.12.mts",
+    "dev:7": "vite --config vite.config.7.mts --port 5187",
+    "dev:8": "vite --config vite.config.8.mts --port 5188",
     "test": "vitest run"
   },
   "devDependencies": {
@@ -26,6 +28,6 @@
     "pug": "^3.0.3",
     "vite": "^8.0.0",
     "vite-plugin-view": "workspace:^",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.5"
   }
 }

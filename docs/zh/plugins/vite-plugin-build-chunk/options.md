@@ -52,13 +52,20 @@ export interface BuildOptions {
    *
    * 输出文件名。
    */
-  fileName?: string | ((format: ModuleFormat, entryName: string) => string);
+  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
   /**
    * The plugins to use.
    *
    * 使用的插件。
    */
   plugins?: PluginOption[];
+
+  /**
+   * The resolve options.
+   *
+   * 解析选项。
+   */
+  resolve?: UserConfig['resolve'];
 }
 
 export interface Options {
@@ -68,20 +75,6 @@ export interface Options {
    * 构建选项。
    */
   build: BuildOptions | BuildOptions[];
-
-  /**
-   * The log level to use.
-   *
-   * 日志等级。
-   */
-  logLevel?: LogLevel;
-
-  /**
-   * Whether to output the banner
-   *
-   * 是否输出 banner
-   */
-  enableBanner?: boolean;
 }
 ```
 
@@ -91,32 +84,29 @@ export interface Options {
 | 参数         | 类型                                                                 | 必填 | 默认值          | 说明                                                                 |
 |--------------|----------------------------------------------------------------------|------|-----------------|----------------------------------------------------------------------|
 | `build`      | `BuildOptions[] \| BuildOptions`                                     | 是   | -              | 构建任务配置（数组或单个对象）                                       |
-| `logLevel`   | `LogLevel` (来自 `vp-runtime-helper`)                                | 否   | `'info'`       | 日志等级（如 `'error'`, `'warn'`, `'info'`）                         |
-| `enableBanner`| `boolean`                                                           | 否   | `false`        | 是否输出构建 banner（如版本信息）                                    |
 
 ---
 
 ### **BuildOptions（每个构建任务的配置）**
 | 参数         | 类型                                                                 | 必填 | 默认值          | 说明                                                                 |
 |--------------|----------------------------------------------------------------------|------|-----------------|----------------------------------------------------------------------|
-| `chunk`      | `string`                                                            | 是   | -              | 入口文件路径（相对项目根目录）                                     |
-| `name`       | `string`                                                            | 是   | `'default'`    | 全局变量名（仅在 UMD/IIFE 格式生效）                               |
+| `chunk`      | `string`                                                            | 是   | -              | 主构建输出目录（`outDir`）内的文件名                                   |
+| `name`       | `string`                                                            | 是   | -              | 全局变量名（仅在 UMD/IIFE 格式生效）                                 |
 | `format`     | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | 否   | `'umd'`        | 构建格式（默认 `umd`）                                             |
 | `sourcemap`  | `boolean \| 'inline' \| 'hidden'`                                    | 否   | `false`        | 是否生成 sourcemap（支持内联或隐藏模式）                           |
 | `exports`    | `'default' \| 'named' \| 'none' \| 'auto'`                           | 否   | `'auto'`       | Rollup 输出的导出类型                                             |
 | `minify`     | `boolean \| 'terser' \| 'esbuild'`                                   | 否   | `false`        | 是否启用代码压缩（支持 `terser` 或 `esbuild`）                     |
 | `outDir`     | `string`                                                            | 否   | 主构建的 `outDir` | 自定义输出目录（相对项目根目录）                                  |
-| `fileName`   | `string \| ((format: string, entryName: string) => string)`          | 否   | 根据格式生成默认名称 | 自定义文件名（支持模板字符串或函数）                               |
+| `fileName`   | `string \| ((format: LibraryFormats, entryName: string) => string)`   | 否   | 根据格式生成默认名称 | 自定义文件名（支持模板字符串或函数）                               |
 | `plugins`    | `PluginOption[]`                                                     | 否   | `[]`           | 额外的 Vite 插件列表                                               |
+| `resolve`    | `UserConfig['resolve']`                                              | 否   | -              | 透传给二次构建的 `resolve` 解析配置                                 |
 
 ---
 
 ## TypeScript 定义
 
 ```typescript
-import { ModuleFormat } from 'rollup';
-import type { LibraryFormats, PluginOption } from 'vite';
-import { LogLevel } from 'vp-runtime-helper';
+import type { LibraryFormats, PluginOption, UserConfig } from 'vite';
 
 export interface BuildOptions {
   /**
@@ -166,13 +156,20 @@ export interface BuildOptions {
    *
    * 输出文件名。
    */
-  fileName?: string | ((format: ModuleFormat, entryName: string) => string);
+  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
   /**
    * The plugins to use.
    *
    * 使用的插件。
    */
   plugins?: PluginOption[];
+
+  /**
+   * The resolve options.
+   *
+   * 解析选项。
+   */
+  resolve?: UserConfig['resolve'];
 }
 
 export interface Options {
@@ -182,19 +179,5 @@ export interface Options {
    * 构建选项。
    */
   build: BuildOptions | BuildOptions[];
-
-  /**
-   * The log level to use.
-   *
-   * 日志等级。
-   */
-  logLevel?: LogLevel;
-
-  /**
-   * Whether to output the banner
-   *
-   * 是否输出 banner
-   */
-  enableBanner?: boolean;
 }
 ```

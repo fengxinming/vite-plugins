@@ -1,14 +1,18 @@
 /* eslint-disable max-len */
-import { execSync } from 'node:child_process';
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { cleanDist, runBuild } from '../../shared/example-testkit';
+
 const root = join(__dirname, '..');
 
-function build(n: number) {
-  execSync(`pnpm run build:${n}`, { cwd: root, stdio: 'pipe' });
+async function build(n: number) {
+  const { code, stdout } = await runBuild(root, 'build', n);
+  if (code !== 0) {
+    throw new Error(`build:${n} failed (code=${code})\n${stdout}`);
+  }
 }
 
 function read(...segments: string[]) {
@@ -16,65 +20,92 @@ function read(...segments: string[]) {
 }
 
 afterEach(() => {
-  const p = join(root, 'dist');
-  if (existsSync(p)) {
-    rmSync(p, { recursive: true, force: true });
-  }
+  cleanDist(root);
 });
 
 describe('vite-plugin-view example configs', () => {
-  it('config 1: pug template → HTML', () => {
-    build(1);
+  it('config 1: pug template → HTML', async () => {
+    await build(1);
     const html = join(root, 'dist/1/index.html');
     expect(existsSync(html)).toBe(true);
     const code = read('dist/1/index.html');
+    // 编译后的 HTML 不得残留模板标记：残留说明模板根本没被渲染，
+    // 只断言标题词会让「渲染失败但标题恰好是静态文本」蒙混过关。
+    expect(code).not.toContain('<%');
+    expect(code).not.toContain('{{ ');
+    expect(code).not.toContain('{%');
     expect(code).toContain('My App');
   }, 60000);
 
-  it('config 2: ejs template → HTML', () => {
-    build(2);
+  it('config 2: ejs template → HTML', async () => {
+    await build(2);
     const html = join(root, 'dist/2/index.html');
     expect(existsSync(html)).toBe(true);
     const code = read('dist/2/index.html');
+    // 编译后的 HTML 不得残留模板标记：残留说明模板根本没被渲染，
+    // 只断言标题词会让「渲染失败但标题恰好是静态文本」蒙混过关。
+    expect(code).not.toContain('<%');
+    expect(code).not.toContain('{{ ');
+    expect(code).not.toContain('{%');
     expect(code).toContain('EJS Example');
     expect(code).toContain('Apple');
   }, 60000);
 
-  it('config 3: nunjucks template → HTML', () => {
-    build(3);
+  it('config 3: nunjucks template → HTML', async () => {
+    await build(3);
     const html = join(root, 'dist/3/index.html');
     expect(existsSync(html)).toBe(true);
     const code = read('dist/3/index.html');
+    // 编译后的 HTML 不得残留模板标记：残留说明模板根本没被渲染，
+    // 只断言标题词会让「渲染失败但标题恰好是静态文本」蒙混过关。
+    expect(code).not.toContain('<%');
+    expect(code).not.toContain('{{ ');
+    expect(code).not.toContain('{%');
     expect(code).toContain('Nunjucks Example');
   }, 60000);
 
-  it('config 4: handlebars with .hbs extension', () => {
-    build(4);
+  it('config 4: handlebars with .hbs extension', async () => {
+    await build(4);
     const html = join(root, 'dist/4/index.html');
     expect(existsSync(html)).toBe(true);
     const code = read('dist/4/index.html');
+    // 编译后的 HTML 不得残留模板标记：残留说明模板根本没被渲染，
+    // 只断言标题词会让「渲染失败但标题恰好是静态文本」蒙混过关。
+    expect(code).not.toContain('<%');
+    expect(code).not.toContain('{{ ');
+    expect(code).not.toContain('{%');
     expect(code).toContain('Handlebars Example');
   }, 60000);
 
-  it('config 5: pretty false — compact HTML output', () => {
-    build(5);
+  it('config 5: pretty false — compact HTML output', async () => {
+    await build(5);
     const html = join(root, 'dist/5/index.html');
     expect(existsSync(html)).toBe(true);
     const code = read('dist/5/index.html');
+    // 编译后的 HTML 不得残留模板标记：残留说明模板根本没被渲染，
+    // 只断言标题词会让「渲染失败但标题恰好是静态文本」蒙混过关。
+    expect(code).not.toContain('<%');
+    expect(code).not.toContain('{{ ');
+    expect(code).not.toContain('{%');
     expect(code).toContain('Compact Build');
   }, 60000);
 
-  it('config 6: custom extension .template with ejs', () => {
-    build(6);
+  it('config 6: custom extension .template with ejs', async () => {
+    await build(6);
     const html = join(root, 'dist/6/index.html');
     expect(existsSync(html)).toBe(true);
     const code = read('dist/6/index.html');
+    // 编译后的 HTML 不得残留模板标记：残留说明模板根本没被渲染，
+    // 只断言标题词会让「渲染失败但标题恰好是静态文本」蒙混过关。
+    expect(code).not.toContain('<%');
+    expect(code).not.toContain('{{ ');
+    expect(code).not.toContain('{%');
     expect(code).toContain('Custom Extension');
     expect(code).toContain('Alpha');
   }, 60000);
 
-  it('config 7: MPA multi-page — BOTH dist/7/index.html + dist/7/home.html are built independently', () => {
-    build(7);
+  it('config 7: MPA multi-page — BOTH dist/7/index.html + dist/7/home.html are built independently', async () => {
+    await build(7);
     const indexOut = join(root, 'dist/7/index.html');
     const homeOut  = join(root, 'dist/7/home.html');
 
@@ -100,47 +131,51 @@ describe('vite-plugin-view example configs', () => {
     expect(homeHtml).not.toContain('<li>Apple</li>'); // index-only content
   }, 60000);
 
-  it('config 8: strategy.build template — outputs .ejs (NOT .html) with asset tags injected before </head>', () => {
-    build(8);
+  it('config 8: strategy.build template — outputs .ejs (NOT .html) with asset tags injected before </head>', async () => {
+    await build(8);
 
+    // Config 8 的入口是独立模板 delegate.ejs / delegateHome.ejs —— 刻意避开
+    // index.html，以免 dev 期在共享 root 下与 config 7 抢同一个 index.html。
+    // 因此本用例断言的是 dist/8/delegate.ejs / dist/8/delegateHome.ejs。
     // Template files are output to dist instead of compiled .html
     // 模板文件输出到 dist，而不是编译后的 .html
-    const indexEjs = join(root, 'dist/8/index.ejs');
-    const homeEjs  = join(root, 'dist/8/home.ejs');
-    expect(existsSync(indexEjs), 'dist/8/index.ejs must exist').toBe(true);
-    expect(existsSync(homeEjs), 'dist/8/home.ejs must exist').toBe(true);
+    const delegateEjs = join(root, 'dist/8/delegate.ejs');
+    const delegateHomeEjs = join(root, 'dist/8/delegateHome.ejs');
+    expect(existsSync(delegateEjs), 'dist/8/delegate.ejs must exist').toBe(true);
+    expect(existsSync(delegateHomeEjs), 'dist/8/delegateHome.ejs must exist').toBe(true);
 
     // No .html files should be produced in template mode
     // template 模式下不应产出 .html 文件
     expect(existsSync(
-      join(root, 'dist/8/index.html')), 'dist/8/index.html must NOT exist in template mode').toBe(false);
-    expect(existsSync(join(root, 'dist/8/home.html')), 'dist/8/home.html must NOT exist in template mode').toBe(false);
+      join(root, 'dist/8/delegate.html')), 'dist/8/delegate.html must NOT exist in template mode').toBe(false);
+    expect(existsSync(
+      join(root, 'dist/8/delegateHome.html')), 'dist/8/delegateHome.html must NOT exist in template mode').toBe(false);
 
-    const indexTemplate = read('dist/8/index.ejs');
-    const homeTemplate  = read('dist/8/home.ejs');
+    const delegateTemplate = read('dist/8/delegate.ejs');
+    const delegateHomeTemplate = read('dist/8/delegateHome.ejs');
 
     // Template syntax is preserved for server-side rendering
     // 保留模板语法供服务端渲染使用
-    expect(indexTemplate).toContain('<%= title %>');
-    expect(homeTemplate).toContain('<%= title %>');
-    expect(homeTemplate).toContain('<%= pageTitle %>');
+    expect(delegateTemplate).toContain('<%= title %>');
+    expect(delegateHomeTemplate).toContain('<%= title %>');
+    expect(delegateHomeTemplate).toContain('<%= pageTitle %>');
 
     // Generated asset tags are injected (Vite always adds crossorigin)
     // 注入生成的资源标签（Vite 始终添加 crossorigin 属性）
-    expect(indexTemplate).toContain('type="module"');
-    expect(indexTemplate).toContain('crossorigin');
-    expect(homeTemplate).toContain('type="module"');
-    expect(homeTemplate).toContain('crossorigin');
+    expect(delegateTemplate).toContain('type="module"');
+    expect(delegateTemplate).toContain('crossorigin');
+    expect(delegateHomeTemplate).toContain('type="module"');
+    expect(delegateHomeTemplate).toContain('crossorigin');
 
     // No injectPlaceholder was set, so tags must have been injected right
     // before </head> (the default Vite-native inject-to-head position).
     // 未设置 injectPlaceholder，标签必须注入在 </head> 前（Vite 原生默认位置）。
-    expect(indexTemplate).toMatch(/type="module"[\s\S]*crossorigin[\s\S]*<\/head>/i);
-    expect(homeTemplate).toMatch(/type="module"[\s\S]*crossorigin[\s\S]*<\/head>/i);
+    expect(delegateTemplate).toMatch(/type="module"[\s\S]*crossorigin[\s\S]*<\/head>/i);
+    expect(delegateHomeTemplate).toMatch(/type="module"[\s\S]*crossorigin[\s\S]*<\/head>/i);
   }, 60000);
 
-  it('config 9: strategy.build both — emits compiled .html AND original .ejs template with asset tags', () => {
-    build(9);
+  it('config 9: strategy.build both — emits compiled .html AND original .ejs template with asset tags', async () => {
+    await build(9);
 
     // strategy.build: 'both' must emit BOTH file types at the same time
     // strategy.build: 'both' 必须同时产出两种文件类型
@@ -188,8 +223,8 @@ describe('vite-plugin-view example configs', () => {
   }, 60000);
 
   // eslint-disable-next-line max-len
-  it('config 10: strategy.build template + injectPlaceholder — asset tags replace placeholder, not </head>-before default', () => {
-    build(10);
+  it('config 10: strategy.build template + injectPlaceholder — asset tags replace placeholder, not </head>-before default', async () => {
+    await build(10);
 
     // Dedicated -pl.ejs templates are emitted; no .html is produced
     // 产出专用的 -pl.ejs 模板文件；不产出 .html
@@ -243,8 +278,8 @@ describe('vite-plugin-view example configs', () => {
     expect(homeTpl).toMatch(/crossorigin[\s\S]*placeholder-marker" content="home-after-vite-assets"/);
   }, 60000);
 
-  it('config 11: Pug + build template + injectPlaceholder — HTML tags converted to Pug syntax, inserted at placeholder', () => {
-    build(11);
+  it('config 11: Pug + build template + injectPlaceholder — HTML tags converted to Pug syntax, inserted at placeholder', async () => {
+    await build(11);
 
     // Template files emitted; no .html (template mode)
     // 产出模板文件；不产出 .html（template 模式）
@@ -300,8 +335,8 @@ describe('vite-plugin-view example configs', () => {
     expect(hm).toMatch(/crossorigin, src=[\s\S]*placeholder-marker" content="home-after-vite-assets-pug"/);
   }, 60000);
 
-  it('config 12: Pug + build template WITHOUT injectPlaceholder — indent fallback inserts Pug syntax under head block', () => {
-    build(12);
+  it('config 12: Pug + build template WITHOUT injectPlaceholder — indent fallback inserts Pug syntax under head block', async () => {
+    await build(12);
 
     const indexPug = join(root, 'dist/12/index.pug');
     const homePug  = join(root, 'dist/12/home.pug');

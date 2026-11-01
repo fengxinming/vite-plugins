@@ -83,17 +83,19 @@ export default function pluginBuildChunk(opts: Options): Plugin {
         format = 'umd',
         name,
         sourcemap,
-        outDir,
+        outDir = originalOutDir,
         fileName,
         exports,
-        plugins
+        plugins,
+        resolve
       }) => {
         return build({
           logLevel: 'silent',
           configFile: false,
           plugins,
+          resolve,
           build: {
-            outDir: outDir || originalOutDir,
+            outDir,
             emptyOutDir: false,
             minify,
             sourcemap,

@@ -10,12 +10,14 @@
     "build:4": "vite build --config vite.config.4.mts",
     "build:5": "vite build --config vite.config.5.mts",
     "build:6": "vite build --config vite.config.6.mts",
+    "build:1:watch": "vite build --config vite.config.1.mts --watch",
+    "dev:1": "vite --config vite.config.1.mts --port 5181 --strictPort",
     "test": "vitest run"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.1.10",
     "vite": "^8.0.0",
     "vite-plugin-combine": "workspace:^",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.5"
   }
 }

@@ -152,40 +152,6 @@ export default defineConfig({
 });
 ```
 
-## 解决 IIFE 格式的打包问题
-
-> 即使 Rolldown 拿到了 `output.globals`，少数情况下 IIFE 顶层的 `require('react')` 仍不会被替换成全局变量访问（参阅 [rollup/rollup#3188](https://github.com/rollup/rollup/issues/3188)）。
->
-> 这时用 `externalGlobals` 回调，把我们已经编译好的 globals resolver 喂给 `@rolldown/plugin-external-globals`（或 Rollup 同名插件），返回的插件会被**插入到 `rolldownOptions.plugins` 数组最前面**，保证它的 transform 先于 Rolldown 内置 globals 执行。
->
-> **注意**：当前 API 是函数形态 `(globals) => Rolldown.Plugin`，不是直接传插件对象。历史上直接传插件对象的写法（旧版 rollup-plugin-external-globals 实例）必须包一层才能在当前类型签名下使用。
-
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-import externalGlobals from '@rolldown/plugin-external-globals';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      // 关键：回调形态。参数 globals(id) 等价于 output.globals 反查函数。
-      externalGlobals: (globals) => externalGlobals(globals),
-      externals: {
-        react: 'React',
-        'react-dom/client': 'ReactDOM',
-      },
-    }),
-  ],
-  build: {
-    rolldownOptions: {
-      output: {
-        format: 'iife',
-      },
-    },
-  },
-});
-```
-
 ## 构建时仅排除依赖
 
 > 场景是写 Node.js CLI / 后端 lib：只希望产物里不打包进 `node_modules` 依赖 / Node 内置模块，不需要浏览器端的全局变量和 CDN shim。两个快捷开关：

@@ -37,6 +37,29 @@ yarn add vite-plugin-external
 
 :::
 
+## 前提：先在 `index.html` 里提供全局变量
+
+全局变量形态的 externals（如 `react: 'React'`）只有在运行时全局变量真实存在才有效——本插件只是把 import 重写成全局变量查找，**不会**帮你下载任何脚本。请先在 `index.html` 里引入 UMD 构建，并保证 `window` 上的变量名与 `externals` 的值一致：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>demo</title>
+  <!-- CDN UMD 构建提供 window.React / window.ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+</html>
+```
+
+ESM CDN 形态是例外——无需手动加脚本：产物直接 import 绝对 CDN 地址，插件还会注入 `<link rel="modulepreload">`。
+
 **iife 格式打包（全局变量注入 HTML script 标签）**
 
 ```js

@@ -18,7 +18,7 @@ export default defineConfig({
       // externalizeDeps 仅在 build 命令生效，把 vite 放这里既能避免打包进
       // 产物，又不会在 vitest 的 dev server 阶段把它标成 external
       // （否则 src/index.ts 里的 import { build } from 'vite' 会挂）。
-      externalizeDeps: [...Object.keys(pkg.dependencies), 'vite']
+      externalizeDeps: [...Object.keys(pkg.dependencies ?? {}), 'vite']
     }),
     dts({
       entryRoot: 'src',

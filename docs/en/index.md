@@ -52,7 +52,7 @@ features:
     linkText: Quick start
   - title: vite-plugin-mock-data
     icon: 🎭
-    details: "Provides a simple, file-route based way to mock HTTP data (dev server only, supports request body)."
+    details: "Mocks HTTP APIs from file-based route definitions, both in the dev server and — via `buildMock` — inside the browser bundle of production builds."
     link: /plugins/vite-plugin-mock-data/quick-start
     linkText: Quick start
   - title: vite-plugin-reverse-proxy

@@ -37,7 +37,6 @@
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-hook-use/quick-start",
   "dependencies": {
     "@clack/prompts": "^0.7.0",
-    "fs-extra": "^11.1.1",
     "picocolors": "^1.0.0",
     "vp-runtime-helper": "workspace:^"
   },

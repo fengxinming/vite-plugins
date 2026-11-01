@@ -11,12 +11,25 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
+      // logLevel: 'TRACE',
       externals: {
         react: 'React',
         'react-dom': 'ReactDOM',
         'react-dom/client': 'ReactDOM'
       }
     })
+    // {
+    //   name: 'test-000',
+    //   resolveId: {
+    //     order: 'pre',
+    //     handler(id) {
+    //       console.log('resolveId <<<<=', id);
+    //     }
+    //   },
+    //   load() {
+
+    //   }
+    // }
   ],
   build: {
     outDir: 'dist/1',
@@ -25,6 +38,17 @@ export default defineConfig({
       output: {
         format: 'iife'
       }
+      // plugins: [
+      //   {
+      //     name: 'test-111',
+      //     resolveId: {
+      //       order: 'pre',
+      //       handler(id) {
+      //         console.log('resolveId =>>>>>', id);
+      //       }
+      //     }
+      //   }
+      // ]
     }
   }
 });

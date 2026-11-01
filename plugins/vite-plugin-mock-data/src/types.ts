@@ -1,5 +1,4 @@
 import type { FastifyReply, FastifyRequest, FastifyServerOptions, RouteHandlerMethod } from 'fastify';
-import type { Connect } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
 /**
@@ -42,22 +41,13 @@ export type MockData =
  * static data (sent by a plugin-generated handler).
  */
 export type RouteValue = MockHandler | MockData;
+export type DevRequest = FastifyRequest;
+export type DevReply = FastifyReply;
+
 
 export interface RouteConfig {
   [route: string]: RouteValue;
 }
-
-/**
- * connect 中间件的 next 回调在 fastify 404 handler 之间的传递载体。
- *
- * fastify 以 `app.routing(req, res)` 嵌入 connect 中间件时，未匹配的请求会
- * 走到 fastify 的 404 handler，但那里拿不到 connect 的 `next`。因此
- * configureServer 在 middleware 里先把 `next` 挂到 `request.raw.__mockNext`，
- * 404 handler 取出并调用，让请求落回 Vite 的中间件链（配合 reply.hijack()）。
- */
-export type ViteRequest = Connect.IncomingMessage & { __mockNext?: () => void };
-export type MockRequest = FastifyRequest;
-export type MockReply = FastifyReply;
 
 export interface Options {
   /**
@@ -89,7 +79,7 @@ export interface Options {
   isAfter?: boolean;
 
   /**
-   * Initial options of `fastify`. see more at https://fastify.dev/docs/latest/Reference/Server/
+   * Initial options of `fastify`. see more at https://fastify.dev/docs/latest/Reference/Server/#routeroptions
    */
   fastifyOptions?: FastifyServerOptions;
 
@@ -100,9 +90,41 @@ export interface Options {
   routes?: RouteConfig | Array<RouteConfig | string> | string;
 
   /**
+   * 是否把 mock 路由提供给浏览器端运行时（`vite-plugin-mock-data/mock-client` 与
+   * `vite-plugin-mock-data/axios-adapter`），使打包后的静态页面（双击打开或静态托管）
+   * 也能通过客户端 axios adapter 使用 mock 数据。
+   *
+   * - `true`：构建期通过 `resolveId`/`load` 提供虚拟模块
+   *   `virtual:mock-routes`，把文件型 routes（`routes` 为字符串目录 / 文件）的清单
+   *   与按 fastify `routerOptions` 推导的编译选项注入运行时，随 app 构建静态导入
+   *   链打进产物；浏览器端由 `createMockAdapter`（来自
+   *   `vite-plugin-mock-data/axios-adapter`）拦截 axios 请求。
+   * - 仅支持文件型 routes；内联 `RouteConfig` 对象为 dev-only，不会被打包。
+   * - 函数型 handler 会在浏览器端用模拟的 `req`/`reply` 执行（见 mock-client 文档）。
+   *
+   * @default false
+   */
+  buildMock?: boolean;
+
+  /**
    * Whether to output the banner
    *
    * 是否输出 banner
    */
   enableBanner?: boolean;
+}
+
+export interface MockRequest {
+  url: string;
+  method?: string;
+  query?: Record<string, string>;
+  body?: any;
+  headers?: Record<string, string>;
+}
+
+export interface MockResponse {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  data: any;
 }

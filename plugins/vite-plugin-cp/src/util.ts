@@ -83,7 +83,7 @@ export function makeCopy(transform?: TransformFile) {
       return readFile(from)
         .then((buf: Buffer) => transform(buf, from))
         .then((data: string | Buffer) => {
-          return outputFile(to, data as any);
+          return outputFile(to, data);
         });
     }
     : copy;

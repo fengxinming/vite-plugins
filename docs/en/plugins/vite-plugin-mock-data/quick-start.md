@@ -2,7 +2,7 @@
 
 [![npm package](https://nodei.co/npm/vite-plugin-mock-data.png?downloads=true&downloadRank=true&stars=true)](https://www.npmjs.com/package/vite-plugin-mock-data)
 
-> Provides a simple way to mock data.
+> Mocks API routes on the Vite dev server from a mock directory or inline route config, and can expose file-based routes to the browser for built static pages.
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-mock-data.svg?style=flat)](https://npmjs.org/package/vite-plugin-mock-data)
 [![NPM Downloads](https://img.shields.io/npm/dm/vite-plugin-mock-data.svg?style=flat)](https://npmjs.org/package/vite-plugin-mock-data)

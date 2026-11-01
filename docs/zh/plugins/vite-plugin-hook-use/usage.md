@@ -24,40 +24,57 @@ export default defineConfig({
 vite build
 ```
 
-将会在控制台打印出以下内容，数字表示调用次数
+首先，`config` 钩子会打印出 `env` 对象：
 
-```bash
+```text
+env: {
+  "mode": "production",
+  "command": "build",
+  "isSsrBuild": false,
+  "isPreview": false
+}
+```
+
+然后在 `closeBundle` 时，控制台输出以下统计内容，数字表示调用次数：
+
+```text
 ┌   === Start === 
 │
 ◇  config(1)
 │
+◇  configEnvironment(1)
+│
 ◇  configResolved(1)
 │
+◇  applyToEnvironment(1)
+│
 ◇  options(1)
+│
+◇  outputOptions(1)
 │
 ◇  buildStart(1)
 │
 ◇  load(1)
 │
-◇  transform(1)
+◇  transform(2)
 │
 ◇  moduleParsed(1)
 │
 ◇  buildEnd(1)
 │
-◇  outputOptions(1)
-│
 ◇  renderStart(1)
 │
 ◇  banner(1)
-│
-◇  footer(1)
 │
 ◇  intro(1)
 │
 ◇  outro(1)
 │
+◇  footer(1)
+│
 ◇  renderChunk(1)
+│
+◇  augmentChunkHash(1)
 │
 ◇  generateBundle(1)
 │

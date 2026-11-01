@@ -4,9 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --config vite.config.6.mts",
-    "dev:6": "vite --config vite.config.6.mts",
-    "dev:7": "vite --config vite.config.7.mts",
+    "dev": "vite --config vite.config.6.mts --host 127.0.0.1 --port 5206",
+    "dev:1": "vite --config vite.config.1.mts --host 127.0.0.1 --port 5201",
+    "dev:2": "vite --config vite.config.2.mts --host 127.0.0.1 --port 5202",
+    "dev:3": "vite --config vite.config.3.mts --host 127.0.0.1 --port 5203",
+    "dev:4": "vite --config vite.config.4.mts --host 127.0.0.1 --port 5204",
+    "dev:5": "vite --config vite.config.5.mts --host 127.0.0.1 --port 5205",
+    "dev:6": "vite --config vite.config.6.mts --host 127.0.0.1 --port 5206",
+    "dev:7": "vite --config vite.config.7.mts --host 127.0.0.1 --port 5207",
     "build:1": "vite build --config vite.config.1.mts",
     "build:2": "vite build --config vite.config.2.mts",
     "build:3": "vite build --config vite.config.3.mts",
@@ -14,16 +19,19 @@
     "build:5": "vite build --config vite.config.5.mts",
     "build:6": "vite build --config vite.config.6.mts",
     "build:7": "vite build --config vite.config.7.mts",
-    "test": "vitest run"
+    "build:8": "vite build --config vite.config.8.mts",
+    "test": "vitest run",
+    "typecheck:test": "tsc --noEmit -p tsconfig.test.json"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "@vitest/coverage-v8": "^4.1.10",
+    "axios": "^1.20.0",
     "vite": "^8.0.0",
     "vite-plugin-mock-data": "workspace:^",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.5"
   },
   "dependencies": {
     "react": "^19.2.0",

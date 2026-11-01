@@ -30,7 +30,7 @@ export default {
     buildChunk({
       build: [ // 必须配置顶层的 `build` 属性
         {
-          chunk: 'main.mjs', // 入口文件路径（相对项目根目录）
+          chunk: 'main.mjs', // 主构建输出目录（outDir）内的文件名
           format: 'umd', // 构建格式（默认 'umd'）
           name: 'MyLib', // 全局变量名（仅 UMD/IIFE 生效）
         },
@@ -46,7 +46,7 @@ export default {
 // 默认模板（如 es → main.mjs，cjs → main.js，umd → main.umd.js）
 fileName: undefined,
 
-// 自定义模板字符串（需包含 `[name]` 和 `[format]`）
+// 自定义模板字符串（`[name]` 等占位符会由 Vite 替换）
 fileName: '[name]',
 
 // 使用函数动态生成
@@ -62,9 +62,9 @@ fileName: (format, entryName) => {
    ```typescript
    buildChunk({ build: [...] })
    ```
-2. **入口路径**：`chunk` 需为绝对路径或相对于项目根目录的路径。
+2. **入口路径**：`chunk` 是主构建输出目录（`outDir`）内的文件名，插件会以主构建的 `outDir` 为基准解析它，而不是项目根目录。
 3. **多配置支持**：通过 `build` 数组配置多个构建任务，每个任务生成独立的构建产物。
-4. **静默模式**：插件默认关闭日志输出（`logLevel: 'OFF'`），避免干扰主构建输出。
+4. **静默模式**：二次构建内部以 `logLevel: 'silent'` 运行，不会干扰主构建的输出。
 5. **格式默认值**：`format` 默认为 `umd`，若未指定将使用此格式。
 
 ---
