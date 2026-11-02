@@ -141,13 +141,15 @@ describe('common/spliceCode', () => {
     });
   });
 
-  it('returns an empty string for an unknown exportsType', () => {
-    // Unknown mode → handles[exportsType] is undefined → spliceCode bails out
-    // with '' so the caller (makeESModuleCode) writes an empty target file
-    // rather than crashing.
-    // 未知模式 → handles[exportsType] 为 undefined → spliceCode 返回空串，
-    // 调用方（makeESModuleCode）写出空目标文件而不是崩溃。
-    expect(spliceCode([file('Foo')], file('index'), 'totally-unknown')).toBe('');
+  it('throws on an unknown exportsType instead of emitting an empty entry', () => {
+    // 配置写错（如 'nameed'）必须立刻失败：旧实现返回空串，构建照样"成功"，
+    // 用户拿到的是没有任何导出的包，排查成本极高。
+    // A typo must fail fast: the old implementation returned '' and produced a package
+    // that exports nothing while the build still "succeeded".
+    expect(() => spliceCode([file('Foo')], file('index'), 'totally-unknown'))
+      .toThrow(/Invalid `exports` value: 'totally-unknown'/);
+    expect(() => spliceCode([file('Foo')], file('index'), 'totally-unknown'))
+      .toThrow(/named, default, both, all, none/);
   });
 
   it('honours a function-shape nameExport when building the export name', () => {
@@ -225,13 +227,20 @@ describe('common/rebuildInput', () => {
     });
   });
 
-  it('mutates and returns the SAME object-form entry instance', () => {
-    // rebuildInput reduces directly onto the passed object — callers should be
-    // aware the input is mutated (not a copy).
-    // rebuildInput 直接在传入对象上 reduce，调用方需注意入参会被修改（非拷贝）。
+  it('returns a new object and leaves the input entry untouched', () => {
+    // 入参是用户的 build.lib.entry，原地塞 key 会污染 vite 配置，
+    // 后续插件读到的 entry 就不再是用户写的那份；这里必须返回副本。
+    // The argument is the user's build.lib.entry; mutating it would pollute the Vite
+    // config, so rebuildInput returns a copy and leaves the input untouched.
     const input = { app: 'src/app.ts' };
     const result = rebuildInput(input, ['/abs/Foo.ts']);
-    expect(result).toBe(input);
+
+    expect(result).not.toBe(input);
+    expect(result).toEqual({
+      app: 'src/app.ts',
+      Foo: '/abs/Foo.ts'
+    });
+    expect(input).toEqual({ app: 'src/app.ts' });
   });
 
   it('returns files as-is when the entry is undefined', () => {

@@ -37,6 +37,29 @@ yarn add vite-plugin-external
 
 :::
 
+## Prerequisite: provide the globals in `index.html`
+
+Global-name externals (e.g. `react: 'React'`) only take effect if the global variable actually exists at runtime — the plugin rewrites the import to a global lookup, it does **not** download anything. Load the UMD builds in `index.html` first, and keep the `window` names aligned with the values in `externals`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>demo</title>
+  <!-- CDN UMD builds provide window.React / window.ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module" src="/src/index.tsx"></script>
+</body>
+</html>
+```
+
+The ESM CDN shape is the exception — nothing to add manually: the bundle imports the absolute CDN URLs directly and the plugin injects `<link rel="modulepreload">`.
+
 **IIFE build (global variable injected via an HTML `<script>` tag)**
 
 ```js
@@ -127,4 +150,4 @@ export default defineConfig({
   * Removed deprecated `rollback` option, updated docs
 
 * **8.0.0**
-  * This Vite-8-compatible rewrite is based on the v6.2.0 codebase but reworks every pipeline for Rolldown + the new DepsOptimizer.
+  * This Vite-8-compatible rewrite is based on the v6.2.2 codebase but reworks every pipeline for Rolldown + the new DepsOptimizer.

@@ -10,6 +10,15 @@ import type { LogLevel } from 'vp-runtime-helper';
  */
 export type NullValue = null | undefined | void;
 
+
+export interface ResolveIdExtraOptions{
+  kind?: Rolldown.ImportKind;
+  custom?: Rolldown.CustomPluginOptions;
+  ssr?: boolean | undefined;
+
+  isEntry: boolean;
+}
+
 /**
  * The single signature that every "external decision" hook inside this plugin
  * compiles down to (see ExternalHook).
@@ -28,27 +37,19 @@ export type NullValue = null | undefined | void;
  *   - true  → import is external, **without** a global-name/URL mapping.
  *            Used by externalizeDeps and string/RegExp matches.
  *            标记为 external，但不提供替换规则（只不打包）。用于 externalizeDeps。
- *   - string → if an absolute URL → ESM CDN route; otherwise → IIFE global
- *             route (see makeCjsExternalCode / makeEsExternalCode).
- *             绝对 URL → ES CDN 重导出；否则 → IIFE 全局变量（写 CJS shim）。
- *   - falsy → not external; proceed to the next hook / normal resolution.
- *            不是 external，继续正常解析。
+ *   - string (non-empty) → an absolute URL → ESM CDN route; otherwise → IIFE
+ *             global route (see makeCjsExternalCode / makeEsExternalCode).
+ *             非空字符串：绝对 URL → ES CDN 重导出；否则 → IIFE 全局变量（写 CJS shim）。
+ *   - falsy（含空字符串 ''）→ not external; proceed to the next hook / normal
+ *             resolution. 不是 external，继续正常解析。
  */
 export type ExternalFn = (
-  source: string,
-  importer: string | undefined,
-  isResolved: boolean,
+  id: string,
+  parentId: string | undefined,
+  isResolved: boolean | ResolveIdExtraOptions | Rolldown.ResolveIdExtraOptions
 ) => string | boolean | NullValue;
 
-export type ModuleNameFn = (id: string) => string;
-
-/**
- * Globals resolver accepted by Rolldown output.globals (either static map
- * or a function deriving the name at runtime).
- *
- * Rolldown output.globals 接受的形态：对象是静态字典，函数是动态反查。
- */
-export type ModuleNameMap = Record<string, string> | ModuleNameFn;
+export type RolldownOptions = NonNullable<NonNullable<UserConfig['build']>['rolldownOptions']>;
 
 
 export type { LogLevel } from 'vp-runtime-helper';
@@ -77,6 +78,8 @@ export interface BasicOptions {
    * Five accepted shapes（五种输入形态）：
    *   1. Record<string, string>  —— {react:React} 或 {react:https://esm.sh/...}
    *   2. ExternalFn             —— (src, imp, resolved) => string|true|false
+   *                                必须同步函数；传 async 函数会在配置阶段直接 throw
+   *                                （external/globals 判断都是同步边界）。
    *   3. string / RegExp        —— single match rule, hit → pure external
    *                                单条匹配规则，命中即 external（不给全局名）
    *   4. Array<string|RegExp>   —— multiple match rules
@@ -173,10 +176,6 @@ export interface ModeOptions {
 /**
  * Full user-facing options shape.
  *
- * Notes：
- *   - externalGlobals is the escape-hatch plugin for fixing Rolldown/Rollup
- *     Issue #3188 (IIFE top-level require not rewritten to a global).
- *
  * 完整的用户配置形态。
  * 注意：Options 必须以「接口继承 BasicOptions + ModeOptions」的方式组合，
  * 不能改成 BasicOptions & ModeOptions 交叉类型——交叉会把 ModeOptions 的
@@ -236,27 +235,6 @@ export interface Options extends BasicOptions, ModeOptions {
     | 'serve'
     | 'build'
     | ((this: void, config: UserConfig, env: ConfigEnv) => boolean);
-
-  /**
-   * Fixes https://github.com/rollup/rollup/issues/3188
-   *
-   * Receives a resolver (id) => string | undefined that answers the same
-   * question as Rolldown output.globals (lookup via the compiled
-   * externals hooks above), and must return a Rolldown-compatible plugin
-   * that rewrites top-level imports/requires to their equivalent global
-   * accesses (window.React / globalThis.React).
-   *
-   * Typical usage: wrap @rolldown/plugin-external-globals (or its Rollup
-   * ancestor). The produced plugin is prepended to rolldownOptions.plugins
-   * so its transforms run **before** Rolldown own globals handling.
-   *
-   * 逃生舱：修复 Rolldown/Rollup Issue #3188（IIFE 输出时顶层 require/import
-   * 没能被正确替换成 window.xxx 访问）。回调参数 globals(id) 可直接反查
-   * 本插件 externals 的结果，等价于 Rolldown 原生 output.globals。返回值是
-   * Rolldown 插件，会被放在 rolldownOptions.plugins 数组的**最前面**，这样
-   * 它的 transform 先于 Rolldown 内置 globals 处理运行。
-   */
-  externalGlobals?: (globals: ModuleNameMap) => Rolldown.Plugin;
 
   /** Whether to print the plugin banner on startup. 启动时是否输出 banner 行。 */
   enableBanner?: boolean;

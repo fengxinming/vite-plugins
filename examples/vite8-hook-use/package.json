@@ -11,6 +11,6 @@
     "@vitest/coverage-v8": "^4.1.10",
     "vite": "^8.0.0",
     "vite-plugin-hook-use": "workspace:^",
-    "vitest": "^4.1.10"
+    "vitest": "^5.0.5"
   }
 }

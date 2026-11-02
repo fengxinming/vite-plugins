@@ -4,7 +4,7 @@
  *
  * 故意引入：
  *   1. react / react-dom/client — 触发函数 externals 的命名全局变量分支
- *   2. @scope/foo — 触发函数 externals 的 @scope/* 前缀 pure external 分支
+/* 前缀 pure external 分支
  */
 import { foo } from '@scope/foo';
 import React from 'react';

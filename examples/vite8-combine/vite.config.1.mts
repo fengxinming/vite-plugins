@@ -22,7 +22,7 @@ export default defineConfig({
     minify: false,
     lib: {
       entry: [],
-      formats: ['es'],
+      formats: ['es', 'cjs'],
       fileName: '[name]'
     }
   }

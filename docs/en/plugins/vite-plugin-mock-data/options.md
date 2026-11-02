@@ -42,9 +42,11 @@ Working directory. Used to resolve relative file paths in route files and as the
 
 - **Type**: `string`
 - **Required**: `false`
-- **Default**: `${cwd}/node_modules/.vite_mock_data`
+- **Default**: `${cwd}/node_modules/.vite-plugin-mock-data`
 
 Directory where the plugin writes compiled route files (route files are transpiled on load).
+
+Relative paths are resolved against `cwd` (not `process.cwd()`); absolute paths are used as-is.
 
 ## `logLevel`
 
@@ -96,7 +98,7 @@ export interface RouteConfig {
 export interface Options {
   /** The directory to serve files from. @default `process.cwd()` */
   cwd?: string;
-  /** Cache directory for compiled files. @default `${cwd}/node_modules/.vite_mock_data` */
+  /** Cache directory for compiled files. @default `${cwd}/node_modules/.vite-plugin-mock-data` */
   cacheDir?: string;
   /** Log level. */
   logLevel?: LogLevel;

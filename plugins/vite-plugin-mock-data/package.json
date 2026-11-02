@@ -1,13 +1,21 @@
 {
   "name": "vite-plugin-mock-data",
-  "version": "8.1.2",
-  "description": "Provides a simple way to mock data.",
+  "version": "8.2.0",
+  "description": "Mocks API routes on the Vite dev server from a mock directory or inline route config, and can expose file-based routes to the browser for built static pages.",
   "type": "module",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./axios-adapter": {
+      "types": "./dist/axios-adapter.d.ts",
+      "import": "./dist/axios-adapter.js"
+    },
+    "./mock-client": {
+      "types": "./dist/mock-client.d.ts",
+      "import": "./dist/mock-client.js"
     }
   },
   "engines": {
@@ -18,9 +26,7 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build",
-    "release": "pnpm publish --no-git-checks",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",
@@ -40,12 +46,23 @@
   "dependencies": {
     "@fastify/formbody": "^9.0.0",
     "@fastify/static": "^10.1.3",
+    "@rolldown/pluginutils": "^1.0.1",
     "fastify": "^5.12.1",
     "is-what-type": "^1.1.4",
+    "path-to-regexp": "^8.2.0",
     "tinyglobby": "^0.2.12",
     "vp-runtime-helper": "workspace:^"
   },
+  "peerDependencies": {
+    "axios": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "axios": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "axios": "^1.7.0",
     "vite": "^8.0.0",
     "vite-plugin-dts": "^5.0.3",
     "vite-plugin-external": "workspace:^"

@@ -18,7 +18,7 @@ npm install vite-plugin-cp --save-dev
 
 ## Usage
 
-```js
+```ts
 import { defineConfig } from 'vite';
 import cp from 'vite-plugin-cp';
 

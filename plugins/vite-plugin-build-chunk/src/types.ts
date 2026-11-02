@@ -1,6 +1,8 @@
-import { ModuleFormat } from 'rolldown';
 import type { LibraryFormats, PluginOption } from 'vite';
-import { LogLevel } from 'vp-runtime-helper';
+import { UserConfig } from 'vite';
+
+type ViteBuildOptions = NonNullable<UserConfig['build']>;
+type ViteLibOptions = NonNullable<ViteBuildOptions['lib']>;
 
 export interface BuildOptions {
   /**
@@ -50,13 +52,20 @@ export interface BuildOptions {
    *
    * 输出文件名。
    */
-  fileName?: string | ((format: ModuleFormat, entryName: string) => string);
+  fileName?: Exclude<ViteLibOptions, boolean>['fileName'];
   /**
    * The plugins to use.
    *
    * 使用的插件。
    */
   plugins?: PluginOption[];
+
+  /**
+   * The resolve options.
+   *
+   * 解析选项。
+   */
+  resolve?: UserConfig['resolve'];
 }
 
 export interface Options {
@@ -66,18 +75,4 @@ export interface Options {
    * 构建选项。
    */
   build: BuildOptions | BuildOptions[];
-
-  /**
-   * The log level to use.
-   *
-   * 日志等级。
-   */
-  logLevel?: LogLevel;
-
-  /**
-   * Whether to output the banner
-   *
-   * 是否输出 banner
-   */
-  enableBanner?: boolean;
 }

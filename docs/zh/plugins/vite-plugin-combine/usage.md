@@ -28,7 +28,6 @@ export default defineConfig({
   build: {
     minify: false,
     lib: {
-      entry: [],
       formats: ['es', 'cjs'],
       fileName: '[name]'
     }

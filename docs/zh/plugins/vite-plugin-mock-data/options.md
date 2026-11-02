@@ -42,9 +42,11 @@ mockData({
 
 - **类型**：`string`
 - **必填**：`false`
-- **默认值**：`${cwd}/node_modules/.vite_mock_data`
+- **默认值**：`${cwd}/node_modules/.vite-plugin-mock-data`
 
 插件写入编译后路由文件的目录（路由文件在加载时会被转译）。
+
+相对路径以 `cwd` 为基准解析（不是 `process.cwd()`），传绝对路径则原样使用。
 
 ## `logLevel`
 
@@ -96,7 +98,7 @@ export interface RouteConfig {
 export interface Options {
   /** 需要提供文件的目录路径。@default `process.cwd()` */
   cwd?: string;
-  /** 编译后文件的缓存目录。@default `${cwd}/node_modules/.vite_mock_data` */
+  /** 编译后文件的缓存目录。@default `${cwd}/node_modules/.vite-plugin-mock-data` */
   cacheDir?: string;
   /** 日志输出等级。 */
   logLevel?: LogLevel;

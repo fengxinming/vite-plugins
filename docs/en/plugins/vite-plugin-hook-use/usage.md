@@ -1,7 +1,3 @@
-Here is the translated English version of the document:
-
----
-
 # Usage Examples
 
 Assume you have the following file structure:
@@ -30,40 +26,57 @@ Run the following command:
 vite build
 ```
 
-The console will output the following content, where numbers indicate the call count:
+First, the `config` hook prints the `env` object:
 
-```bash
+```text
+env: {
+  "mode": "production",
+  "command": "build",
+  "isSsrBuild": false,
+  "isPreview": false
+}
+```
+
+Then, at `closeBundle`, the console outputs the hook summary below, where numbers indicate the call count:
+
+```text
 ┌   === Start === 
 │
 ◇  config(1)
 │
+◇  configEnvironment(1)
+│
 ◇  configResolved(1)
 │
+◇  applyToEnvironment(1)
+│
 ◇  options(1)
+│
+◇  outputOptions(1)
 │
 ◇  buildStart(1)
 │
 ◇  load(1)
 │
-◇  transform(1)
+◇  transform(2)
 │
 ◇  moduleParsed(1)
 │
 ◇  buildEnd(1)
 │
-◇  outputOptions(1)
-│
 ◇  renderStart(1)
 │
 ◇  banner(1)
-│
-◇  footer(1)
 │
 ◇  intro(1)
 │
 ◇  outro(1)
 │
+◇  footer(1)
+│
 ◇  renderChunk(1)
+│
+◇  augmentChunkHash(1)
 │
 ◇  generateBundle(1)
 │

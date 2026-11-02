@@ -45,7 +45,7 @@ import v8, { cleanupCache } from './v8';
  * @param opts 插件配置项，默认为 {}。
  * @returns Vite 插件实例。
  */
-export default function vitePluginExternal(opts: Options = {} as Options): Plugin {
+export default function vitePluginExternal(opts: Options = {}): Plugin {
   if (opts.enableBanner) {
     banner(pkg.name);
   }

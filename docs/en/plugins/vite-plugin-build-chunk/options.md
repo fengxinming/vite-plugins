@@ -52,13 +52,20 @@ export interface BuildOptions {
    *
    * 输出文件名。
    */
-  fileName?: string | ((format: ModuleFormat, entryName: string) => string);
+  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
   /**
    * The plugins to use.
    *
    * 使用的插件。
    */
   plugins?: PluginOption[];
+
+  /**
+   * The resolve options.
+   *
+   * 解析选项。
+   */
+  resolve?: UserConfig['resolve'];
 }
 
 export interface Options {
@@ -68,20 +75,6 @@ export interface Options {
    * 构建选项。
    */
   build: BuildOptions | BuildOptions[];
-
-  /**
-   * The log level to use.
-   *
-   * 日志等级。
-   */
-  logLevel?: LogLevel;
-
-  /**
-   * Whether to output the banner
-   *
-   * 是否输出 banner
-   */
-  enableBanner?: boolean;
 }
 ```
 
@@ -91,32 +84,29 @@ export interface Options {
 | Parameter       | Type                                                                 | Required | Default Value          | Description                                                                 |
 |-----------------|----------------------------------------------------------------------|----------|------------------------|-----------------------------------------------------------------------------|
 | `build`         | `BuildOptions[] \| BuildOptions`                                     | Yes      | -                      | Configuration for build tasks (array or single object).                   |
-| `logLevel`      | `LogLevel` (from `vp-runtime-helper`)                                | No       | `'info'`               | Log level (e.g., `'error'`, `'warn'`, `'info'`).                          |
-| `enableBanner`  | `boolean`                                                           | No       | `false`                | Whether to output a build banner (e.g., version information).              |
 
 ---
 
 ### **BuildOptions (Configuration for Each Build Task)**
 | Parameter       | Type                                                                 | Required | Default Value          | Description                                                                 |
 |-----------------|----------------------------------------------------------------------|----------|------------------------|-----------------------------------------------------------------------------|
-| `chunk`         | `string`                                                            | Yes      | -                      | Entry file path (relative to project root).                               |
-| `name`          | `string`                                                            | Yes      | `'default'`            | Global variable name (applies only to UMD/IIFE formats).                   |
+| `chunk`         | `string`                                                            | Yes      | -                      | File name inside the main build's output dir (`outDir`).                  |
+| `name`          | `string`                                                            | Yes      | -                      | Global variable name (applies only to UMD/IIFE formats).                   |
 | `format`        | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | No       | `'umd'`                | Build format (defaults to `umd`).                                         |
 | `sourcemap`     | `boolean \| 'inline' \| 'hidden'`                                    | No       | `false`                | Whether to generate sourcemaps (supports inline or hidden modes).          |
 | `exports`       | `'default' \| 'named' \| 'none' \| 'auto'`                           | No       | `'auto'`               | Export type for Rollup output.                                            |
 | `minify`        | `boolean \| 'terser' \| 'esbuild'`                                   | No       | `false`                | Whether to enable output minification (supports `terser` or `esbuild`).   |
 | `outDir`        | `string`                                                            | No       | Main build's `outDir`  | Custom output directory (relative to project root).                       |
-| `fileName`      | `string \| ((format: string, entryName: string) => string)`          | No       | Default based on format| Custom filename (supports template strings or functions).                 |
+| `fileName`      | `string \| ((format: LibraryFormats, entryName: string) => string)`  | No       | Default based on format| Custom filename (supports template strings or functions).                 |
 | `plugins`       | `PluginOption[]`                                                     | No       | `[]`                   | Additional Vite plugins.                                                  |
+| `resolve`       | `UserConfig['resolve']`                                              | No       | -                      | `resolve` config passed through to the secondary build.                   |
 
 ---
 
 ## TypeScript Definitions
 
 ```typescript
-import { ModuleFormat } from 'rollup';
-import type { LibraryFormats, PluginOption } from 'vite';
-import { LogLevel } from 'vp-runtime-helper';
+import type { LibraryFormats, PluginOption, UserConfig } from 'vite';
 
 export interface BuildOptions {
   /**
@@ -150,11 +140,16 @@ export interface BuildOptions {
   /**
    * The output file name.
    */
-  fileName?: string | ((format: ModuleFormat, entryName: string) => string);
+  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
   /**
    * The plugins to use.
    */
   plugins?: PluginOption[];
+
+  /**
+   * The resolve options.
+   */
+  resolve?: UserConfig['resolve'];
 }
 
 export interface Options {
@@ -162,15 +157,5 @@ export interface Options {
    * The build options.
    */
   build: BuildOptions | BuildOptions[];
-
-  /**
-   * The log level to use.
-   */
-  logLevel?: LogLevel;
-
-  /**
-   * Whether to output the banner
-   */
-  enableBanner?: boolean;
 }
 ```

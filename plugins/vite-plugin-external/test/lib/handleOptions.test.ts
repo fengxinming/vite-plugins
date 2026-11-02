@@ -70,6 +70,34 @@ describe('lib/handleOptions', () => {
       expect(typeof opts.externals).toBe('function');
     });
 
+    it('replaces a root function with a per-mode object instead of shallow-merging', () => {
+      // root 是函数时无法浅合并：旧实现 Object.assign({}, fn, value) 会把函数悄悄丢掉，
+      // 最后只剩 mode 的对象，且没有任何提示。现在明确走"替换"。
+      // A function cannot be shallow-merged: the old Object.assign silently dropped it and
+      // kept only the mode object. It is now an explicit replace.
+      const root: Options = {
+        externals: (id: string) => (id === 'react' ? 'React' : false),
+        development: {
+          externals: { vue: 'Vue' }
+        }
+      };
+      const opts = buildOptions(root, { mode: 'development', command: 'serve' });
+      expect(opts.externals).toEqual({ vue: 'Vue' });
+    });
+
+    it('replaces a root object with a per-mode array instead of shallow-merging', () => {
+      // 形态不同（对象 vs 数组）时不能合并，直接替换。
+      // Different shapes (object vs array) cannot merge — replace instead.
+      const root: Options = {
+        externals: { react: 'React' },
+        production: {
+          externals: ['vue', /^lodash/]
+        }
+      };
+      const opts = buildOptions(root, { mode: 'production', command: 'build' });
+      expect(opts.externals).toEqual(['vue', /^lodash/]);
+    });
+
     it('concats + dedupes when both root and per-mode externals are arrays', () => {
       const root: Options = {
         externals: ['react', 'vue'],

@@ -15,7 +15,11 @@ export interface Options {
   /**
    * Path to the target file after combination.
    *
-   * 合并后的目标文件虚拟路径。
+   * 合并后的目标文件路径。
+   *
+   * 该文件由插件自动生成：构建开始时写入、构建结束后删除，watch 模式下跨轮保留。
+   * 文件首行带生成标记，进程被强杀留下的残留会在下次构建时被识别并覆盖；
+   * 若同名文件已存在且不带标记（即用户自己的文件），构建会中断而不是覆盖它。
    *
    * @default 'index.js'
    */

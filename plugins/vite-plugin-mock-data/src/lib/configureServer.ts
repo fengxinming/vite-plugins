@@ -1,26 +1,18 @@
 import fastifyFormbody from '@fastify/formbody';
 import fastifyStatic from '@fastify/static';
-import fastify, {
-  type FastifyInstance,
-  type FastifyServerOptions,
-  type HTTPMethods,
-  type RouteHandlerMethod
+import type {
+  FastifyInstance,
+  FastifyServerOptions,
+  RouteHandlerMethod
 } from 'fastify';
+import fastify from 'fastify';
 import { isObject } from 'is-what-type';
 import { ViteDevServer } from 'vite';
 
-import type { MockData, RouteConfig, RouteValue, ViteRequest } from './types';
+import { ViteRequest } from '../_types';
+import type { MockData, RouteConfig, RouteValue } from '../types';
+import { parseRouteKey } from './parseRouteKey';
 
-/**
- * 解析路由 key：`"METHOD /path"`，支持 `METHOD1/METHOD2 /path` 与 `:param`。
- * 缺省 METHOD 时默认 GET。
- */
-function parseRouteKey(xpath: string): { methods: HTTPMethods[], pathname: string } {
-  const [first, second] = xpath.split(' ');
-  const pathname = second ?? first;
-  const methods = (second ? first : 'GET').toUpperCase().split('/') as HTTPMethods[];
-  return { methods, pathname };
-}
 
 /**
  * 静态数据发送 handler：
@@ -72,7 +64,7 @@ function registerMockRoute(
  */
 export async function configureServer(
   server: ViteDevServer,
-  fastifyOptions: FastifyServerOptions | undefined,
+  fastifyOptions: FastifyServerOptions,
   routes: RouteConfig[],
   cwd: string
 ) {
@@ -131,6 +123,7 @@ export async function configureServer(
 
   server.middlewares.use((req, res, next) => {
     (req as ViteRequest).__mockNext = next;
-    app.routing(req, res);
+    // app.routing(req, res);
+    app.server.emit('request', req, res);
   });
 }

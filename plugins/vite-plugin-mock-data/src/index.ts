@@ -1,18 +1,21 @@
-import { isObject } from 'is-what-type';
+import { exactRegex } from '@rolldown/pluginutils';
 import { Plugin, ViteDevServer } from 'vite';
-import { banner, toAbsolutePath } from 'vp-runtime-helper';
+import { banner } from 'vp-runtime-helper';
 
 import pkg from '../package.json' with { type: 'json' };
-import { configureServer } from './configureServer';
-import loadRoutes from './loadRoutes';
-import { logger, PLUGIN_NAME } from './logger';
+import { collectRoutes, resolveMockFiles } from './lib/collectRoutes';
+import { configureServer } from './lib/configureServer';
+import { PLUGIN_NAME, VIRTUAL_MOCK_ROUTES } from './lib/constants';
+import { createMockRoutesSource } from './lib/createMockRoutesSource';
+import { logger } from './lib/logger';
 import type { Options, RouteConfig, RouteValue } from './types';
 
+export * from './lib/constants';
 export * from './types';
 
-
 /**
- * Provides a simple way to mock data.
+ * Mocks API routes on the Vite dev server from a mock directory or inline route
+ * config, and can expose file-based routes to the browser for built static pages.
  *
  * @example
  * ```js
@@ -38,11 +41,12 @@ export default function pluginMockData(opts: Options): Plugin {
 
   const {
     isAfter,
-    fastifyOptions,
+    fastifyOptions = {},
     routes,
     logLevel,
     cacheDir,
-    cwd = process.cwd()
+    cwd = process.cwd(),
+    buildMock = false
   } = opts;
 
   if (logLevel) {
@@ -51,7 +55,7 @@ export default function pluginMockData(opts: Options): Plugin {
 
   const allRoutes: RouteConfig[] = [];
 
-  return {
+  const plugin: Plugin = {
     name: PLUGIN_NAME,
 
     async configureServer(server: ViteDevServer) {
@@ -60,32 +64,43 @@ export default function pluginMockData(opts: Options): Plugin {
       // 不清空会重复 push → 同一批路由注册两次 → FST_ERR_DUPLICATED_ROUTE。
       allRoutes.length = 0;
 
-      if (typeof routes === 'string') {
-        logger.debug('Load routes from', routes);
-        await loadRoutes(toAbsolutePath(routes, cwd), allRoutes, cwd, cacheDir);
-      }
-      else if (Array.isArray(routes)) {
-        for (const route of routes) {
-          logger.debug('Load routes from', route);
-
-          if (typeof route === 'string') {
-            await loadRoutes(toAbsolutePath(route, cwd), allRoutes, cwd, cacheDir);
-          }
-          else {
-            allRoutes.push(route);
-          }
-        }
-      }
-      else if (isObject<RouteConfig>(routes)) {
-        logger.debug('Load routes from', routes);
-        allRoutes.push(routes);
-      }
+      // 必须 await：.ts/.mts mock 文件要经 oxc 转译 + 动态 import 才能拿到
+      // RouteConfig，不等待就会以空路由表进入 configureServer（文件型路由全 404）。
+      await collectRoutes(routes, allRoutes, cwd, cacheDir);
 
       return isAfter
         ? () => configureServer(server, fastifyOptions, allRoutes, cwd)
         : configureServer(server, fastifyOptions, allRoutes, cwd);
     }
   };
+
+  if (buildMock) {
+    const mockFiles = resolveMockFiles(routes, cwd);
+    const mockSource = createMockRoutesSource(mockFiles, fastifyOptions);
+    const resolvedVirtualModuleId = `\0${VIRTUAL_MOCK_ROUTES}`;
+
+    if (mockFiles.length === 0) {
+      logger.warn(
+        'buildMock is enabled but no mock files resolved; static mock will be empty. '
+              + 'Inline RouteConfig objects are dev-only and are not bundled for the static build.'
+      );
+    }
+
+    plugin.resolveId = {
+      filter: { id: exactRegex(VIRTUAL_MOCK_ROUTES) },
+      handler() {
+        return resolvedVirtualModuleId;
+      }
+    };
+    plugin.load = {
+      filter: { id: exactRegex(resolvedVirtualModuleId) },
+      handler() {
+        return mockSource;
+      }
+    };
+  }
+
+  return plugin;
 }
 
 export function defineRouteValue(value: RouteValue): RouteValue {

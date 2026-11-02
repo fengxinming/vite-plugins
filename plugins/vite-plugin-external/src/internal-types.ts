@@ -1,4 +1,4 @@
-import type { ConfigEnv } from 'vite';
+import type { ConfigEnv, Rolldown } from 'vite';
 
 import { Options } from './types';
 
@@ -57,3 +57,33 @@ export interface ExternalES {
   stashPath: string;
   cdnUrl: string;
 }
+
+/**
+ * 插件自建 metadata（`${cacheDir}/_metadata.json`）的文件格式。
+ *
+ * externalized：模块名 → stash 条目的映射，与内存里的 stashMap 同构。
+ *
+ * 它是一份**给下一次 dev 启动用的名单**，不参与 external 判定，build 阶段完全不碰：
+ *   - 写：预构建插件的 buildEnd，记下本轮 dev 预构建涉及的 external；
+ *   - 读（取 keys）：configResolved 且 command === 'serve' —— 拿这批模块名去清
+ *     Vite 自己的 deps 缓存条目，迫使它重新预构建；
+ *   - 读（取条目）：closeServer 且 reason === 'restart' —— 改 vite.config 触发重启时
+ *     插件实例重建、stashMap 清空，而 DepsOptimizer 不会重跑，此时靠它恢复
+ *     format / cdnUrl，否则 transformIndexHtml 注入不出 CDN 的 modulepreload。
+ *
+ * 为什么存完整条目而不只是模块名：名单只服务 cleanupCache，但 restart 场景还需要
+ * format（判断 ES external）与 cdnUrl（拼 modulepreload 的 href），所以一并保留。
+ * Why full entries: the list alone serves cleanupCache, but the restart path also needs
+ * `format` and `cdnUrl` to rebuild the modulepreload tags.
+ *
+ * 为什么是 Record 而不是数组：stashMap 本来就是 Map<string, 条目>，
+ *   写成 { 模块名: 条目 } 可以直接 Object.entries / Object.fromEntries 双向搬运，
+ *   读取时也能按模块名直查，不需要遍历。
+ * Why a Record rather than an array: stashMap is a Map<string, entry>; keying by
+ * module name makes the round-trip a direct Object.entries / fromEntries mapping.
+ */
+export interface ExternalMetadata {
+  externalized: Record<string, ExternalIIFE | ExternalES>;
+}
+
+export type RolldownOutputOptions = Exclude<Rolldown.RolldownOptions['output'], string | undefined | any[]>;

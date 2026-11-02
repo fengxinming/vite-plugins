@@ -16,11 +16,15 @@ export interface Options {
   /**
    * Path to the target file after combination.
    *
-   * 合并后的目标文件虚拟路径。
+   * 合并后的目标文件路径。该文件由插件在构建期写入、构建结束时删除，
+   * 不应与用户自己的文件冲突。
    *
-   * @default 'index.js'
+   * The target file is written by the plugin at build time and removed when the build ends,
+   * so it must not collide with a file the user already owns.
+   *
+   * @default 'index.ts'
    */
-  target: string;
+  target?: string;
 
   /**
    * Custom function or boolean value for controlling the generation of export names.
@@ -87,3 +91,10 @@ export interface Options {
    */
   dts?: boolean | DtsPluginOptions;
 }
+
+/**
+ * Options actually consumed when rendering the combined code.
+ *
+ * 渲染组合代码时真正用到的选项子集。
+ */
+export type CombineCodeOptions = Pick<Options, 'exports' | 'nameExport' | 'beforeWrite'>;

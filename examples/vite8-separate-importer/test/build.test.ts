@@ -1,16 +1,19 @@
-import { existsSync, rmSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { build } from 'vite';
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { cleanDist } from '../../shared/example-testkit';
+
 const root = resolve(__dirname, '..');
 const dist = resolve(root, 'dist');
 
+// 注意：本文件是唯一保留「进程内 build」的例外 —— 它必须注入一个
+// post-transform 插件来捕获 separate-importer 拆分后的源码，
+// 走子进程（vite CLI）无法注入插件，因此不能用 runBuild。
 afterEach(() => {
-  if (existsSync(dist)) {
-    rmSync(dist, { recursive: true, force: true });
-  }
+  cleanDist(root);
 });
 
 /**
@@ -37,8 +40,10 @@ async function buildWithCapture(
         name: 'test:post-capture',
         enforce: 'post', // 在 separate-importer 之后执行，拿到拆分后的代码
         transform(code, id) {
-          // 过滤掉虚拟模块和依赖，只捕获项目的源文件
-          if (id.includes(captureFile) && !id.includes('node_modules')) {
+          // 去掉 query 后按路径尾部精确比对：用 includes 的话
+          // 'src/index.ts' 会同时命中 'src/index.tsx'，capturedCode 会被后者覆盖。
+          const cleanId = id.replace(/\?.*$/, '');
+          if (cleanId.endsWith(captureFile) && !cleanId.includes('node_modules')) {
             capturedCode = code;
           }
           return null;

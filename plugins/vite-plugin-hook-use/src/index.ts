@@ -10,6 +10,9 @@ import { Plugin } from 'vite';
 import { banner } from 'vp-runtime-helper';
 
 import pkg from '../package.json' with { type: 'json' };
+import type { Options } from './types';
+
+export * from './types';
 
 const PLUGIN_NAME = pkg.name;
 
@@ -30,8 +33,11 @@ const PLUGIN_NAME = pkg.name;
  *
  * @returns a vite plugin
  */
-export default function pluginHookUse(): Plugin {
-  banner(PLUGIN_NAME);
+export default function pluginHookUse(opts: Options = {}): Plugin {
+  const { enableBanner = true } = opts;
+  if (enableBanner) {
+    banner(PLUGIN_NAME);
+  }
 
   const order = new Map<string, number>();
 
@@ -71,7 +77,6 @@ export default function pluginHookUse(): Plugin {
     'augmentChunkHash',
     'generateBundle',
     'writeBundle',
-    'closeBundle',
     'renderError',
     'onLog',
     'closeWatcher',

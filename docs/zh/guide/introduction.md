@@ -16,7 +16,7 @@
 
 * [vite-plugin-include-css](/zh/plugins/vite-plugin-include-css/quick-start) - 当启用 `cssCodeSplit: false` 时，将所有 CSS 打包到单个 JavaScript 文件中。
 
-* [vite-plugin-mock-data](/zh/plugins/vite-plugin-mock-data/quick-start) - 提供了基于文件路由的简单数据 Mock 方案（dev server 专属，支持解析请求体 / 动态参数）。
+* [vite-plugin-mock-data](/zh/plugins/vite-plugin-mock-data/quick-start) - 基于文件路由定义提供 mock 接口：开发服务器可用，开启 `buildMock` 后也能打进浏览器产物供静态页面使用。
 
 * [vite-plugin-reverse-proxy](/zh/plugins/vite-plugin-reverse-proxy/quick-start) - 将指定脚本以 `text/javascript` MIME 类型提供服务（而不是默认的 ES module MIME 类型）。
 

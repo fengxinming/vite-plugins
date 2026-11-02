@@ -35,7 +35,7 @@ yarn add vite-plugin-cp
 
 ## 使用示例
 
-```js
+```ts
 import { defineConfig } from 'vite';
 import cp from 'vite-plugin-cp';
 

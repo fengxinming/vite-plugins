@@ -36,3 +36,17 @@ export default defineConfig({
   ]
 });
 ```
+
+## Options
+
+### `enableBanner`
+
+- **Type**: `boolean`
+- **Required**: `false`
+- **Default**: `true`
+
+Whether to print the plugin banner on startup.
+
+```js
+vitePluginHookUse({ enableBanner: false })
+```

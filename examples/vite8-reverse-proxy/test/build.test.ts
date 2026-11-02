@@ -1,54 +1,41 @@
-import { existsSync, rmSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-import { build, createServer, ViteDevServer } from 'vite';
 import { afterEach, describe, expect, it } from 'vitest';
+
+import { cleanDist, type DevHandle, runBuild, runScript } from '../../shared/example-testkit';
 
 const root = resolve(__dirname, '..');
 const dist = resolve(root, 'dist');
 
-let server: ViteDevServer | null = null;
+let handle: DevHandle | null = null;
 
 afterEach(async () => {
-  if (server) {
-    await server.close();
-    server = null;
+  if (handle) {
+    await handle.close();
+    handle = null;
   }
-  if (existsSync(dist)) {
-    rmSync(dist, { recursive: true, force: true });
-  }
+  cleanDist(root);
 });
 
-async function start(configName: string): Promise<{ server: ViteDevServer, baseUrl: string }> {
-  const configMod = await import(resolve(root, `vite.config.${configName}.mts`));
-  const userConfig = configMod.default ?? configMod;
-  server = await createServer({
-    ...userConfig,
-    server: {
-      ...(userConfig.server ?? {}),
-      host: '127.0.0.1',
-      port: 0 // 随机可用端口，避免 CI / 并发冲突
-    },
-    logLevel: 'error'
-  });
-  await server.listen();
-  const info = server.httpServer!.address() as { address: string, port: number };
-  // 兼容 IPv4 / IPv6
-  const host = info.address === '::' || info.address === '::1' ? '[::1]' : info.address;
-  return { server, baseUrl: `http://${host}:${info.port}` };
+async function start(configName: string): Promise<{ baseUrl: string }> {
+  // 每个 config 走独立端口（dev:1→5191 / dev:2→5192，见 package.json），
+  // 由 afterEach 在用例结束后关闭，避免并发抢端口。
+  handle = await runScript(root, 'dev', Number(configName));
+  return { baseUrl: handle.baseUrl };
 }
 
 describe('vite-plugin-reverse-proxy example configs', () => {
   describe('build smoke (plugin does not break build)', () => {
     it('config 1: builds successfully', async () => {
-      const cfg = await import(resolve(root, 'vite.config.1.mts'));
-      await build({ ...(cfg.default ?? cfg), logLevel: 'error' });
+      const { code, stdout } = await runBuild(root, 'build', 1);
+      expect(code, `build:1 failed\n${stdout}`).toBe(0);
       expect(existsSync(resolve(dist, '1/index.html'))).toBe(true);
     }, 60000);
 
     it('config 2: builds successfully with preambleCode config present', async () => {
-      const cfg = await import(resolve(root, 'vite.config.2.mts'));
-      await build({ ...(cfg.default ?? cfg), logLevel: 'error' });
+      const { code, stdout } = await runBuild(root, 'build', 2);
+      expect(code, `build:2 failed\n${stdout}`).toBe(0);
       expect(existsSync(resolve(dist, '2/index.html'))).toBe(true);
     }, 60000);
   });

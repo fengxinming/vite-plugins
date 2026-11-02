@@ -34,7 +34,7 @@ export interface Target {
   flatten?: boolean;
 
   /**
-   * Options for tinyglobby. See more at https://github.com/sindresorhus/globby#options
+   * Options for tinyglobby. See more at https://superchupu.dev/tinyglobby/documentation#options
    *
    * tinyglobby 的选项，设置 `src` 的匹配参数
    */
@@ -103,9 +103,9 @@ export interface Options {
   targets: Target[];
 
   /**
-   * Default `'warn'`, The log level to use.
+   * Default `'WARN'`, The log level to use.
    *
-   * 默认 `'warn'`，日志等级。
+   * 默认 `'WARN'`，日志等级。
    *
    * @default 'WARN'
    */

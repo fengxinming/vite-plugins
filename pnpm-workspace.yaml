@@ -1,3 +1,5 @@
+lockfile: false
+shamefullyHoist: false
 packages:
   - 'plugins/*'
   - 'packages/*'

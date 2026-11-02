@@ -16,7 +16,17 @@ export interface Options {
   /**
    * Path to the target file after combination.
    *
-   * 合并后的目标文件虚拟路径。
+   * 合并后的目标文件路径。
+   *
+   * This file is managed by the plugin: written at build start, removed after the build,
+   * and kept across rebuilds in watch mode. Its first line carries a generated marker, so a
+   * leftover from a killed process is safely overwritten on the next build; if a file with
+   * the same path already exists without the marker (i.e. your own file), the build aborts
+   * instead of overwriting it.
+   *
+   * 该文件由插件自动生成：构建开始时写入、构建结束后删除，watch 模式下跨轮保留。
+   * 文件首行带生成标记，进程被强杀留下的残留会在下次构建时被识别并覆盖；
+   * 若同名文件已存在且不带标记（即用户自己的文件），构建会中断而不是覆盖它。
    *
    * @default 'index.js'
    */
@@ -111,7 +121,17 @@ export interface Options {
   /**
    * Path to the target file after combination.
    *
-   * 合并后的目标文件虚拟路径。
+   * 合并后的目标文件路径。
+   *
+   * This file is managed by the plugin: written at build start, removed after the build,
+   * and kept across rebuilds in watch mode. Its first line carries a generated marker, so a
+   * leftover from a killed process is safely overwritten on the next build; if a file with
+   * the same path already exists without the marker (i.e. your own file), the build aborts
+   * instead of overwriting it.
+   *
+   * 该文件由插件自动生成：构建开始时写入、构建结束后删除，watch 模式下跨轮保留。
+   * 文件首行带生成标记，进程被强杀留下的残留会在下次构建时被识别并覆盖；
+   * 若同名文件已存在且不带标记（即用户自己的文件），构建会中断而不是覆盖它。
    *
    * @default 'index.js'
    */

@@ -78,6 +78,24 @@ describe('common/ExternalHook', () => {
       expect(fn('lodash', undefined, false)).toBe(false);
     });
 
+    it('keeps matching across repeated calls when the RegExp carries g / y flags', () => {
+      // 带 g / y 的正则会推进 lastIndex；不复位的话，同一个 id 会 true / false 交替，
+      // 表现为同一个依赖有时被 external、有时被打包。
+      // A global/sticky RegExp advances lastIndex; without resetting it the same id would
+      // flip between true and false, externalising a dependency only intermittently.
+      const hook = new ExternalHook().use([/^react$/g, /^vue/y]);
+      const fn = hook.hooks[0];
+
+      expect(fn('react', undefined, false)).toBe(true);
+      expect(fn('react', undefined, false)).toBe(true);
+      expect(fn('react', undefined, false)).toBe(true);
+
+      expect(fn('vue', undefined, false)).toBe(true);
+      expect(fn('vue', undefined, false)).toBe(true);
+
+      expect(fn('lodash', undefined, false)).toBe(false);
+    });
+
     it('filters false / null / undefined entries inside an array', () => {
       // The implementation skips Boolean filtering before testing.
       // We use `as any` because the public type signature does not allow

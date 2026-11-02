@@ -44,7 +44,7 @@ function getClosestFilePath(fileName: string, path?: string): string | null {
     // Check if the current path is a file
     return getClosestFilePath(fileName, dirname(path));
   }
-  catch (e) {
+  catch {
     // Error: ENOENT: no such file or directory
     return null;
   }

@@ -21,7 +21,11 @@ export default defineConfig({
   plugins: [
     pluginMockData({
       routes: [
-        './mock/api',
+        // 绝对路径：不受 cwd 影响，保住原有的 /api/users 等用例。
+        resolve(root, 'mock/api'),
+        // 相对路径：按 cwd 解析到 nested/mock（cwd 指向 nested/）。
+        // 若实现误用 process.cwd()，这里会解析到 root/mock，/api/hello 直接 404。
+        './mock',
         {
           '/api/inline': { via: 'inline-object' },
           'POST /api/echo': async (request) => ({ echo: request.body })
@@ -31,7 +35,8 @@ export default defineConfig({
         bodyLimit: 16
       },
       cacheDir: resolve(root, 'node_modules/.vite-plugin-mock-data-test'),
-      cwd: root
+      // 必须与 process.cwd()（= root）不同，否则测不出 cwd 是否真的参与解析。
+      cwd: resolve(root, 'nested')
     })
   ],
   build: {

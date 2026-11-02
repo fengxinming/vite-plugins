@@ -16,7 +16,7 @@
 
 * [vite-plugin-include-css](/plugins/vite-plugin-include-css/quick-start) - Bundles all CSS into a single JavaScript file when `cssCodeSplit: false` is enabled.
 
-* [vite-plugin-mock-data](/plugins/vite-plugin-mock-data/quick-start) - Provides a simple file-route based way to mock HTTP data (dev server only, supports request body).
+* [vite-plugin-mock-data](/plugins/vite-plugin-mock-data/quick-start) - Mocks HTTP APIs from file-based route definitions, both in the dev server and — via `buildMock` — inside the browser bundle of production builds.
 
 * [vite-plugin-reverse-proxy](/plugins/vite-plugin-reverse-proxy/quick-start) - Serves specific scripts as `text/javascript` MIME type instead of the ES module MIME type.
 

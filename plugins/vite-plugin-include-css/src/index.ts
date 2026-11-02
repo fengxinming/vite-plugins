@@ -89,6 +89,7 @@ export default function pluginIncludeCSS(): Plugin {
       for (const [key, chunk] of Object.entries(bundle)) {
         if (chunk && chunk.type === 'asset') {
           if (chunk.fileName.endsWith('.css')) {
+            // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
             cssCode += chunk.source;
             delete bundle[key];
             cssFileNames.push(chunk.fileName);

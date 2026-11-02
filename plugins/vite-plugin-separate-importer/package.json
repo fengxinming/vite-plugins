@@ -18,9 +18,7 @@
     "build": "vite build",
     "watch": "vite build --watch",
     "prepublishOnly": "npm run build",
-    "release": "pnpm publish --no-git-checks",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "release": "pnpm publish --no-git-checks"
   },
   "repository": {
     "type": "git",

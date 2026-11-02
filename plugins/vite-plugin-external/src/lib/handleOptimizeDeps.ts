@@ -3,7 +3,7 @@ import { isCSSRequest } from 'vite';
 import { getValue } from 'vp-runtime-helper';
 
 import {
-  DEP_PRE_BUNDLE_CONVERSION_NS,
+  DEP_PRE_BUNDLE_CONVERSION_PREFIX,
   DEP_PRE_BUNDLE_EXTERNAL_PREFIX,
   ROLLDOWN_PLUGIN_NAME
 } from '../common/constants';
@@ -35,31 +35,36 @@ import type { ResolvedOptions } from '../internal-types';
  *        (b) Resolver.resolve() 返回 true → 纯 external，没有 stash 文件。
  *            不能简单 return {external:true}，因为 CSS import 和
  *            import * as X from 'X' 在预打包后会丢失命名空间形状导致出错。
- *            所以走自定义命名空间 DEP_PRE_BUNDLE_CONVERSION_NS，让下一轮
- *            load 生成重导出 shim，shim 内部 import '<prefix>id'，
+ *            所以把 id 加上 DEP_PRE_BUNDLE_CONVERSION_PREFIX 前缀重定向到一个
+ *            虚拟模块，让下一轮 load 生成重导出 shim，shim 内部 import '<prefix>id'，
  *            再回到 (a) 分支把 '<prefix>id' 剥离前缀后标 external:true。
  *            等价于"预打包后的模块里保留了 import 'external' 的原样"，
  *            但把 CJS/ESM 命名空间形状正确传递过去。
+ *
+ *            为什么用 id 前缀而不是 resolveId 的 namespace 字段：
+ *            rolldown 的 load 钩子只传 id（实测 argc=1，moduleInfo.meta 为空），
+ *            namespace 无法抵达 load；vite 自身也是把命名空间编进 id 前缀
+ *            （内部 idToPathAndNamespace 按第一个冒号切分）。
  *
  *        (c) Resolver.resolve() 返回 stash info（IIFE / ES 格式）→
  *            直接把预打包器重定向到 stash 文件路径 info.stashPath。
  *            这里不标 external:true，因为 stash 文件本身是真实 JS 文件，
  *            Rolldown 会正常打包它。
  *
- *   2. load(id, {namespace}) —— 只有 resolveId 用自定义命名空间标记时才触发
+ *   2. load(id) —— 只有 id 带 DEP_PRE_BUNDLE_CONVERSION_PREFIX 前缀时才触发
  *      （对应上面 case b）。生成小型 ESM 重导出 shim，通过 '<prefix>id'
  *      把所有导出转发出去，再经由 (a) 分支正确 external。
  *      CSS 请求简化成裸 import。
  *
- *   3. buildEnd() —— 纯日志：输出所有已写 stash 的库名，用于调试
- *      "为什么 X 还在打包" 类问题。
+ *   3. buildEnd() —— 输出已写 stash 的库名（便于排查"为什么 X 还在打包"），
+ *      并把本轮 external 名单落盘，供下一次 dev 启动清理 Vite deps 缓存。
  */
 function rolldownPluginForExternals(
   resolver: Resolver,
 ): Rolldown.Plugin {
   return {
     name: ROLLDOWN_PLUGIN_NAME,
-    async resolveId(id: string, importer: string | undefined, extra?: { isEntry: boolean }) {
+    async resolveId(id: string, importer: string | undefined, extra: Rolldown.ResolveIdExtraOptions) {
       // case (a) — 前缀 specifier 的第二轮 resolve。
       if (id.startsWith(DEP_PRE_BUNDLE_EXTERNAL_PREFIX)) {
         return {
@@ -68,40 +73,38 @@ function rolldownPluginForExternals(
         };
       }
 
-      const isEntry = !!extra?.isEntry;
-      const info = await resolver.resolve(id, importer, isEntry);
+      const info = await resolver.resolve(id, importer, extra);
 
       // 不是 external → 让 Rolldown 按常规流程解析。
       if (!info) {
         return null;
       }
 
-      // case (b) — 纯 external。通过转换命名空间重路由，让 load 能生成
-      // 保留命名空间形状的重导出 shim。
+      // case (b) — 纯 external。把 id 加上转换前缀重定向到虚拟模块，
+      // 让 load 能识别并生成保留命名空间形状的重导出 shim。
       if (info === true) {
-        logger.trace(`Pre-bundling: '${id}' will be externalized (pure external).`);
+        logger.debug(`[${ROLLDOWN_PLUGIN_NAME}] Pre-bundling: '${id}' will be externalized (pure external).`);
         return {
-          id,
-          namespace: DEP_PRE_BUNDLE_CONVERSION_NS
+          id: DEP_PRE_BUNDLE_CONVERSION_PREFIX + id
         };
       }
 
       // case (c) — 基于 stash 的命名 external / CDN external。记录日志分类，
       // 然后把解析目标重定向到 stash 路径。
       if (info.format === 'iife') {
-        logger.trace('Pre-bundling IIFE external:', {
+        logger.debug(`[${ROLLDOWN_PLUGIN_NAME}] Pre-bundling IIFE external:`, {
           globalName: info.globalName,
           moduleId: info.moduleId,
           importer,
-          isEntry
+          extra
         });
       }
       else {
-        logger.trace('Pre-bundling ES external:', {
+        logger.debug(`[${ROLLDOWN_PLUGIN_NAME}] Pre-bundling ES external:`, {
           cdnUrl: info.cdnUrl,
           moduleId: info.moduleId,
           importer,
-          isEntry
+          extra
         });
       }
 
@@ -111,21 +114,35 @@ function rolldownPluginForExternals(
     },
 
     // case (b) 的配对处理：生成 ESM 重导出 shim。
-    load(id: string, extra?: { namespace?: string }) {
-      if (extra?.namespace !== DEP_PRE_BUNDLE_CONVERSION_NS) {
+    // load 只收 id，所以用前缀判定"这是我的转入模块"，再剥离出原始 id。
+    load(id: string) {
+      if (!id.startsWith(DEP_PRE_BUNDLE_CONVERSION_PREFIX)) {
         return null;
       }
-      const modulePath = `"${DEP_PRE_BUNDLE_EXTERNAL_PREFIX}${id}"`;
+
+      const originalId = id.slice(DEP_PRE_BUNDLE_CONVERSION_PREFIX.length);
+      const modulePath = `"${DEP_PRE_BUNDLE_EXTERNAL_PREFIX}${originalId}"`;
+
       return {
-        code: isCSSRequest(id)
+        code: isCSSRequest(originalId)
           ? `import ${modulePath};`
           : `export { default } from ${modulePath};\nexport * from ${modulePath};`,
         moduleType: 'js'
       };
     },
 
+    /*
+     * buildEnd — 预构建结束时把本轮 external 名单落盘
+     * buildEnd — Persists this round's external list when pre-bundling ends
+     *
+     * 为什么在这里写：这是 dev 预构建唯一的结束点，此时"本轮涉及哪些 external"已经确定；
+     * 写下的名单供下一次 dev 启动清理 Vite deps 缓存（见 v8 的 configResolved）。
+     * Why here: the only end-of-round point for dev pre-bundling. The written list is what
+     * the next dev start uses to clear stale Vite deps entries.
+     */
     buildEnd() {
-      logger.debug('Pre-bundling externals:', Array.from(resolver.stashMap.keys()));
+      logger.debug(`[${ROLLDOWN_PLUGIN_NAME}] Pre-bundling externals:`, Array.from(resolver.stashMap.keys()));
+      return resolver.flushMetadata();
     }
   };
 }
@@ -145,5 +162,9 @@ export async function setOptimizeDeps(
     'optimizeDeps.rolldownOptions.plugins',
     [],
   );
+  const lastIndex = plugins.findIndex((n) => n.name === ROLLDOWN_PLUGIN_NAME);
+  if (lastIndex !== -1) {
+    plugins.splice(lastIndex, 1);
+  }
   plugins.push(rolldownPluginForExternals(resolver));
 }

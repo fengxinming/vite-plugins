@@ -1,0 +1,94 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+
+  # 允许你从 Actions 选项卡手动运行此工作流程
+  workflow_dispatch:
+    inputs:
+      target:
+        type: choice
+        description: 执行范围
+        options: [all, publish, docs]
+        default: all
+env:
+  base_url: /vite-plugins/
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-npm:
+    if: ${{ github.event_name == 'push' || inputs.target != 'docs' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+      - name: Install dependencies
+        run: pnpm install
+      - run: npm run build:vp-deps          # 构建 vite-plugin 依赖
+      - run: npm run build:starters         # 构建 starter 依赖
+      - name: Publish packages
+        run: npm run release:all            # 发布所有包
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+
+  docs:
+    if: ${{ github.event_name == 'push' || inputs.target != 'publish' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build dependencies
+        run: npm run build:all
+      - name: Build docs dependencies
+        run: npm run docs:build   # 执行构建命令（生成 dist/ 目录）
+        env:
+          BASE_URL: ${{ env.base_url }}
+      - name: 配置 Pages
+        id: configuration
+        uses: actions/configure-pages@v6
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          # Upload entire repository
+          path: './docs/.vitepress/dist'
+      # - name: Deploy to GitHub Pages
+      #   uses: peaceiris/actions-gh-pages@v4
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}  # 自动生成的 GitHub Token
+      #     publish_dir: ./docs/.vitepress/dist        # 构建产物目录
+      #     keep_files: false                          # 是否保留 gh-pages 现有文件
+      #     force_orphan: true                         # 强制清空历史（仅保留最新部署）
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
