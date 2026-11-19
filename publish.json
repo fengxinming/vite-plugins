@@ -1,0 +1,12 @@
+{
+  "packages": [
+    "packages/*",
+    "plugins/*"
+  ],
+  "client": "pnpm",
+  "args": [
+    "stage",
+    "publish",
+    "--no-git-checks"
+  ]
+}
