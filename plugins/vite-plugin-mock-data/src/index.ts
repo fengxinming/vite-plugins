@@ -14,6 +14,23 @@ export * from './lib/constants';
 export * from './types';
 
 /**
+ * 归一化浏览器端 mock 的注入时机。
+ *
+ * - `mockIn` 未配置时回退到已废弃的 `buildMock`（`true` → `'build'`，否则 `false`）；
+ * - `mockIn: true` 视作 `'build'`，`mockIn: false` 保持 `false`（不注入）。
+ */
+function resolveMockIn(opts: Options): MockIn {
+  const { mockIn } = opts;
+  if (mockIn == null) {
+    return opts.buildMock ? 'build' : false;
+  }
+  if (mockIn === true) {
+    return 'build';
+  }
+  return mockIn;
+}
+
+/**
  * Mocks API routes on the Vite dev server from a mock directory or inline route
  * config, and can expose file-based routes to the browser for built static pages.
  *
@@ -34,23 +51,6 @@ export * from './types';
  * @param opts Options
  * @returns a vite plugin
  */
-/**
- * 归一化浏览器端 mock 的注入时机。
- *
- * - `mockIn` 未配置时回退到已废弃的 `buildMock`（`true` → `'build'`，否则 `false`）；
- * - `mockIn: true` 视作 `'build'`，`mockIn: false` 保持 `false`（不注入）。
- */
-function resolveMockIn(opts: Options): MockIn {
-  const { mockIn } = opts;
-  if (mockIn == null) {
-    return opts.buildMock ? 'build' : false;
-  }
-  if (mockIn === true) {
-    return 'build';
-  }
-  return mockIn;
-}
-
 export default function pluginMockData(opts: Options): Plugin {
   if (opts.enableBanner) {
     banner(pkg.name);

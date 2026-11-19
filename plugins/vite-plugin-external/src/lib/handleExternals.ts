@@ -54,9 +54,11 @@ export function setExternals(
 
   const { nodeBuiltins, externalizeDeps, command } = opts;
 
-  // 命令行快捷开关只在 build 阶段生效。dev 阶段不处理：
-  //   - Node 内置模块在浏览器里本来就解析不到，不用额外 external。
-  //   - externalizeDeps 的纯 external 已通过 DepsOptimizer 集成（setOptimizeDeps + Resolver）处理。
+  // 两个快捷开关的作用范围不同：
+  //   - nodeBuiltins 只在 build 阶段生效：Node 内置模块在浏览器里本来就解析不到，
+  //     dev 阶段不需要额外 external。
+  //   - externalizeDeps 在 dev 与 build 都注册：build 走 rolldown external，
+  //     dev 侧由 setOptimizeDeps + Resolver 接管预构建，两阶段判定结果保持一致。
   if (command === 'build' && nodeBuiltins) {
     const builtinModuleArray = builtinModules.map((builtinModule) => {
       // 同时匹配 'fs'、'node:fs'、以及子路径如 'fs/promises' / 'node:fs/promises'。

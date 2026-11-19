@@ -71,4 +71,19 @@ describe('vite-plugin-build-chunk example configs', () => {
     // Inline sourcemap.
     expect(code).toContain('sourceMappingURL=data:');
   }, 60000);
+
+  it('config 4: deprecated `chunk` alias resolves against the main outDir', async () => {
+    await build(4);
+    // Main build output.
+    expect(existsSync(join(root, 'dist/4/my-lib.js'))).toBe(true);
+
+    // Secondary build: `chunk: 'my-lib.js'` must be joined with the main
+    // outDir. A cwd-relative resolution would not find the entry at all, so
+    // the build above would have thrown.
+    const legacyFile = join(root, 'dist/4/my-lib.legacy.umd.js');
+    expect(existsSync(legacyFile)).toBe(true);
+    const code = read('dist/4/my-lib.legacy.umd.js');
+    expect(code).toContain('(function');
+    expect(code).toContain('MyLib');
+  }, 60000);
 });

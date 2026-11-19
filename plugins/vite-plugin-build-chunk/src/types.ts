@@ -10,7 +10,12 @@ export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
   logLevel?: UserConfig['logLevel'];
   output?: OutputOptions;
   /**
-   * @deprecated
+   * 已废弃的旧入口选项。
+   *
+   * 相对值以**主构建的 `outDir`** 为基准解析（旧版行为），因此与 `entry` 不等价：
+   * `entry` 的相对值按项目根目录解析。
+   *
+   * @deprecated 请改用 `entry`，并把路径换算成相对项目根的写法。
    */
   chunk?: string;
   /**

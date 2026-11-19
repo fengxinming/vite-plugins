@@ -30,7 +30,7 @@ export default {
     buildChunk({
       build: [ // 必须配置顶层的 `build` 属性
         {
-          entry: 'main.mjs', // 主构建输出目录（outDir）内的文件；相对路径以该 outDir 为基准解析，绝对路径原样使用
+          entry: 'dist/main.mjs', // 主构建 outDir 内的文件；相对值按项目根目录解析（此处 outDir 为默认 dist），绝对路径原样使用
           format: 'umd', // 构建格式（默认 'umd'）
           name: 'MyLib', // 全局变量名（仅 UMD/IIFE 生效）
         },
@@ -63,7 +63,7 @@ fileName: (format, entryName) => {
    ```typescript
    buildChunk({ build: [...] })
    ```
-2. **入口路径**：`entry` 指向主构建输出目录（`outDir`）内的文件；插件以主构建的 `outDir` 为基准解析相对 `entry`，而不是项目根目录。绝对 `entry` 则原样使用。（`chunk` 是 `entry` 的废弃别名。）
+2. **入口路径**：`entry` 指向主构建输出目录（`outDir`）内的文件，其相对值按**项目根目录**解析，绝对路径原样使用。已废弃的 `chunk` 保留旧行为：相对值以**主构建的 `outDir`** 为基准解析，因此与 `entry` 不等价，迁移时需换算路径。
 3. **多配置支持**：通过 `build` 数组配置多个构建任务，每个任务生成独立的构建产物。
 4. **静默模式**：二次构建内部以 `logLevel: 'silent'` 运行，不会干扰主构建的输出。
 5. **格式默认值**：`format` 默认为 `umd`，若未指定将使用此格式。
@@ -75,7 +75,7 @@ fileName: (format, entryName) => {
 ```typescript
 {
   build: [{
-    entry: 'main.mjs',
+    entry: 'dist/main.mjs',
     name: 'MyLib',
     format: 'umd',
     fileName: () => 'main.umd.js'

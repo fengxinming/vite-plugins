@@ -9,6 +9,7 @@
 | `vite.config.1.mts` | 基础用法：生成单个 UMD chunk |
 | `vite.config.2.mts` | 同时生成多个 chunk（UMD + CJS） |
 | `vite.config.3.mts` | 开启 sourcemap + 自定义输出目录 |
+| `vite.config.4.mjs` | 已废弃的 `chunk` 选项（相对值按主构建 `outDir` 解析） |
 
 ## 运行
 
@@ -21,4 +22,7 @@ pnpm build --config vite.config.2.mts
 
 # 示例 3
 pnpm build --config vite.config.3.mts
+
+# 示例 4
+pnpm build --config vite.config.4.mjs
 ```

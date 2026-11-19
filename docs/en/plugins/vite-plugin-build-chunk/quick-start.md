@@ -30,7 +30,7 @@ export default {
     buildChunk({
       build: [ // The `build` property must be configured
         {
-          entry: 'main.mjs', // File inside the main build's output dir (outDir); a relative path resolves against that outDir, an absolute path is used as-is
+          entry: 'dist/main.mjs', // File inside the main build's output dir (outDir); a relative path resolves against the project root (outDir defaults to `dist` here), an absolute path is used as-is
           format: 'umd', // Build format (default: 'umd')
           name: 'MyLib', // Global variable name (only applies to UMD/IIFE formats)
         },
@@ -63,7 +63,7 @@ fileName: (format, entryName) => {
    ```typescript
    buildChunk({ build: [...] })
    ```
-2. **Entry Path**: `entry` names a file inside the main build's output directory (`outDir`); the plugin resolves a relative `entry` against the main build's `outDir`, not the project root. An absolute `entry` is used as-is. (`chunk` is a deprecated alias for `entry`.)
+2. **Entry Path**: `entry` names a file inside the main build's output directory (`outDir`); a relative value resolves against the **project root**, and an absolute path is used as-is. The deprecated `chunk` keeps the legacy behaviour: its relative value resolves against the **main build's `outDir`**, so it is not equivalent to `entry` — convert the path when migrating.
 3. **Multi-Task Support**: Use the `build` array to configure multiple tasks, each generating independent artifacts.
 4. **Silent Mode**: The secondary builds run with `logLevel: 'silent'` so they don't clutter the main build output.
 5. **Format Default**: `format` defaults to `umd` if unspecified.
@@ -75,7 +75,7 @@ For the configuration:
 ```typescript
 {
   build: [{
-    entry: 'main.mjs',
+    entry: 'dist/main.mjs',
     name: 'MyLib',
     format: 'umd',
     fileName: () => 'main.umd.js'
