@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-cp",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "description": "A powerful Vite plugin for copying files/directories with advanced transformation and renaming capabilities.",
   "type": "module",
   "types": "./dist/index.d.ts",
