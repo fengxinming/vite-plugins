@@ -1,7 +1,7 @@
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
-import { mockRoutes, request as defaultRequest } from 'vite-plugin-mock-data/mock-client';
 
+import { mockRoutes, request as defaultRequest } from './mock-client';
 import type { MockAdapterOptions } from './types';
 
 export function createMockAdapter({
@@ -10,15 +10,13 @@ export function createMockAdapter({
   if (mockRoutes.length === 0) {
     return;
   }
-  if (typeof request !== 'function') {
-    request = defaultRequest;
-  }
+  const doRequest = typeof request === 'function' ? request : defaultRequest;
   return async function mockAdapter(
     config: InternalAxiosRequestConfig
   ): Promise<AxiosResponse> {
     // `axios.getUri(config)` 已把 baseURL / params（query）序列化进 url，
     // 因此不再单独传 query，避免与 url 内的查询串重复。
-    const res = await request({
+    const res = await doRequest({
       url: axios.getUri(config),
       method: (config.method ?? 'GET').toUpperCase(),
       body: config.data,

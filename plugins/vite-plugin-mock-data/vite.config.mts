@@ -7,14 +7,14 @@ import { VIRTUAL_MOCK_ROUTES } from './src/lib/constants.ts';
 
 export default defineConfig({
   plugins: [
-    dts({
-      entryRoot: 'src',
-      include: 'src/**/*.ts'
-    }),
     pluginExternal({
       apply: 'build',
       nodeBuiltins: true,
       externalizeDeps: Object.keys(pkg.dependencies).concat('vite', 'axios', pkg.name, VIRTUAL_MOCK_ROUTES)
+    }),
+    dts({
+      entryRoot: 'src',
+      include: 'src/**/*.ts'
     })
   ],
   build: {
