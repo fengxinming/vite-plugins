@@ -10,7 +10,7 @@ import { isObject } from 'is-what-type';
 import { ViteDevServer } from 'vite';
 
 import { ViteRequest } from '../_types';
-import type { MockData, RouteConfig, RouteValue } from '../types';
+import type { MockData, RouteConfig } from '../types';
 import { parseRouteKey } from './parseRouteKey';
 
 
@@ -37,24 +37,27 @@ function createStaticHandler(data: MockData): RouteHandlerMethod {
  */
 function registerMockRoute(
   app: FastifyInstance,
-  xpath: string,
-  raw: RouteValue
+  routes: RouteConfig[],
 ) {
-  const { methods, pathname } = parseRouteKey(xpath);
+  for (const route of routes) {
+    for (const [xpath, raw] of Object.entries(route)) {
+      const { methods, pathname } = parseRouteKey(xpath);
 
-  app.route({
-    method: methods,
-    url: pathname,
-    handler: typeof raw === 'function' ? raw : createStaticHandler(raw)
-  });
+      app.route({
+        method: methods,
+        url: pathname,
+        handler: typeof raw === 'function' ? raw : createStaticHandler(raw)
+      });
+    }
+  }
 }
 
 /**
  * Mounts mock routes on the Vite dev server via a fastify instance.
  *
- * fastify is embedded as a connect middleware using its internal
- * `routing(req, res)` API, so the plugin keeps the exact middleware
- * semantics of the previous find-my-way based implementation:
+ * fastify is embedded as a connect middleware by emitting `request` on its
+ * internal server (`app.server.emit('request', req, res)`), so the plugin keeps
+ * the exact middleware semantics of the previous find-my-way based implementation:
  *   - matched mock routes are answered by fastify;
  *   - unmatched requests fall through to the next middleware via
  *     `setNotFoundHandler` + `reply.hijack()` + `next()`.
@@ -66,7 +69,8 @@ export async function configureServer(
   server: ViteDevServer,
   fastifyOptions: FastifyServerOptions,
   routes: RouteConfig[],
-  cwd: string
+  cwd: string,
+  base: string | undefined
 ) {
   const app = fastify({ logger: false, ...fastifyOptions });
 
@@ -113,11 +117,15 @@ export async function configureServer(
     next?.();
   });
 
-  routes.forEach((route) => {
-    for (const [key, val] of Object.entries(route)) {
-      registerMockRoute(app, key, val);
-    }
-  });
+  if (base) {
+    app.register((instance, opts, done) => {
+      registerMockRoute(instance, routes);
+      done();
+    }, { prefix: base });
+  }
+  else {
+    registerMockRoute(app, routes);
+  }
 
   await app.ready();
 

@@ -4,8 +4,7 @@
 > 类型定义直接从插件 TypeScript 源码复制：
 >
 ```ts
-import type { InputOption } from 'rolldown';
-import type { ConfigEnv, ResolvedConfig, UserConfig } from 'vite';
+import type { ConfigEnv, ResolvedConfig, Rolldown, UserConfig } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
 export type SupportedTemplateEngines =
@@ -72,7 +71,7 @@ export interface Options {
    *
    * @default `index${extension}`
    */
-  entry?: InputOption;
+  entry?: Rolldown.InputOption;
 
   /**
    * 用于处理指定扩展名的文件，默认跟引擎名称保持一致
@@ -243,7 +242,7 @@ export type DelegateWrittenMap = Map<string, { htmlPath: string, bakPath: string
 | 属性名              | 类型                                                     | 描述                                                                                               | 默认值                               |
 |-------------------|---------------------------------------------------------|---------------------------------------------------------------------------------------------------|--------------------------------------|
 | **engine**        | `SupportedTemplateEngines`                              | 必填项，指定模板引擎名称                                                                              | -                                    |
-| entry             | `InputOption`                                           | 模板引擎入口文件配置，Vite 8 起支持对象形式 `{ index: 'index.ejs', home: 'home.ejs' }` 用于多页面 MPA        | `index${extension}`                  |
+| entry             | `Rolldown.InputOption`                                  | 模板引擎入口文件配置，Vite 8 起支持对象形式 `{ index: 'index.ejs', home: 'home.ejs' }` 用于多页面 MPA        | `index${extension}`                  |
 | extension         | `string`                                                | 需要处理的文件扩展名，默认与引擎名称一致                                                                 | `.${engine}`                         |
 | engineOptions     | `EngineOptions`                                         | 模板引擎配置选项                                                                                     | -                                    |
 | pretty            | `boolean`                                               | 强制美化代码输出（部分引擎不建议渲染时美化）                                                              | `false`                              |
@@ -254,7 +253,7 @@ export type DelegateWrittenMap = Map<string, { htmlPath: string, bakPath: string
 | injectPlaceholder | `string`                                                | 构建时模板中注入资源标签的占位符，仅在 `strategy.build` 为 `'template'` 或 `'both'` 时生效。不指定则注入到 head 闭合标签前 | `undefined`                          |
 
 ## SupportedTemplateEngines 枚举类型
-支持的模板引擎列表，包含以下 59 种类型：
+支持的模板引擎列表，包含以下 43 种类型：
 
 ```typescript
 type SupportedTemplateEngines =
@@ -399,5 +398,5 @@ view({
 
 ## 关键类型引用
 - `LogLevel` 来自 `vp-runtime-helper` 包
-- `InputOption` 来自 `rolldown` 包
+- `Rolldown.InputOption` 来自 `vite` 包
 - `ResolvedConfig` 来自 `vite` 包

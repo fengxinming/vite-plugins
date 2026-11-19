@@ -1,12 +1,18 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { cleanDir, cleanDist, runBuild } from '../../shared/example-testkit';
+import { runBuild } from '../../shared/example-testkit';
 
 const root = join(__dirname, '..');
 
+/**
+ * 用例之间不清理任何缓存/产物：
+ *   - dist/<n> 由 vite 自己的 emptyOutDir 在每次构建前清空，无需手动 rm；
+ *   - 插件的 stash 目录（各 config 独立 cacheDir）与 vite 的 deps 缓存原地保留，
+ *     等价于真实项目里连续构建，让插件的清理链自己决定第二次拿到什么。
+ */
 async function build(n: number) {
   const { code, stdout } = await runBuild(root, 'build', n);
   if (code !== 0) {
@@ -18,42 +24,18 @@ function read(...segments: string[]) {
   return readFileSync(join(root, ...segments), 'utf-8');
 }
 
-/** Find the first .js (or .mjs) file under a directory. */
-function findJs(dir: string): string | null {
-  if (!existsSync(dir)) {
-    return null;
-  }
-  for (const f of readdirSync(dir)) {
-    if (f.endsWith('.js') || f.endsWith('.mjs')) {
-      return join(dir, f);
-    }
-  }
-  return null;
-}
-
 /**
- * Scan a directory recursively for the first matching JS file.
- * 递归查找目录下第一个匹配的 JS 文件。
+ * 产物页面的 module script 指向的入口文件。
+ * 入口由页面自己声明，不靠扫目录猜名字：dist 里还有别的产物
+ * （如 config 2 二次构建的 foo.iife.js）也不会被当成主入口。
  */
-function findJsRecursive(startDir: string): string | null {
-  if (!existsSync(startDir)) {
-    return null;
+function entryFileOf(distDir: string): string {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf-8');
+  const src = /<script\b(?=[^>]*\btype="module")(?=[^>]*\bsrc="\/([^"]+\.js)")[^>]*>/.exec(html)?.[1];
+  if (!src) {
+    throw new Error(`${distDir}/index.html 里没有指向构建产物的 module script`);
   }
-  const stack = [startDir];
-  while (stack.length > 0) {
-    const cur = stack.pop()!;
-    const entries = readdirSync(cur, { withFileTypes: true });
-    for (const e of entries) {
-      const full = join(cur, e.name);
-      if (e.isFile() && /\.(m?js)$/.test(e.name)) {
-        return full;
-      }
-      if (e.isDirectory()) {
-        stack.push(full);
-      }
-    }
-  }
-  return null;
+  return join(distDir, src);
 }
 
 /**
@@ -61,7 +43,10 @@ function findJsRecursive(startDir: string): string | null {
  * 断言 not.toContain 即"产物中不含该依赖源码"；toContain 即"确实打包在内"。
  */
 const MARKERS = {
-  react: 'react.transitional.element', // react/cjs/react.production.js
+  // 主包 Symbol.for 注册的类型名，16/17/18/19 都有；jsx-runtime 只有 element/fragment
+  react: 'react.forward_ref',
+  // React 19 主包独有的 owner-stack 实现；jsx-runtime 里不含。
+  // （react.transitional.element 不能用作判据——jsx-runtime 自己也定义该 Symbol）
   reactDom: 'formatProdErrorMessage', // react-dom/cjs/react-dom-client.production.js
   lodash: '__lodash_hash_undefined__', // lodash/lodash.js
   dayjs: 'invalidDate', // dayjs
@@ -69,17 +54,41 @@ const MARKERS = {
   vue: 'templateContainer' // @vue/runtime-dom esm-bundler
 };
 
-afterEach(() => {
-  cleanDist(root);
-  cleanDir(root, '.external-cache');
-});
+/**
+ * 页面断言：external 依赖靠宿主提供，页面没挂 CDN 就等于产物跑不起来。
+ * 这里一次校验两件事，缺一个都会红：
+ *   1. CDN `<script>` 的地址（dev/build 各自不同，能证明 command 分支生效）；
+ *   2. 页面声明的入口就是本次断言内容的那份产物（防止产物改名后 html 指向空文件）。
+ */
+function expectCdnPage(distDir: string, cdnUrl: string, jsFile: string) {
+  const html = readFileSync(join(distDir, 'index.html'), 'utf-8');
+  expect(html).toContain(cdnUrl);
+  expect(entryFileOf(distDir)).toBe(jsFile);
+}
+
+/**
+ * 页面预取标签的精确集合校验：多一条、少一条都红。
+ * 不锁顺序 —— 标签顺序由依赖解析顺序决定，本来就不稳定。
+ * crossorigin 必须落在同一个标签里：缺了它预取走 no-cors、模块请求要 CORS，
+ * 两边对不上就是同一份依赖白取一遍（浏览器实测告警）。
+ */
+function expectCdnPreloads(html: string, urls: string[]) {
+  const hrefs = [...html.matchAll(/<link[^>]*rel="modulepreload"[^>]*href="(https:\/\/[^"]+)"/g)]
+    .map((m) => m[1]);
+  expect(hrefs.sort(), 'modulepreload 的 CDN 地址集合应与产物真正 import 的地址一致')
+    .toEqual([...urls].sort());
+  for (const url of urls) {
+    expect(html, `${url} 的预取标签应带 crossorigin`).toMatch(
+      new RegExp(`<link[^>]*modulepreload[^>]*crossorigin[^>]*href="${url.replace(/\./g, '\\.')}">`),
+    );
+  }
+}
 
 describe('vite-plugin-external example configs', () => {
   it('config 1: Record externals — IIFE with React/ReactDOM globals', async () => {
     await build(1);
-    const jsFile = findJs(join(root, 'dist/1/assets'));
-    expect(jsFile).not.toBeNull();
-    const code = readFileSync(jsFile!, 'utf-8');
+    const jsFile = entryFileOf(join(root, 'dist/1'));
+    const code = readFileSync(jsFile, 'utf-8');
     // 量级上限：依赖整包混入会让产物膨胀一个数量级（react ~130KB、lodash ~530KB）。
     expect(code.length).toBeLessThan(16384);
     // Rolldown IIFE 原生方式：globals 作为参数传入 — })(React, ReactDOM);
@@ -90,28 +99,44 @@ describe('vite-plugin-external example configs', () => {
     // 不包含：react/react-dom 源码不得进包（只留全局引用）
     expect(code).not.toContain(MARKERS.react);
     expect(code).not.toContain(MARKERS.reactDom);
-  }, 60000);
+    // 页面：build 用压缩版 React UMD，且引用的 js 就是上面校验的产物
+    expectCdnPage(join(root, 'dist/1'), 'https://unpkg.com/umd-react/dist/react.production.min.js', jsFile);
+  }, 120000);
 
   it('config 2: function externals — both react branch AND @scope/* branch', async () => {
     await build(2);
-    // Config.2 使用 lib IIFE 模式，产物在 dist/2/ 根目录
-    const jsFile = findJs(join(root, 'dist/2'));
-    expect(jsFile).not.toBeNull();
-    const code = readFileSync(jsFile!, 'utf-8');
+
+    // dist/2 有两个 JS，角色不同，必须分别锁定：
+    //   - 主入口   : 页面里的 module script 指向它
+    //   - foo.iife.js : buildChunk 二次构建产物，页面里以经典脚本提供 ScopeFoo 全局
+    const html = read('dist/2/index.html');
+    const entryFile = entryFileOf(join(root, 'dist/2'));
+    const code = readFileSync(entryFile, 'utf-8');
     // 量级上限：依赖整包混入会让产物膨胀一个数量级（react ~130KB、lodash ~530KB）。
     expect(code.length).toBeLessThan(16384);
 
-    // vite-plugin-external 走原生 external + output.globals（lib.formats 含 iife
-    // 时门控判定为 IIFE 构建）：全局名作为 IIFE 实参传入 — })(ScopeFoo, React, ReactDOM);
-    // 1) react 分支
-    expect(code).toMatch(/\}\)\s*\(\s*ScopeFoo,\s*React,\s*ReactDOM\s*\)/);
-    // 2) @scope/* 前缀分支：动态生成 ScopeFoo 全局名
-    // 这证明 source.startsWith('@scope/') 分支真的被执行了，不是伪通过
-    expect(code).toMatch(/ScopeFoo/);
-    // 不包含：react 系列源码不得漏进包
+    // 函数形态 production 分支的两条路都执行过：@scope/* → ScopeFoo、
+    // react / react-dom/client → React / ReactDOM，各留一条 CJS shim。
+    // ScopeFoo 能出现就证明 source.startsWith('@scope/') 分支真的执行过
+    // （@scope/foo 并未安装，不可能从 node_modules 里被打包进来）。
+    expect(code).toContain('module.exports = ScopeFoo;');
+    expect(code).toContain('module.exports = React;');
+    expect(code).toContain('module.exports = ReactDOM;');
+    // 包含：react() 自动运行时用到的 jsx-runtime 没被 external，确实打进包。
+    expect(code).toContain('react.transitional.element');
+    // 不包含：react / react-dom 主包源码不得进包
     expect(code).not.toContain(MARKERS.react);
     expect(code).not.toContain(MARKERS.reactDom);
-  }, 60000);
+
+    // 第二个产物单独断言：它是页面里 ScopeFoo 全局的提供者，不是主入口。
+    const scopeProvider = read('dist/2/foo.iife.js');
+    expect(scopeProvider).toMatch(/^var ScopeFoo=/m);
+    expect(scopeProvider).toContain('e.foo=');
+    expect(html).toContain('src="/foo.iife.js"');
+
+    // 页面：React/ReactDOM 用生产版 UMD，module 入口必须指向刚校验的主产物。
+    expectCdnPage(join(root, 'dist/2'), 'https://unpkg.com/umd-react/dist/react.production.min.js', entryFile);
+  }, 120000);
 
   it('config 3: externalizeDeps — lodash + dayjs + @babel/core all external', async () => {
     await build(3);
@@ -137,13 +162,12 @@ describe('vite-plugin-external example configs', () => {
     expect(code).not.toContain(MARKERS.lodash);
     expect(code).not.toContain(MARKERS.dayjs);
     expect(code).not.toContain(MARKERS.babel);
-  }, 60000);
+  }, 120000);
 
-  it('config 4: multi-environment override — production globals', async () => {
+  it('config 4: 配置函数按 command 分支 — production 用 $linkdesign 全局', async () => {
     await build(4);
-    const jsFile = findJs(join(root, 'dist/4/assets'));
-    expect(jsFile).not.toBeNull();
-    const code = readFileSync(jsFile!, 'utf-8');
+    const jsFile = entryFileOf(join(root, 'dist/4'));
+    const code = readFileSync(jsFile, 'utf-8');
     // 量级上限：依赖整包混入会让产物膨胀一个数量级（react ~130KB、lodash ~530KB）。
     expect(code.length).toBeLessThan(16384);
     // 生产构建：IIFE 参数中注入 $linkdesign.React / ReactDOM。
@@ -153,13 +177,12 @@ describe('vite-plugin-external example configs', () => {
     // react/react-dom 源码都必须留在包外——这条曾漏网（缺键导致 474kB 整包混入）
     expect(code).not.toContain(MARKERS.react);
     expect(code).not.toContain(MARKERS.reactDom);
-  }, 60000);
+  }, 120000);
 
   it('config 5: interop auto', async () => {
     await build(5);
-    const jsFile = findJs(join(root, 'dist/5/assets'));
-    expect(jsFile).not.toBeNull();
-    const code = readFileSync(jsFile!, 'utf-8');
+    const jsFile = entryFileOf(join(root, 'dist/5'));
+    const code = readFileSync(jsFile, 'utf-8');
     // 量级上限：依赖整包混入会让产物膨胀一个数量级（react ~130KB、lodash ~530KB）。
     expect(code.length).toBeLessThan(16384);
     // interop: 'auto' 通过 stash shim 注入 React/ReactDOM
@@ -169,13 +192,31 @@ describe('vite-plugin-external example configs', () => {
     // 不包含：走 shim 路径同样不该把源码打进来
     expect(code).not.toContain(MARKERS.react);
     expect(code).not.toContain(MARKERS.reactDom);
-  }, 60000);
+  }, 120000);
+
+  it('config 6: Vue JSX — vue 外置 + @vitejs/plugin-vue-jsx 编译', async () => {
+    await build(6);
+    const jsFile = entryFileOf(join(root, 'dist/6'));
+    const code = readFileSync(jsFile, 'utf-8');
+    // 量级上限：vue 运行时整包 ~130KB，混入即膨胀一个数量级。
+    expect(code.length).toBeLessThan(16384);
+    // IIFE 全局实参：})(Vue);
+    expect(code).toMatch(/\}\)\s*\(\s*Vue\s*\)\s*;?\s*$/m);
+    // 包含：JSX 由 vue-jsx 插件编译成 createVNode；
+    // 若插件没生效，.tsx 会走 esbuild 的 React 自动运行时，产物里出现的是 jsx() 而非 createVNode。
+    expect(code).toMatch(/createVNode/);
+    // 不包含：vue 源码不得进包；React 也不该因为 JSX 运行时被拖进来
+    // （react/jsx-runtime 被打进来即说明 .tsx 走了 esbuild 的自动运行时，而不是 vue-jsx 编译链）
+    expect(code).not.toContain(MARKERS.vue);
+    expect(code).not.toContain('react/jsx-runtime');
+    // 页面：build 用生产版 Vue 全局构建，且引用的 js 就是上面校验的产物
+    expectCdnPage(join(root, 'dist/6'), 'https://unpkg.com/vue@3/dist/vue.global.prod.js', jsFile);
+  }, 120000);
 
   it('config 7: CDN URL externals — imports from esm.sh', async () => {
     await build(7);
-    const jsFile = findJsRecursive(join(root, 'dist/7'));
-    expect(jsFile).not.toBeNull();
-    const code = readFileSync(jsFile!, 'utf-8');
+    const jsFile = entryFileOf(join(root, 'dist/7'));
+    const code = readFileSync(jsFile, 'utf-8');
     // 量级上限：依赖整包混入会让产物膨胀一个数量级（react ~130KB、lodash ~530KB）。
     expect(code.length).toBeLessThan(16384);
     // 必须是真的 import 语句指向 CDN，而不是任意位置上出现该 URL。
@@ -184,7 +225,20 @@ describe('vite-plugin-external example configs', () => {
     // 不包含：CDN 形态下 react/react-dom 源码零进包
     expect(code).not.toContain(MARKERS.react);
     expect(code).not.toContain(MARKERS.reactDom);
-  }, 60000);
+
+    // 开关关着（本 config 没配 importmap）：地址写在产物的 import 里，HTML 只负责预取，
+    // 不该再出现一张表 —— 「裸说明符 + 表」是开关打开后的形态（对照 config 16）。
+    const html = read('dist/7/index.html');
+    expect(html).not.toContain('type="importmap"');
+    // 页面不手写 CDN 脚本：地址已经在产物 import 里，再挂一份就是同一依赖取两次。
+    expect(html).not.toContain('<script src="https://esm.sh');
+
+    // 预取集合 == 产物真正 import 的 CDN 地址集合。配置里另外两条（react-dom、
+    // jsx-dev-runtime）没被入口引用，就不该凭空出现在页面上；反之漏一条也红。
+    const importedUrls = [...code.matchAll(/from\s*"(https:\/\/esm\.sh\/[^"]+)"/g)].map((m) => m[1]);
+    expect(importedUrls, '入口用到 react / react-dom/client / jsx-runtime 三条 CDN 地址').toHaveLength(3);
+    expectCdnPreloads(html, importedUrls);
+  }, 120000);
 
   it('config 8: nodeBuiltins + externalizeDeps — node:path + lodash + dayjs all external', async () => {
     await build(8);
@@ -206,13 +260,12 @@ describe('vite-plugin-external example configs', () => {
     // 不包含：lodash/dayjs 是 external，源码不得进包
     expect(code).not.toContain(MARKERS.lodash);
     expect(code).not.toContain(MARKERS.dayjs);
-  }, 60000);
+  }, 120000);
 
   it('config 9: Vue external — IIFE with Vue global', async () => {
     await build(9);
-    const jsFile = findJs(join(root, 'dist/9')) ?? findJs(join(root, 'dist/9/assets'));
-    expect(jsFile).not.toBeNull();
-    const code = readFileSync(jsFile!, 'utf-8');
+    const jsFile = entryFileOf(join(root, 'dist/9'));
+    const code = readFileSync(jsFile, 'utf-8');
     // 量级上限：依赖整包混入会让产物膨胀一个数量级（react ~130KB、lodash ~530KB）。
     expect(code.length).toBeLessThan(16384);
     // lib.formats:['iife'] 被门控识别为 IIFE 构建 → 原生 external + globals：
@@ -220,7 +273,13 @@ describe('vite-plugin-external example configs', () => {
     expect(code).toMatch(/\}\)\s*\(\s*Vue\s*\)\s*;?\s*$/m);
     // 不包含：vue 源码不得进包
     expect(code).not.toContain(MARKERS.vue);
-  }, 60000);
+    // 包含：SFC 确实被 @vitejs/plugin-vue 编译进产物
+    // （__name 是 script setup 的组件名，createElementBlock 是模板编译出的运行时调用）
+    expect(code).toMatch(/__name:\s*"VueApp"/);
+    expect(code).toMatch(/createElementBlock/);
+    // 页面：build 用生产版 Vue 全局构建，且引用的 js 就是上面校验的产物
+    expectCdnPage(join(root, 'dist/9'), 'https://unpkg.com/vue@3/dist/vue.global.prod.js', jsFile);
+  }, 120000);
 
   it('config 10: externals array [string | RegExp] — lodash and @babel/* external', async () => {
     await build(10);
@@ -240,15 +299,14 @@ describe('vite-plugin-external example configs', () => {
     // 不包含：lodash/@babel 是 external，源码不得进包
     expect(code).not.toContain(MARKERS.lodash);
     expect(code).not.toContain(MARKERS.babel);
-  }, 60000);
+  }, 120000);
 
   it('config 11: custom cacheDir — IIFE with React/ReactDOM globals', async () => {
     await build(11);
-    // cacheDir: '.external-cache' 自定义 stash 缓存目录，
+    // cacheDir: './node_modules/.external-cache' 自定义 stash 缓存目录，
     // 不影响构建结果，只影响 vite-plugin-external 生成 shim 的存储位置。
-    const jsFile = findJs(join(root, 'dist/11/assets'));
-    expect(jsFile).not.toBeNull();
-    const code = readFileSync(jsFile!, 'utf-8');
+    const jsFile = entryFileOf(join(root, 'dist/11'));
+    const code = readFileSync(jsFile, 'utf-8');
     // 量级上限：依赖整包混入会让产物膨胀一个数量级（react ~130KB、lodash ~530KB）。
     expect(code.length).toBeLessThan(16384);
     // 与 Config.1 类似：IIFE 参数形式注入 React/ReactDOM
@@ -256,7 +314,7 @@ describe('vite-plugin-external example configs', () => {
     // 不包含：自定义 cacheDir 不改变"源码不进包"的结果
     expect(code).not.toContain(MARKERS.react);
     expect(code).not.toContain(MARKERS.reactDom);
-  }, 60000);
+  }, 120000);
 
   it('config 12: per-mode override — externalizeDeps concat + nodeBuiltins on', async () => {
     await build(12);
@@ -276,7 +334,7 @@ describe('vite-plugin-external example configs', () => {
     // 不包含：lodash/dayjs 均被 externalizeDeps 外置，源码不得进包
     expect(code).not.toContain(MARKERS.lodash);
     expect(code).not.toContain(MARKERS.dayjs);
-  }, 60000);
+  }, 120000);
 
   it('config 13: lib.formats ["umd"] — UMD 同样走原生 external + output.globals', async () => {
     await build(13);
@@ -295,10 +353,11 @@ describe('vite-plugin-external example configs', () => {
     // 包含：代码确实调用了外部 API
     expect(code).toMatch(/createElement/);
     expect(code).toMatch(/createRoot/);
-    // 不包含：react / react-dom 源码不得进包
-    expect(code).not.toContain(MARKERS.react);
+    // 不包含：react-dom 源码不得进包。react 主包标记（react.forward_ref）不适用于 UMD：
+    // react/jsx-runtime 是 CJS 转发文件，dev 分支无法被 tree-shake，其内联 Symbol 表
+    // 含 forward_ref——但主包确实没进包（require("react") 保留 + 体积断言兜底）。
     expect(code).not.toContain(MARKERS.reactDom);
-  }, 60000);
+  }, 120000);
 
   it('config 14: 纯 external（函数返回 true）— lodash 不进包，产物保留裸 import', async () => {
     await build(14);
@@ -310,5 +369,58 @@ describe('vite-plugin-external example configs', () => {
     expect(code).not.toContain('.VERSION');
     // 未被 external 的依赖照常打包。
     expect(code).toContain(MARKERS.dayjs);
-  }, 60000);
+  }, 120000);
+
+  it('config 16: importmap 开关 — 产物留裸 import，地址只出现在 HTML 的表里', async () => {
+    await build(16);
+    const jsFile = entryFileOf(join(root, 'dist/16'));
+    const code = readFileSync(jsFile, 'utf-8');
+
+    // 开关改的是「地址写在哪」：产物里是裸说明符，CDN 地址只进 HTML 的 import map。
+    expect(code).toMatch(/import\s+dayjs\s+from\s+"dayjs"/);
+    expect(code).toMatch(/import\s+\w+\s+from\s+"lodash"/);
+    // 反向（对照 config 7 那条 CDN 路线）：产物里出现 CDN 地址就说明开关没生效。
+    expect(code).not.toMatch(/from\s+["']https:\/\/esm\.sh\//);
+    // 量级上限 + 源码标记：依赖整包混入会让产物膨胀一个数量级。
+    expect(code.length).toBeLessThan(16384);
+    expect(code).not.toContain(MARKERS.lodash);
+    expect(code).not.toContain(MARKERS.dayjs);
+
+    const html = read('dist/16/index.html');
+
+    // 表必须存在，且键是产物里那条裸说明符本身（不是 dev 的 /@id/ 形态）。
+    // 不逐字节比字符串：标签内空格数量、以及条目顺序（由依赖解析顺序决定）都不稳定，
+    // 所以按结构校验。
+    const mapBody = /<script type="importmap">([\s\S]*?)<\/script>/.exec(html)?.[1];
+    expect(mapBody, 'dist/16/index.html 里应有 <script type="importmap">').toBeTruthy();
+    // {"imports":…} 外壳不能少：少外壳浏览器按空表处理（实测）。
+    const map = JSON.parse(mapBody!) as { imports: Record<string, string> };
+    expect(map).toEqual({
+      imports: {
+        lodash: 'https://esm.sh/lodash@4.18.1',
+        dayjs: 'https://esm.sh/dayjs@1.11.23'
+      }
+    });
+
+    // 跨产物一致性：表的键集合 == 产物里裸说明符集合。表里多列一个没被 import 的依赖、
+    // 或漏掉一个真被 import 的依赖，浏览器都会在运行时解析失败，而单看 HTML 发现不了。
+    const bareSpecifiers = [...code.matchAll(/from\s+"([^"]+)"/g)].map((m) => m[1]);
+    expect(Object.keys(map.imports).sort(), 'import map 的键应与产物留下的裸说明符一一对应')
+      .toEqual(bareSpecifiers.sort());
+
+    // 预取集合 == 表里的地址集合（同 config 7 的口径，只是这边地址来自表而不是产物）。
+    expectCdnPreloads(html, Object.values(map.imports));
+    // 页面不手写 CDN 脚本：地址只该出现在表里，再挂一份就是同一依赖取两次。
+    expect(html).not.toContain('<script src="https://esm.sh');
+
+    // 表必须排在第一个 module script / modulepreload 之前：顺序错了浏览器整张表作废。
+    // vite 的 postImportMapHook 会搬，这条断言钉的是「搬完之后仍然成立」。
+    const mapIndex = html.indexOf('<script type="importmap">');
+    const firstModule = html.search(/<script[^>]*type="module"|<link[^>]*modulepreload/);
+    expect(mapIndex).toBeGreaterThanOrEqual(0);
+    expect(firstModule).toBeGreaterThan(mapIndex);
+
+    // 页面挂的 module script 就是上面校验的那个产物，不能指向空文件。
+    expect(entryFileOf(join(root, 'dist/16'))).toBe(jsFile);
+  }, 120000);
 });

@@ -1,106 +1,98 @@
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { build } from 'vite';
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { cleanDist } from '../../shared/example-testkit';
+import { runBuild } from '../../shared/example-testkit';
 
+/**
+ * 真实使用场景测试：build 通过 `vite build` CLI 子进程执行（runBuild），
+ * 与用户实际用法完全一致；不再注入捕获插件抓中间代码，而是直接读 dist 产物断言。
+ *
+ * 前提：两个示例配置都用 vite-plugin-external 把目标库（含子路径）externalize，
+ * 拆出的子路径 import 才会保留进产物，而不是被整库打包进去。
+ * es 产物留 es 子路径；cjs 产物经 separate-importer 的 generateBundle 替换为 lib 子路径。
+ */
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, '..');
 const dist = resolve(root, 'dist');
 
-// 注意：本文件是唯一保留「进程内 build」的例外 —— 它必须注入一个
-// post-transform 插件来捕获 separate-importer 拆分后的源码，
-// 走子进程（vite CLI）无法注入插件，因此不能用 runBuild。
-afterEach(() => {
-  cleanDist(root);
-});
-
-/**
- * 加载配置并运行 vite build，同时注入一个 post-transform 插件，
- * 用于捕获 separate-importer 插件 transform 后的源代码，
- * 再断言其中是否真正包含了子路径 import（验证拆分生效）。
- */
-async function buildWithCapture(
-  configName: string,
-  captureFile: string
-): Promise<{ capturedCode: string | null }> {
-  let capturedCode: string | null = null;
-
-  // 动态加载配置文件
-  const configMod = await import(resolve(root, `vite.config.${configName}.mts`));
-  const userConfig = configMod.default ?? configMod;
-
-  await build({
-    ...userConfig,
-    logLevel: 'error',
-    plugins: [
-      ...(userConfig.plugins ?? []),
-      {
-        name: 'test:post-capture',
-        enforce: 'post', // 在 separate-importer 之后执行，拿到拆分后的代码
-        transform(code, id) {
-          // 去掉 query 后按路径尾部精确比对：用 includes 的话
-          // 'src/index.ts' 会同时命中 'src/index.tsx'，capturedCode 会被后者覆盖。
-          const cleanId = id.replace(/\?.*$/, '');
-          if (cleanId.endsWith(captureFile) && !cleanId.includes('node_modules')) {
-            capturedCode = code;
-          }
-          return null;
-        }
-      }
-    ]
-  });
-
-  return { capturedCode };
+// 产物保留了源码注释（含 `from 'antd'` 这类示意文字），
+// 负向断言"不再整体导入"前必须先剥掉注释，否则会误判。
+function stripComments(code: string): string {
+  return code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
 }
 
-describe('vite-plugin-separate-importer example configs', () => {
-  it('config 1: antd imports are SPLIT into antd/es/* sub-paths + style', async () => {
-    const { capturedCode } = await buildWithCapture('1', 'src/index.ts');
 
-    // 1. 构建产物存在
-    expect(existsSync(resolve(dist, '1/index.js'))).toBe(true);
-    expect(existsSync(resolve(dist, '1/index.mjs'))).toBe(true);
+describe('vite-plugin-separate-importer (real `vite build` CLI, verify dist)', () => {
+  it('config 1: antd 拆分为 es 子路径 + style；cjs 产物替换为 lib 子路径', async () => {
+    const { code, stdout } = await runBuild(root, 'build', 1);
+    expect(code, `build:1 failed\n${stdout}`).toBe(0);
 
-    // 2. 关键验证：captured code 必须体现拆分后的 import 路径
-    //    （直接从最终 bundle 里看不出子路径，因为 lib build 会把 antd 打包进来）
-    expect(capturedCode).not.toBeNull();
-    const code = capturedCode!;
+    const esFile = resolve(dist, '1/index.mjs');
+    const cjsFile = resolve(dist, '1/index.js');
+    expect(existsSync(esFile)).toBe(true);
+    expect(existsSync(cjsFile)).toBe(true);
 
-    // JS 模块路径：antd/es/button, antd/es/input, antd/es/select
-    expect(code).toMatch(/["']antd\/es\/button["']/);
-    expect(code).toMatch(/["']antd\/es\/input["']/);
-    expect(code).toMatch(/["']antd\/es\/select["']/);
+    // es 产物：JS 模块拆成 antd/es/*，样式 side-effect import 也在。
+    // 正则要求路径两端紧跟引号，避免 antd/es/button 误命中 antd/es/button/style。
+    const es = readFileSync(esFile, 'utf-8');
+    expect(es).toMatch(/["']antd\/es\/button["']/);
+    expect(es).toMatch(/["']antd\/es\/input["']/);
+    expect(es).toMatch(/["']antd\/es\/select["']/);
+    expect(es).toMatch(/["']antd\/es\/button\/style["']/);
+    expect(es).toMatch(/["']antd\/es\/input\/style["']/);
+    expect(es).toMatch(/["']antd\/es\/select\/style["']/);
+    // 不再整体导入 antd
+    expect(stripComments(es)).not.toMatch(/from\s*["']antd["']/);
 
-    // 样式 import：antd/es/*/style（insertSideEffect 配置生效）
-    expect(code).toMatch(/["']antd\/es\/button\/style["']/);
-    expect(code).toMatch(/["']antd\/es\/input\/style["']/);
-    expect(code).toMatch(/["']antd\/es\/select\/style["']/);
-
-    // 3. 不再出现原始整体导入 `from "antd"`（除注释以外）
-    const nonComment = code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(nonComment).not.toMatch(/from\s+["']antd["']/);
+    // cjs 产物：generateBundle 把 es 子路径替换成 lib 子路径
+    const cjs = readFileSync(cjsFile, 'utf-8');
+    expect(cjs).toContain('require(');
+    expect(cjs).toMatch(/["']antd\/lib\/button["']/);
+    expect(cjs).toMatch(/["']antd\/lib\/input["']/);
+    expect(cjs).toMatch(/["']antd\/lib\/select["']/);
+    expect(cjs).toMatch(/["']antd\/lib\/button\/style["']/);
+    expect(cjs).toMatch(/["']antd\/lib\/input\/style["']/);
+    expect(cjs).toMatch(/["']antd\/lib\/select\/style["']/);
+    // es 子路径不应残留在 cjs 产物里
+    expect(cjs).not.toContain('antd/es/');
   }, 120000);
 
-  it('config 2: lodash imports are SPLIT into lodash/<fn> sub-paths', async () => {
-    const { capturedCode } = await buildWithCapture('2', 'src/lodash-demo.ts');
+  it('config 2: lodash 拆分为 lodash/<fn> 子路径', async () => {
+    const { code, stdout } = await runBuild(root, 'build', 2);
+    expect(code, `build:2 failed\n${stdout}`).toBe(0);
 
-    // 1. 构建产物存在（es 单 format 时 Vite 输出 .js 扩展名）
-    expect(existsSync(resolve(dist, '2/index.js'))).toBe(true);
+    const esFile = resolve(dist, '2/index.js');
+    expect(existsSync(esFile)).toBe(true);
 
-    // 2. separate-importer 实际拆分了 3 个方法：get / set / merge
-    expect(capturedCode).not.toBeNull();
-    const code = capturedCode!;
+    const es = readFileSync(esFile, 'utf-8');
+    expect(es).toMatch(/["']lodash\/get["']/);
+    expect(es).toMatch(/["']lodash\/set["']/);
+    expect(es).toMatch(/["']lodash\/merge["']/);
+    // 不再整体导入 lodash
+    expect(stripComments(es)).not.toMatch(/from\s*["']lodash["']/);
+  }, 120000);
 
-    // 被拆成子路径（注意 lodash 这里 kebab: get→get, set→set, merge→merge，
-    // 所以路径会是 "lodash/get"、"lodash/set"、"lodash/merge"）
-    expect(code).toMatch(/["']lodash\/get["']/);
-    expect(code).toMatch(/["']lodash\/set["']/);
-    expect(code).toMatch(/["']lodash\/merge["']/);
+  it('config 3: named re-export 拆分为子路径，renamed 按原名正确解析', async () => {
+    const { code, stdout } = await runBuild(root, 'build', 3);
+    expect(code, `build:3 failed\n${stdout}`).toBe(0);
 
-    // 3. 不再出现整体导入 `from "lodash"`（除注释）
-    const nonComment = code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    expect(nonComment).not.toMatch(/from\s+["']lodash["']/);
+    const esFile = resolve(dist, '3/index.js');
+    expect(existsSync(esFile)).toBe(true);
+
+    const es = readFileSync(esFile, 'utf-8');
+    // re-export 被拆成子路径（rolldown 优化为 import default + 本地 export）
+    expect(es).toMatch(/["']lodash\/get["']/);
+    expect(es).toMatch(/["']lodash\/set["']/);
+    expect(es).toMatch(/["']lodash\/merge["']/);
+    // renamed：merge as mergeDeep → 绑定名 mergeDeep，但仍按原名 merge 解析到 lodash/merge
+    expect(es).toMatch(/import\s+mergeDeep\s+from\s*["']lodash\/merge["']/);
+    // 公开 API 保留：mergeDeep 仍被导出
+    expect(es).toMatch(/export\s*{[^}]*mergeDeep[^}]*}/);
+    // 不再整体 re-export lodash
+    expect(stripComments(es)).not.toMatch(/from\s*["']lodash["']/);
   }, 120000);
 });

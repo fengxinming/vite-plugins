@@ -2,9 +2,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { cleanDist, runBuild } from '../../shared/example-testkit';
+import { runBuild, runScript } from '../../shared/example-testkit';
 
 const root = join(__dirname, '..');
 
@@ -19,9 +19,25 @@ function read(...segments: string[]) {
   return readFileSync(join(root, ...segments), 'utf-8');
 }
 
-afterEach(() => {
-  cleanDist(root);
-});
+async function fetchHtml(url: string): Promise<string> {
+  const res = await fetch(url, { headers: { Accept: 'text/html' } });
+  expect(res.status).toBe(200);
+  expect(res.headers.get('content-type')).toContain('text/html');
+  return res.text();
+}
+
+// 复用本用例刚构建好的 dist 起 preview，断言完即关进程，不另起 build。
+// preview 行为由 strategy.build 决定：template 渲染 dist 里的模板，
+// html / both 交给 Vite 静态服务编译好的 .html。
+async function withPreview(n: number, fn: (baseUrl: string) => Promise<void>): Promise<void> {
+  const handle = await runScript(root, 'preview', n);
+  try {
+    await fn(handle.baseUrl);
+  }
+  finally {
+    await handle.close();
+  }
+}
 
 describe('vite-plugin-view example configs', () => {
   it('config 1: pug template → HTML', async () => {
@@ -35,7 +51,21 @@ describe('vite-plugin-view example configs', () => {
     expect(code).not.toContain('{{ ');
     expect(code).not.toContain('{%');
     expect(code).toContain('My App');
-  }, 60000);
+
+    // preview（html 策略）：dist 有编译好的 .html，Vite 静态服务直接返回。
+    await withPreview(1, async (baseUrl) => {
+      const root_ = await fetchHtml(`${baseUrl}/`);
+      expect(root_).toContain('My App');
+      expect(root_).not.toContain('<%');
+      expect(root_).not.toContain('{{');
+      expect(root_).toContain('<script');
+      expect(root_).toContain('/assets/');
+
+      const index = await fetchHtml(`${baseUrl}/index.html`);
+      expect(index).toContain('My App');
+      expect(index).not.toContain('<%');
+    });
+  }, 90000);
 
   it('config 2: ejs template → HTML', async () => {
     await build(2);
@@ -172,7 +202,37 @@ describe('vite-plugin-view example configs', () => {
     // 未设置 injectPlaceholder，标签必须注入在 </head> 前（Vite 原生默认位置）。
     expect(delegateTemplate).toMatch(/type="module"[\s\S]*crossorigin[\s\S]*<\/head>/i);
     expect(delegateHomeTemplate).toMatch(/type="module"[\s\S]*crossorigin[\s\S]*<\/head>/i);
-  }, 60000);
+
+    // preview（template 策略）：dist 无 .html，必须经引擎渲染注入标签后的模板。
+    await withPreview(8, async (baseUrl) => {
+      const delegate = await fetchHtml(`${baseUrl}/delegate.html`);
+      expect(delegate).toContain('EJS Delegate Example');
+      expect(delegate).toContain('Alpha');
+      expect(delegate).toContain('Beta');
+      expect(delegate).toContain('Gamma');
+      expect(delegate).not.toContain('<%=');
+      expect(delegate).toContain('type="module"');
+      expect(delegate).toContain('crossorigin');
+      expect(delegate).toContain('/assets/');
+
+      // 无扩展名同样命中模板渲染。
+      const extless = await fetchHtml(`${baseUrl}/delegate`);
+      expect(extless).toContain('EJS Delegate Example');
+      expect(extless).toContain('/assets/');
+      expect(extless).not.toContain('<%=');
+
+      const home = await fetchHtml(`${baseUrl}/delegateHome.html`);
+      expect(home).toContain('Home (delegate)');
+      expect(home).toContain('data-page="home"');
+      expect(home).toContain('/assets/');
+      expect(home).not.toContain('<%=');
+
+      // 无对应模板 → 404，不渲染任何模板。
+      const missing = await fetch(`${baseUrl}/missing.html`, { headers: { Accept: 'text/html' } });
+      expect(missing.status).toBe(404);
+      expect(await missing.text()).not.toContain('EJS Delegate Example');
+    });
+  }, 90000);
 
   it('config 9: strategy.build both — emits compiled .html AND original .ejs template with asset tags', async () => {
     await build(9);
@@ -220,7 +280,25 @@ describe('vite-plugin-view example configs', () => {
     //    不同文件必然内容不同
     expect(indexHtmlSrc).not.toEqual(indexTpl);
     expect(homeHtmlSrc).not.toEqual(homeTpl);
-  }, 60000);
+
+    // preview（both 策略）：dist 有编译好的 .html，静态服务直接返回，不被模板渲染接管。
+    await withPreview(9, async (baseUrl) => {
+      const root_ = await fetchHtml(`${baseUrl}/`);
+      expect(root_).toContain('EJS Build Both Example');
+      expect(root_).toContain('<li>One</li>');
+      expect(root_).toContain('/assets/');
+      expect(root_).not.toContain('<%=');
+
+      const index = await fetchHtml(`${baseUrl}/index.html`);
+      expect(index).toContain('EJS Build Both Example');
+      expect(index).not.toContain('<%=');
+
+      // .ejs 不是文档请求，作为静态资源原样返回，保留模板语法供后端渲染。
+      const tpl = await fetch(`${baseUrl}/index.ejs`);
+      expect(tpl.status).toBe(200);
+      expect(await tpl.text()).toContain('<%= title %>');
+    });
+  }, 90000);
 
   // eslint-disable-next-line max-len
   it('config 10: strategy.build template + injectPlaceholder — asset tags replace placeholder, not </head>-before default', async () => {

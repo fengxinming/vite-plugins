@@ -4,7 +4,7 @@ import { Connect } from 'vite';
 /**
  * connect 中间件的 next 回调在 fastify 404 handler 之间的传递载体。
  *
- * fastify 以 `app.routing(req, res)` 嵌入 connect 中间件时，未匹配的请求会
+ * fastify 以 `app.server.emit('request', req, res)` 嵌入 connect 中间件时，未匹配的请求会
  * 走到 fastify 的 404 handler，但那里拿不到 connect 的 `next`。因此
  * configureServer 在 middleware 里先把 `next` 挂到 `request.raw.__mockNext`，
  * 404 handler 取出并调用，让请求落回 Vite 的中间件链（配合 reply.hijack()）。
@@ -42,7 +42,7 @@ export interface MockClientRoute {
  *
  * 值由构建期按 fastify 的三级取值（`routerOptions` > 顶层 > 默认值）推导，
  * 经虚拟模块注入入口——因此这里与 fastify 的 `routerOptions` 是**映射关系**
- * 而非同一份结构：`trailing` 对应 `ignoreTrailingSlash` 的取反语义，
+ * 而非同一份结构：`trailing` 直接取 `ignoreTrailingSlash` 的值（同名映射），
  * `collapseSlashes` 则是 path-to-regexp 无原生能力、需自行预处理的补偿项。
  */
 export interface MockRouteOptions {

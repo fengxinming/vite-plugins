@@ -1,0 +1,27 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    title= title
+    meta(name="description" content=description)
+    //- 外置依赖的 CDN 由每个 config 的 engineOptions.cdnScripts 给出，模板不做任何判定：
+    //- 页面挂哪个地址必须和该 config externals 里的全局名一一对应，只在 config 里可见。
+    each src in cdnScripts
+      script(crossorigin src=src)
+    //- importMap 同样由 engineOptions 逐字给出，模板不做判定：
+    //- dev 下命中纯 external 的裸说明符会被 vite 改写成 /@id/<说明符>，
+    //- 浏览器只有靠这张表才知道去哪个地址取模块，所以键必须是页面实际看到的形态。
+    //- 表里的 CDN 地址先各自挂一条 modulepreload，与入口链并行取回，不用等 import 解析到才发起。
+    //- crossorigin 不能省：缺了它预取走的是 no-cors，模块请求要 CORS，两者对不上就是白取一遍 +
+    //- "only used by a preload" 告警（实测）。
+    if importMap
+      each href in Object.values(importMap)
+        link(rel="modulepreload" crossorigin href=href)
+      //- 浏览器只认 { "imports": {...} } 这一层结构，直接序列化映射对象会被当成空表（实测：
+      //- 少这层包裹时 /@id/lodash 仍然请求本地 dev server 并 404），所以模板补外层 imports。
+      script(type="importmap")!= JSON.stringify({ imports: importMap })
+  body
+    h1= title
+    #app
+      | loading...
+    script(type="module" src=(entry || '/src/index.tsx'))

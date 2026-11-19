@@ -5,6 +5,6 @@ import { Button, Input, Select } from 'antd';
  *   import { Button } from 'antd'
  *   → import 'antd/es/button' + import 'antd/es/button/style'
  */
-export function App() {
+export function App(): { Button: typeof Button, Input: typeof Input, Select: typeof Select } {
   return { Button, Input, Select };
 }

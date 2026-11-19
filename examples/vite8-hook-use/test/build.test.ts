@@ -1,9 +1,9 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { cleanDist, runBuild } from '../../shared/example-testkit';
+import { runBuild } from '../../shared/example-testkit';
 
 const root = join(__dirname, '..');
 
@@ -15,10 +15,6 @@ async function buildCapture(n: number): Promise<string> {
   }
   return stdout;
 }
-
-afterEach(() => {
-  cleanDist(root);
-});
 
 describe('vite-plugin-hook-use example configs', () => {
   it('config 1: builds successfully with hook logging', async () => {

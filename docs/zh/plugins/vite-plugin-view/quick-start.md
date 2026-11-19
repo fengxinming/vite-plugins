@@ -11,7 +11,7 @@
 ---
 
 ## 支持的模板引擎
-支持以下 59 种模板引擎（按字母顺序排列）：
+支持以下 43 种模板引擎（按字母顺序排列）：
 
 * arc-templates
 * atpl
@@ -175,3 +175,24 @@ export default defineConfig({
 ## 注意事项
 1. 确保已安装所选模板引擎的依赖包（如 `npm install pug`）
 2. 模板文件需放置在 Vite 可识别的路径中（默认入口为 `index.${extension}`）
+
+---
+
+## 导出
+
+包入口对外暴露以下符号：
+
+```ts
+// 默认导出 — 插件工厂函数。
+import view from 'vite-plugin-view';
+
+// 具名导出 — 等价入口。
+import { view, vitePluginView, engineSource } from 'vite-plugin-view';
+```
+
+| 导出 | 形态 | 说明 |
+|------|------|------|
+| `view`（默认导出） | `(opts?: Options) => Plugin \| Plugin[]` | 插件工厂函数。 |
+| `view`（具名导出） | 同上 | 同一工厂的具名再导出。 |
+| `vitePluginView` | 同上 | `view` 的别名，供偏好完整命名的代码库使用。 |
+| `engineSource` | consolidate 实例映射 | 底层 [`consolidate`](https://github.com/ladjs/consolidate) 导出，用于挂载引擎实例/过滤器（如 `engineSource.requires.nunjucks = env`）。 |

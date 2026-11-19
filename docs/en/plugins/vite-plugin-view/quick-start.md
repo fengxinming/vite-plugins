@@ -12,7 +12,7 @@
 ---
 
 ## Supported Template Engines
-The plugin supports **59 template engines** (sorted alphabetically):
+The plugin supports **43 template engines** (sorted alphabetically):
 
 
 * arc-templates
@@ -178,3 +178,24 @@ After building, two separate HTML files will be generated: `dist/index.html` and
 2. Place template files in Vite-accessible paths (default entry: `index.${extension}`).
 3. Some engines (e.g., `pug`) may have specific requirements for beautification (`pretty` option).
 4. Always test configurations with your chosen template engine.
+
+---
+
+## Exports
+
+The package exposes the following symbols from its entry:
+
+```ts
+// Default export — the plugin factory.
+import view from 'vite-plugin-view';
+
+// Named exports — equivalent entry points.
+import { view, vitePluginView, engineSource } from 'vite-plugin-view';
+```
+
+| Export | Kind | Description |
+|--------|------|-------------|
+| `view` (default) | `(opts?: Options) => Plugin \| Plugin[]` | The plugin factory. |
+| `view` (named) | same | The same factory re-exported as a named binding. |
+| `vitePluginView` | same | Alias of `view`, for codebases that prefer the fully-qualified name. |
+| `engineSource` | consolidate instance map | The underlying [`consolidate`](https://github.com/ladjs/consolidate) export, used to attach engine instances/filters (e.g. `engineSource.requires.nunjucks = env`). |

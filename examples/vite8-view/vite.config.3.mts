@@ -22,7 +22,7 @@ export default defineConfig({
   ],
   build: {
     outDir: 'dist/3',
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         format: 'iife'
       }

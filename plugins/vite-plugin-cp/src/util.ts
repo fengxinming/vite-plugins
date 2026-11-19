@@ -18,7 +18,7 @@
 import { readFile } from 'node:fs/promises';
 import { inspect } from 'node:util';
 
-import { copy, outputFile } from 'fs-extra';
+import { copy, outputFile } from 'fs-extra/esm';
 
 import { TransformFile } from './typings';
 

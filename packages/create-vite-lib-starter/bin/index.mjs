@@ -4,7 +4,7 @@ import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { generateStarter } from 'cs-runtime-helper';
-import { ensureDir } from 'fs-extra';
+import { ensureDir } from 'fs-extra/esm';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

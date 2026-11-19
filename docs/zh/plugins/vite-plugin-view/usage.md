@@ -71,10 +71,10 @@ html(lang='en')
   body
     //- ResolvedConfig 来自 configResolved 钩子
     p
-      | define: 
+      | define:
       = JSON.stringify(ResolvedConfig.define, null, 2)
     p
-      | env: 
+      | env:
       = JSON.stringify(ResolvedConfig.env, null, 2)
     #root
     script(src='//unpkg.com/vue@3.5.13/dist/vue.runtime.global.js')
@@ -159,8 +159,8 @@ export default defineConfig({
     <p>alias: <%= JSON.stringify(ResolvedConfig.resolve.alias, null, 2) %></p>
     <p>env: <%= JSON.stringify(ResolvedConfig.env, null, 2) %></p>
     <div id="root"></div>
-    <script src="//unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-    <script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="//unpkg.com/react@19.3.1/umd/react.production.min.js"></script>
+    <script src="//unpkg.com/react-dom@19.3.1/umd/react-dom.production.min.js"></script>
     <script type="module" src="./src/index.jsx"></script>
   </body>
 </html>
@@ -254,8 +254,8 @@ export default defineConfig({
     <p>alias: {{ ResolvedConfig.resolve.alias|stringify }}</p>
     <p>env: {{ ResolvedConfig.env|stringify }}</p>
     <div id="root"></div>
-    <script src="//unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-    <script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="//unpkg.com/react@19.3.1/umd/react.production.min.js"></script>
+    <script src="//unpkg.com/react-dom@19.3.1/umd/react-dom.production.min.js"></script>
     <script type="module" src="./src/index.jsx"></script>
   </body>
 </html>
@@ -345,8 +345,8 @@ export default defineConfig({
     <p>alias: {{ stringify ResolvedConfig.resolve.alias }}</p>
     <p>env: {{ stringify ResolvedConfig.env }}</p>
     <div id="root"></div>
-    <script src="//unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
-    <script src="//unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <script src="//unpkg.com/react@19.3.1/umd/react.production.min.js"></script>
+    <script src="//unpkg.com/react-dom@19.3.1/umd/react-dom.production.min.js"></script>
     <script type="module" src="./src/index.jsx"></script>
   </body>
 </html>

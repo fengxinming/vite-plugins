@@ -1,10 +1,10 @@
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { cleanDist, runBuild, runScript } from '../../shared/example-testkit';
+import { runBuild, runScript } from '../../shared/example-testkit';
 
 /**
  * 真实使用场景测试：所有 dev / build 都通过 `vite` CLI 子进程执行，
@@ -41,9 +41,23 @@ function isJs(ct: string | null): boolean {
   return !!ct && ct.includes('javascript');
 }
 
-afterEach(() => {
-  cleanDist(root);
-});
+/**
+ * 读取某个构建产物目录下所有 JS chunk 的内容。
+ *
+ * 产物文件名带 hash、无法逐个预知，所以整目录拼接后再断言——
+ * 用来验证 `mockIn` 是否真的把 `./mock` 目录的代码打进了产物。
+ */
+function readBundleJs(sub: string): string {
+  const assets = resolve(dist, sub, 'assets');
+  if (!existsSync(assets)) {
+    return '';
+  }
+  return readdirSync(assets)
+    .filter((name) => name.endsWith('.js'))
+    .map((name) => readFileSync(resolve(assets, name), 'utf-8'))
+    .join('\n');
+}
+
 
 describe('build smoke (real `vite build` CLI)', () => {
   for (const n of [1, 2, 3, 4, 5, 6, 7]) {
@@ -313,5 +327,117 @@ describe('isAfter: true (config 7) — plugin boots, pages served by Vite (mock-
     finally {
       await handle.close();
     }
+  }, 60000);
+});
+
+describe('base: 显式 base（config 9）/ 兜底 base（config 10）/ 前端开关不影响服务端（config 11）', () => {
+  it('dev:9 显式 base → /app/api/users 命中，未带前缀不命中', async () => {
+    const handle = await runScript(root, 'dev', 9);
+    try {
+      // Vite 在非根 base 下打印的 Local url 可能已带 /app，
+      // 统一取 origin 再拼目标路径，避免依赖 banner 的具体形态。
+      const origin = new URL(handle.baseUrl).origin;
+
+      // ./mock 里的路由 key 仍是 'GET /api/users'，前缀由插件 base 加上。
+      const list = await jsonFetch(`${origin}/app/api/users`);
+      expect(list.res.ok).toBe(true);
+      expect(list.data).toHaveLength(2);
+      expect(list.data[0]).toMatchObject({ id: 1, name: 'Alice', email: 'alice@example.com' });
+
+      // prefix 对动态参数路由同样生效
+      const one = await jsonFetch(`${origin}/app/api/users/1`);
+      expect(one.data).toMatchObject({ id: 1, name: 'Alice' });
+
+      // 未带 base 的请求不命中 mock：Vite 的 baseMiddleware 直接给出 404 提示
+      const miss = await fetch(`${origin}/api/users`);
+      expect(miss.status).toBe(404);
+      expect(await miss.text()).not.toContain('Alice');
+    }
+    finally {
+      await handle.close();
+    }
+  }, 60000);
+
+  it('dev:10 未配插件 base → 跟随 Vite base，服务端前缀同样生效', async () => {
+    // config 10 只配 Vite 顶层 base '/app'，插件 base 缺省 → 取 resolvedConfig.base，
+    // 与 config 9 显式写 base 的结果必须一致。
+    const handle = await runScript(root, 'dev', 10);
+    try {
+      const origin = new URL(handle.baseUrl).origin;
+
+      const list = await jsonFetch(`${origin}/app/api/users`);
+      expect(list.res.ok).toBe(true);
+      expect(list.data).toHaveLength(2);
+      expect(list.data[0]).toMatchObject({ id: 1, name: 'Alice', email: 'alice@example.com' });
+
+      const one = await jsonFetch(`${origin}/app/api/users/1`);
+      expect(one.data).toMatchObject({ id: 1, name: 'Alice' });
+    }
+    finally {
+      await handle.close();
+    }
+  }, 60000);
+
+  it("dev:11 只开 mockIn: 'build' → 服务端 mock 不受前端开关影响", async () => {
+    // mockIn 只决定「浏览器端要不要 mock」，
+    // dev 端的服务端 mock 始终由 fastify 中间件提供。
+    const handle = await runScript(root, 'dev', 11);
+    try {
+      const list = await jsonFetch(`${handle.baseUrl}/api/users`);
+      expect(list.res.ok).toBe(true);
+      expect(list.data).toHaveLength(2);
+      expect(list.data[0]).toMatchObject({ id: 1, name: 'Alice', email: 'alice@example.com' });
+    }
+    finally {
+      await handle.close();
+    }
+  }, 60000);
+
+  it('build:9 / build:10 构建成功，且产物含 mock 数据（mockIn 注入生效）', async () => {
+    const nine = await runBuild(root, 'build', 9);
+    expect(nine.code, `build:9 failed\n${nine.stdout}`).toBe(0);
+    expect(existsSync(resolve(dist, '9'))).toBe(true);
+
+    const ten = await runBuild(root, 'build', 10);
+    expect(ten.code, `build:10 failed\n${ten.stdout}`).toBe(0);
+    expect(existsSync(resolve(dist, '10'))).toBe(true);
+
+    // mockIn 注入生效：mock 目录里的数据必须真的出现在产物里，而不是只在 dev 端。
+    // 入口（src/mock-client-entry.ts）用 baseURL='/app' + '/api/users' 运行时拼接，
+    // 产物里出现 alice@example.com 这些字面量只可能来自被打包的 mock 文件。
+    const nineBundle = readBundleJs('9');
+    expect(nineBundle, 'dist/9/assets 下没有 JS 产物').not.toBe('');
+    expect(nineBundle).toContain('alice@example.com');
+    expect(nineBundle).toContain('bob@example.com');
+    // base 前缀由客户端运行时 withBase 拼进路径：产物里 `base="/app"` 与无前缀 route key
+    // （"GET /api/users"）各自独立，没有连续的全路径字面量。下面这条正则命中的是 minify:false
+    // 保留下来的文档注释（normalize / entry 注释里写了 /app/api/users），不是路由数据本身；
+    // 前缀是否真的生效由 adapter-base.test.ts 在运行时验证。
+    expect(nineBundle).toMatch(/app[\\/]{1,3}api[\\/]{1,3}users/);
+
+    const tenBundle = readBundleJs('10');
+    expect(tenBundle, 'dist/10/assets 下没有 JS 产物').not.toBe('');
+    expect(tenBundle).toContain('alice@example.com');
+    // 兜底 base 一致：未配插件 base、只配 Vite base 时，下发的 base 同样归一化成 '/app'（正则命中注释，机理同上）
+    expect(tenBundle).toMatch(/app[\\/]{1,3}api[\\/]{1,3}users/);
+
+    // 产物里的静态页面真的引用了 mock chunk，而不是一个没人加载的孤立入口
+    for (const sub of ['9', '10']) {
+      const html = readFileSync(resolve(dist, sub, 'mock-client.html'), 'utf-8');
+      expect(html, `dist/${sub}/mock-client.html 没有引用 mockClient chunk`).toContain('mockClient-');
+    }
+  }, 120000);
+
+  it("build:11 mockIn:'build' 打包注入实际配置（产物含 mock 数据）", async () => {
+    // 与 no-client-mock（serve 不注入）互补：'build' 在 vite build 时必须真的注入。
+    // config 11 无 base，路由不带前缀，故只断言 mock 数据进了产物，不断言 /app 正则。
+    const eleven = await runBuild(root, 'build', 11);
+    expect(eleven.code, `build:11 failed\n${eleven.stdout}`).toBe(0);
+    expect(existsSync(resolve(dist, '11'))).toBe(true);
+
+    const elevenBundle = readBundleJs('11');
+    expect(elevenBundle, 'dist/11/assets 下没有 JS 产物').not.toBe('');
+    expect(elevenBundle).toContain('alice@example.com');
+    expect(elevenBundle).toContain('bob@example.com');
   }, 60000);
 });

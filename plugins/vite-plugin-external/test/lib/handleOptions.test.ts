@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { logger } from '../../src/common/logger';
 import { buildOptions } from '../../src/lib/handleOptions';
-import type { Options } from '../../src/types';
+import type { Options } from '../../src/types/public';
 
 describe('lib/handleOptions', () => {
   describe('buildOptions', () => {
@@ -194,9 +194,12 @@ describe('lib/handleOptions', () => {
       // 模拟 JS 用户（无类型检查）往 mode 块塞插件级字段的场景
       const root = {
         interop: 'auto',
+        apply: 'build',
         development: {
           interop: 'auto',
           enableBanner: true,
+          apply: 'serve',
+          enforce: 'post',
           externalizeDeps: ['lodash']
         }
       } as unknown as Options;
@@ -206,8 +209,13 @@ describe('lib/handleOptions', () => {
       // 非法字段被 warn 点名
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"interop"'));
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"enableBanner"'));
-      // 根级 interop 不受影响（mode 块里的副本被丢弃）
+      // apply / enforce 只能在插件工厂阶段定值，mode 块里的副本同样被丢弃
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"apply"'));
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('"enforce"'));
+      // 根级字段不受影响（mode 块里的副本被丢弃）
       expect(opts.interop).toBe('auto');
+      expect(opts.apply).toBe('build');
+      expect(opts.enforce).toBeUndefined();
       expect(opts.enableBanner).toBeUndefined();
       // 合法字段照常生效
       expect(opts.externalizeDeps).toEqual(['lodash']);

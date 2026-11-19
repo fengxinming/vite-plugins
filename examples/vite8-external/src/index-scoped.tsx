@@ -4,7 +4,7 @@
  *
  * 故意引入：
  *   1. react / react-dom/client — 触发函数 externals 的命名全局变量分支
-/* 前缀 pure external 分支
+ *   2. @scope/foo — 触发函数 externals 的 @scope/ 前缀分支
  */
 import { foo } from '@scope/foo';
 import React from 'react';
@@ -12,7 +12,12 @@ import { createRoot } from 'react-dom/client';
 
 function App() {
   // 引用 foo 防止 tree-shake，确保 @scope/* 分支被真正触发
-  return React.createElement('div', null, 'Hello from scoped example', String(foo));
+  return (
+    <div>
+      Hello from scoped example
+      <div>{foo}</div>
+    </div>
+  );
 }
 
 const root = createRoot(document.getElementById('app')!);

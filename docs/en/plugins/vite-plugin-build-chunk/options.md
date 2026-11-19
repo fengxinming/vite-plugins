@@ -4,19 +4,27 @@
 > Type definitions copied verbatim from the plugin TypeScript source:
 >
 ```ts
-export interface BuildOptions {
+import type { LibraryFormats, PluginOption } from 'vite';
+import { LibraryOptions, UserConfig } from 'vite';
+
+type ViteBuildOptions = NonNullable<UserConfig['build']>;
+type BaseBuildOptions = Exclude<ViteBuildOptions, 'rollupOptions' | 'rolldownOptions' | 'lib'>;
+type OutputOptions = NonNullable<NonNullable<ViteBuildOptions['rolldownOptions']>['output']>;
+type SingleOutputOptions = Exclude<OutputOptions, OutputOptions[]>;
+
+export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
+  logLevel?: UserConfig['logLevel'];
+  output?: OutputOptions;
+  /**
+   * @deprecated
+   */
+  chunk?: string;
   /**
    * The chunk name.
    *
    * 构建的 chunk 名称。
    */
-  chunk: string;
-  /**
-   * Global variable name.
-   *
-   * 全局变量名。
-   */
-  name: string;
+  entry: NonNullable<LibraryOptions['entry']>;
   /**
    * The output format.
    *
@@ -24,35 +32,23 @@ export interface BuildOptions {
    */
   format?: LibraryFormats;
   /**
-   * Whether to generate sourcemaps.
-   *
-   * 是否生成 sourcemap。
-   */
-  sourcemap?: boolean | 'inline' | 'hidden';
-  /**
    * The exports type.
    *
    * 导出类型。
    */
-  exports?: 'default' | 'named' | 'none' | 'auto';
+  exports?: SingleOutputOptions['exports'];
   /**
-   * Whether to minify the output.
-   *
-   * 是否压缩输出。
+   * @deprecated
    */
-  minify?: boolean | 'terser' | 'esbuild';
+  plugins?: PluginOption[];
+
   /**
-   * The output directory.
-   *
-   * 输出目录。
+   * @deprecated
    */
-  outDir?: string;
-  /**
-   * The output file name.
-   *
-   * 输出文件名。
-   */
-  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
+  resolve?: UserConfig['resolve'];
+}
+
+export interface Options {
   /**
    * The plugins to use.
    *
@@ -66,9 +62,6 @@ export interface BuildOptions {
    * 解析选项。
    */
   resolve?: UserConfig['resolve'];
-}
-
-export interface Options {
   /**
    * The build options.
    *
@@ -84,63 +77,73 @@ export interface Options {
 | Parameter       | Type                                                                 | Required | Default Value          | Description                                                                 |
 |-----------------|----------------------------------------------------------------------|----------|------------------------|-----------------------------------------------------------------------------|
 | `build`         | `BuildOptions[] \| BuildOptions`                                     | Yes      | -                      | Configuration for build tasks (array or single object).                   |
+| `plugins`       | `PluginOption[]`                                                     | No       | `[]`                   | Additional Vite plugins applied to every secondary build.                |
+| `resolve`       | `UserConfig['resolve']`                                              | No       | -                      | `resolve` config passed through to every secondary build.                |
 
 ---
 
 ### **BuildOptions (Configuration for Each Build Task)**
+
+`BuildOptions` extends Vite's build options (minus `rollupOptions` / `rolldownOptions` / `lib`) and Vite's `build.lib` options, so fields such as `sourcemap`, `minify`, `formats`, `cssFileName` and `emptyOutDir` are also accepted. The most commonly used ones are listed below.
+
 | Parameter       | Type                                                                 | Required | Default Value          | Description                                                                 |
 |-----------------|----------------------------------------------------------------------|----------|------------------------|-----------------------------------------------------------------------------|
-| `chunk`         | `string`                                                            | Yes      | -                      | File name inside the main build's output dir (`outDir`).                  |
-| `name`          | `string`                                                            | Yes      | -                      | Global variable name (applies only to UMD/IIFE formats).                   |
-| `format`        | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | No       | `'umd'`                | Build format (defaults to `umd`).                                         |
+| `entry`         | `NonNullable<LibraryOptions['entry']>`                                | Yes      | -                      | The file to re-bundle. A relative value is resolved against the **main build's `outDir`** (captured in `configResolved`); an absolute path is used as-is. |
+| `chunk`         | `string`                                                             | No       | -                      | **Deprecated** alias for `entry`; kept for backward compatibility. Prefer `entry`. |
+| `name`          | `string`                                                            | No       | -                      | Global variable name; required when the output format is UMD or IIFE.      |
+| `format`        | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | No       | `'umd'`                | Build format (defaults to `umd`). Ignored when `formats` is provided.     |
 | `sourcemap`     | `boolean \| 'inline' \| 'hidden'`                                    | No       | `false`                | Whether to generate sourcemaps (supports inline or hidden modes).          |
-| `exports`       | `'default' \| 'named' \| 'none' \| 'auto'`                           | No       | `'auto'`               | Export type for Rollup output.                                            |
+| `exports`       | `'default' \| 'named' \| 'none' \| 'auto'`                           | No       | `'auto'`               | Export type for the Rolldown output.                                      |
 | `minify`        | `boolean \| 'terser' \| 'esbuild'`                                   | No       | `false`                | Whether to enable output minification (supports `terser` or `esbuild`).   |
-| `outDir`        | `string`                                                            | No       | Main build's `outDir`  | Custom output directory (relative to project root).                       |
-| `fileName`      | `string \| ((format: LibraryFormats, entryName: string) => string)`  | No       | Default based on format| Custom filename (supports template strings or functions).                 |
-| `plugins`       | `PluginOption[]`                                                     | No       | `[]`                   | Additional Vite plugins.                                                  |
-| `resolve`       | `UserConfig['resolve']`                                              | No       | -                      | `resolve` config passed through to the secondary build.                   |
+| `outDir`        | `string`                                                            | No       | Main build's `outDir`  | Secondary build's output directory (relative to project root). Note: `entry` is resolved against the **main** build's outDir, not this value. |
+| `fileName`      | `string \| ((format: LibraryFormats, entryName: string) => string)`  | No       | Vite default naming    | Output file name. When **unset**, Vite derives it from the `package.json` `name` (not the entry file name), so rebundling `my-lib.js` does NOT yield `my-lib.*`; set `fileName` explicitly to control the name. A function form returns the exact filename without extra extensions. |
+| `plugins`       | `PluginOption[]`                                                     | No       | -                      | **Deprecated** at this level; use the top-level `Options.plugins`.         |
+| `resolve`       | `UserConfig['resolve']`                                              | No       | -                      | **Deprecated** at this level; use the top-level `Options.resolve`.         |
 
 ---
 
 ## TypeScript Definitions
 
 ```typescript
-import type { LibraryFormats, PluginOption, UserConfig } from 'vite';
+import type { LibraryFormats, PluginOption } from 'vite';
+import { LibraryOptions, UserConfig } from 'vite';
 
-export interface BuildOptions {
+type ViteBuildOptions = NonNullable<UserConfig['build']>;
+type BaseBuildOptions = Exclude<ViteBuildOptions, 'rollupOptions' | 'rolldownOptions' | 'lib'>;
+type OutputOptions = NonNullable<NonNullable<ViteBuildOptions['rolldownOptions']>['output']>;
+type SingleOutputOptions = Exclude<OutputOptions, OutputOptions[]>;
+
+export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
+  logLevel?: UserConfig['logLevel'];
+  output?: OutputOptions;
+  /**
+   * @deprecated
+   */
+  chunk?: string;
   /**
    * The chunk name.
    */
-  chunk: string;
-  /**
-   * Global variable name.
-   */
-  name: string;
+  entry: NonNullable<LibraryOptions['entry']>;
   /**
    * The output format.
    */
   format?: LibraryFormats;
   /**
-   * Whether to generate sourcemaps.
-   */
-  sourcemap?: boolean | 'inline' | 'hidden';
-  /**
    * The exports type.
    */
-  exports?: 'default' | 'named' | 'none' | 'auto';
+  exports?: SingleOutputOptions['exports'];
   /**
-   * Whether to minify the output.
+   * @deprecated
    */
-  minify?: boolean | 'terser' | 'esbuild';
+  plugins?: PluginOption[];
+
   /**
-   * The output directory.
+   * @deprecated
    */
-  outDir?: string;
-  /**
-   * The output file name.
-   */
-  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
+  resolve?: UserConfig['resolve'];
+}
+
+export interface Options {
   /**
    * The plugins to use.
    */
@@ -150,9 +153,6 @@ export interface BuildOptions {
    * The resolve options.
    */
   resolve?: UserConfig['resolve'];
-}
-
-export interface Options {
   /**
    * The build options.
    */

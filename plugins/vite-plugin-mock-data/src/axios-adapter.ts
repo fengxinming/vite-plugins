@@ -1,8 +1,18 @@
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios from 'axios';
-import { request } from 'vite-plugin-mock-data/mock-client';
+import { mockRoutes, request as defaultRequest } from 'vite-plugin-mock-data/mock-client';
 
-export function createMockAdapter(): AxiosAdapter {
+import type { MockAdapterOptions } from './types';
+
+export function createMockAdapter({
+  request
+}: MockAdapterOptions = {}): AxiosAdapter | undefined {
+  if (mockRoutes.length === 0) {
+    return;
+  }
+  if (typeof request !== 'function') {
+    request = defaultRequest;
+  }
   return async function mockAdapter(
     config: InternalAxiosRequestConfig
   ): Promise<AxiosResponse> {

@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { cleanDist, runBuild } from '../../shared/example-testkit';
+import { runBuild } from '../../shared/example-testkit';
 
 const root = join(__dirname, '..');
 
@@ -17,10 +17,6 @@ async function build(n: number) {
 function read(...segments: string[]) {
   return readFileSync(join(root, ...segments), 'utf-8');
 }
-
-afterEach(() => {
-  cleanDist(root);
-});
 
 /**
  * 从构建好的 JS 代码中提取被内联的 CSS 字符串（即 textContent = "..." 赋值里引号中的内容）。

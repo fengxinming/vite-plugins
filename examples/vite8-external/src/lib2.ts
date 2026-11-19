@@ -35,7 +35,7 @@ export function formatDate(date: Date | string | number, pattern = 'YYYY-MM-DD')
 }
 
 /**
-/* 被真实引用，
+ * 使用 @babel/core 的 version — 确保 @babel/core 被真实引用，
  * 使 externalizeDeps: [/^@babel\//] 和 externals: [/^@babel\//] 生效。
  */
 export function getBabelVersion(): string {

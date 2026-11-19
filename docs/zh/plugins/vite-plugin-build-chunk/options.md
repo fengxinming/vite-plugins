@@ -4,19 +4,27 @@
 > Type definitions copied verbatim from the plugin TypeScript source:
 >
 ```ts
-export interface BuildOptions {
+import type { LibraryFormats, PluginOption } from 'vite';
+import { LibraryOptions, UserConfig } from 'vite';
+
+type ViteBuildOptions = NonNullable<UserConfig['build']>;
+type BaseBuildOptions = Exclude<ViteBuildOptions, 'rollupOptions' | 'rolldownOptions' | 'lib'>;
+type OutputOptions = NonNullable<NonNullable<ViteBuildOptions['rolldownOptions']>['output']>;
+type SingleOutputOptions = Exclude<OutputOptions, OutputOptions[]>;
+
+export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
+  logLevel?: UserConfig['logLevel'];
+  output?: OutputOptions;
+  /**
+   * @deprecated
+   */
+  chunk?: string;
   /**
    * The chunk name.
    *
    * 构建的 chunk 名称。
    */
-  chunk: string;
-  /**
-   * Global variable name.
-   *
-   * 全局变量名。
-   */
-  name: string;
+  entry: NonNullable<LibraryOptions['entry']>;
   /**
    * The output format.
    *
@@ -24,35 +32,23 @@ export interface BuildOptions {
    */
   format?: LibraryFormats;
   /**
-   * Whether to generate sourcemaps.
-   *
-   * 是否生成 sourcemap。
-   */
-  sourcemap?: boolean | 'inline' | 'hidden';
-  /**
    * The exports type.
    *
    * 导出类型。
    */
-  exports?: 'default' | 'named' | 'none' | 'auto';
+  exports?: SingleOutputOptions['exports'];
   /**
-   * Whether to minify the output.
-   *
-   * 是否压缩输出。
+   * @deprecated
    */
-  minify?: boolean | 'terser' | 'esbuild';
+  plugins?: PluginOption[];
+
   /**
-   * The output directory.
-   *
-   * 输出目录。
+   * @deprecated
    */
-  outDir?: string;
-  /**
-   * The output file name.
-   *
-   * 输出文件名。
-   */
-  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
+  resolve?: UserConfig['resolve'];
+}
+
+export interface Options {
   /**
    * The plugins to use.
    *
@@ -66,9 +62,6 @@ export interface BuildOptions {
    * 解析选项。
    */
   resolve?: UserConfig['resolve'];
-}
-
-export interface Options {
   /**
    * The build options.
    *
@@ -84,43 +77,55 @@ export interface Options {
 | 参数         | 类型                                                                 | 必填 | 默认值          | 说明                                                                 |
 |--------------|----------------------------------------------------------------------|------|-----------------|----------------------------------------------------------------------|
 | `build`      | `BuildOptions[] \| BuildOptions`                                     | 是   | -              | 构建任务配置（数组或单个对象）                                       |
+| `plugins`    | `PluginOption[]`                                                     | 否   | `[]`           | 应用到每个二次构建的额外 Vite 插件                                   |
+| `resolve`    | `UserConfig['resolve']`                                              | 否   | -              | 透传给每个二次构建的 `resolve` 解析配置                               |
 
 ---
 
 ### **BuildOptions（每个构建任务的配置）**
+
+`BuildOptions` 继承了 Vite 的构建选项（除 `rollupOptions` / `rolldownOptions` / `lib` 外）以及 Vite 的 `build.lib` 选项，因此 `sourcemap`、`minify`、`formats`、`cssFileName`、`emptyOutDir` 等字段同样可用。下面列出最常用的几项。
+
 | 参数         | 类型                                                                 | 必填 | 默认值          | 说明                                                                 |
 |--------------|----------------------------------------------------------------------|------|-----------------|----------------------------------------------------------------------|
-| `chunk`      | `string`                                                            | 是   | -              | 主构建输出目录（`outDir`）内的文件名                                   |
-| `name`       | `string`                                                            | 是   | -              | 全局变量名（仅在 UMD/IIFE 格式生效）                                 |
-| `format`     | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | 否   | `'umd'`        | 构建格式（默认 `umd`）                                             |
+| `entry`      | `NonNullable<LibraryOptions['entry']>`                                | 是   | -              | 要二次打包的文件。相对值以**主构建的 `outDir`**（在 `configResolved` 中捕获）为基准解析；绝对路径原样使用。 |
+| `chunk`      | `string`                                                             | 否   | -              | **已废弃**，等价于 `entry`，仅为向后兼容保留，建议改用 `entry`。        |
+| `name`       | `string`                                                            | 否   | -              | 全局变量名；输出格式为 UMD 或 IIFE 时必填                             |
+| `format`     | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | 否   | `'umd'`        | 构建格式（默认 `umd`）；提供 `formats` 时该项被忽略                   |
 | `sourcemap`  | `boolean \| 'inline' \| 'hidden'`                                    | 否   | `false`        | 是否生成 sourcemap（支持内联或隐藏模式）                           |
-| `exports`    | `'default' \| 'named' \| 'none' \| 'auto'`                           | 否   | `'auto'`       | Rollup 输出的导出类型                                             |
+| `exports`    | `'default' \| 'named' \| 'none' \| 'auto'`                           | 否   | `'auto'`       | Rolldown 输出的导出类型                                             |
 | `minify`     | `boolean \| 'terser' \| 'esbuild'`                                   | 否   | `false`        | 是否启用代码压缩（支持 `terser` 或 `esbuild`）                     |
-| `outDir`     | `string`                                                            | 否   | 主构建的 `outDir` | 自定义输出目录（相对项目根目录）                                  |
-| `fileName`   | `string \| ((format: LibraryFormats, entryName: string) => string)`   | 否   | 根据格式生成默认名称 | 自定义文件名（支持模板字符串或函数）                               |
-| `plugins`    | `PluginOption[]`                                                     | 否   | `[]`           | 额外的 Vite 插件列表                                               |
-| `resolve`    | `UserConfig['resolve']`                                              | 否   | -              | 透传给二次构建的 `resolve` 解析配置                                 |
+| `outDir`     | `string`                                                            | 否   | 主构建的 `outDir` | 二次构建的输出目录（相对项目根目录）。注意：`entry` 以**主构建**的 outDir 为基准解析，与此值无关。 |
+| `fileName`   | `string \| ((format: LibraryFormats, entryName: string) => string)`   | 否   | Vite 默认命名    | 输出文件名。**未设置**时 Vite 以 `package.json` 的 `name` 为基名（而非入口文件名），故二次打包 `my-lib.js` 并不会得到 `my-lib.*`；需显式设置 `fileName` 才能控制名称。函数形式返回的名称即为完整文件名，不再追加扩展名。 |
+| `plugins`    | `PluginOption[]`                                                     | 否   | -              | **此层级已废弃**，请改用顶层 `Options.plugins`。                       |
+| `resolve`    | `UserConfig['resolve']`                                              | 否   | -              | **此层级已废弃**，请改用顶层 `Options.resolve`。                       |
 
 ---
 
 ## TypeScript 定义
 
 ```typescript
-import type { LibraryFormats, PluginOption, UserConfig } from 'vite';
+import type { LibraryFormats, PluginOption } from 'vite';
+import { LibraryOptions, UserConfig } from 'vite';
 
-export interface BuildOptions {
+type ViteBuildOptions = NonNullable<UserConfig['build']>;
+type BaseBuildOptions = Exclude<ViteBuildOptions, 'rollupOptions' | 'rolldownOptions' | 'lib'>;
+type OutputOptions = NonNullable<NonNullable<ViteBuildOptions['rolldownOptions']>['output']>;
+type SingleOutputOptions = Exclude<OutputOptions, OutputOptions[]>;
+
+export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
+  logLevel?: UserConfig['logLevel'];
+  output?: OutputOptions;
+  /**
+   * @deprecated
+   */
+  chunk?: string;
   /**
    * The chunk name.
    *
    * 构建的 chunk 名称。
    */
-  chunk: string;
-  /**
-   * Global variable name.
-   *
-   * 全局变量名。
-   */
-  name: string;
+  entry: NonNullable<LibraryOptions['entry']>;
   /**
    * The output format.
    *
@@ -128,35 +133,23 @@ export interface BuildOptions {
    */
   format?: LibraryFormats;
   /**
-   * Whether to generate sourcemaps.
-   *
-   * 是否生成 sourcemap。
-   */
-  sourcemap?: boolean | 'inline' | 'hidden';
-  /**
    * The exports type.
    *
    * 导出类型。
    */
-  exports?: 'default' | 'named' | 'none' | 'auto';
+  exports?: SingleOutputOptions['exports'];
   /**
-   * Whether to minify the output.
-   *
-   * 是否压缩输出。
+   * @deprecated
    */
-  minify?: boolean | 'terser' | 'esbuild';
+  plugins?: PluginOption[];
+
   /**
-   * The output directory.
-   *
-   * 输出目录。
+   * @deprecated
    */
-  outDir?: string;
-  /**
-   * The output file name.
-   *
-   * 输出文件名。
-   */
-  fileName?: string | ((format: LibraryFormats, entryName: string) => string);
+  resolve?: UserConfig['resolve'];
+}
+
+export interface Options {
   /**
    * The plugins to use.
    *
@@ -170,9 +163,6 @@ export interface BuildOptions {
    * 解析选项。
    */
   resolve?: UserConfig['resolve'];
-}
-
-export interface Options {
   /**
    * The build options.
    *

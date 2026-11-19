@@ -23,7 +23,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist/2',
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         entryFileNames: '[name].js',
         format: 'iife'

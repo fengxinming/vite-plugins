@@ -45,11 +45,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist/7',
-    rollupOptions: {
-      output: {
-        format: 'iife'
-      }
-    },
     // Vite 8 / Rolldown defaults codeSplitting to false for IIFE output, but
     // Rolldown's multi-entry MPA mode requires codeSplitting=true (otherwise
     // it emits INVALID_OPTION: multiple inputs are not supported when

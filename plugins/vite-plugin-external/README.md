@@ -18,8 +18,6 @@ For detailed usage instructions and API references, please visit the official do
 
 ## Quick Start
 
-Each example below mirrors a real, build-tested config under `examples/vite8-external` (`vite.config.1.mts` … `vite.config.12.mts`).
-
 ### Prerequisite: provide the globals in `index.html`
 
 Global-name externals (e.g. `react: 'React'`) only take effect if the global variable actually exists at runtime — the plugin rewrites the import to a global lookup, it does **not** download anything. So load the UMD builds in `index.html` **before** writing the config, and keep the `window` names aligned with the values in `externals`:
@@ -31,8 +29,8 @@ Global-name externals (e.g. `react: 'React'`) only take effect if the global var
   <meta charset="UTF-8">
   <title>demo</title>
   <!-- CDN UMD builds provide window.React / window.ReactDOM -->
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/umd-react/dist/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/umd-react/dist/react-dom.production.min.js"></script>
 </head>
 <body>
   <div id="app"></div>
@@ -41,7 +39,7 @@ Global-name externals (e.g. `react: 'React'`) only take effect if the global var
 </html>
 ```
 
-Same rule for per-mode overrides (example 6/12): every mode's global names must exist on `window` in that environment. The ESM CDN shape (example 3) is the exception — nothing to add manually: the bundle imports the absolute CDN URLs directly and the plugin injects `<link rel="modulepreload">` for first-paint prefetching.
+The same rule applies to per-mode (`development` / `production`) overrides: every mode's global names must exist on `window` in that environment. Externals whose value is an ESM CDN URL are the exception — nothing to add manually: in a build the bundle imports the absolute CDN URLs directly and the plugin injects `<link rel="modulepreload">` for first-paint prefetching; with `importmap: true` (example 5 below) the addresses move out of the bundle into an injected `<script type="importmap">`.
 
 **1. IIFE build with global variables (application build)**
 
@@ -71,7 +69,7 @@ export default defineConfig({
 
 **2. Function-style externals (dynamic mapping, lib build)**
 
-`(source, importer, isResolved)` — return a string (global name / CDN URL), `true` (pure external), or a falsy value to let it resolve normally. IIFE lib builds need `build.lib.name`:
+`(source, importer, isResolved)` — return a string (global name / CDN URL), an `ExternalEsConfig` (`{ format: 'es', url, exports? }`, where `exports` is `'auto' | 'named' | 'default' | 'none'`), `true` (pure external), or a falsy value to let it resolve normally. IIFE lib builds need `build.lib.name`:
 
 ```js
 import { defineConfig } from 'vite';
@@ -111,38 +109,17 @@ export default defineConfig({
   plugins: [
     pluginExternal({
       externals: {
-        react: 'https://esm.sh/react@18.3.1',
-        'react-dom/client': 'https://esm.sh/react-dom@18.3.1'
+        react: 'https://esm.sh/react@19.3.1',
+        'react-dom/client': 'https://esm.sh/react-dom@19.3.1/client',
+        // the automatic JSX runtime is a separate module id — list it too
+        'react/jsx-runtime': 'https://esm.sh/react@19.3.1/jsx-runtime'
       }
     })
   ]
 });
 ```
 
-**4. Array of strings and regex (pure external on match)**
-
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      externals: ['lodash', /^@babel\//],
-      nodeBuiltins: true
-    })
-  ],
-  build: {
-    lib: {
-      entry: 'src/main.ts',
-      formats: ['es'],
-      fileName: 'my-lib'
-    }
-  }
-});
-```
-
-**5. externalizeDeps — pure external without shim (build only)**
+**4. externalizeDeps — pure external without shim (dev and build)**
 
 ```js
 import { defineConfig } from 'vite';
@@ -164,7 +141,13 @@ export default defineConfig({
 });
 ```
 
-**6. Per-mode override (development / production)**
+Pure external leaves a bare specifier, so the consumer has to supply the address itself:
+a Node host resolves it from `node_modules`, and a dev-server page needs a
+`<script type="importmap">` whose keys match what the browser actually requests — Vite 8 rewrites
+an externalized bare specifier to `/@id/<specifier>`, so the keys must carry that prefix
+(`{"imports": {"/@id/lodash": "https://esm.sh/lodash@4.18.1"}}`).
+
+**5. `importmap: true` — CDN externals become an import map**
 
 ```js
 import { defineConfig } from 'vite';
@@ -174,158 +157,25 @@ export default defineConfig({
   plugins: [
     pluginExternal({
       externals: {
-        react: 'React',
-        'react-dom': 'ReactDOM'
+        lodash: 'https://esm.sh/lodash@4.18.1',
+        dayjs: 'https://esm.sh/dayjs@1.11.23'
       },
-      production: {
-        externals: {
-          react: '$linkdesign.React',
-          'react-dom': '$linkdesign.ReactDOM'
-        }
-      }
+      importmap: true
     })
-  ],
-  build: {
-    rolldownOptions: {
-      output: {
-        format: 'iife'
-      }
-    }
-  }
+  ]
 });
 ```
 
-**7. interop: 'auto' — fix IIFE require wrapping**
+With the switch on, the CDN-valued entries stay bare specifiers in the bundle instead of absolute
+URLs, and the build injects `<script type="importmap">{"imports": …}</script>` (keys are the bare
+specifiers) plus one `<link rel="modulepreload" crossorigin>` per URL into the HTML — the addresses
+live only in the map, so pointing a dependency at another host is a single edit. This is a
+build-only switch: dev still pre-bundles CDN externals through the DepsOptimizer and gets neither a
+map nor the preload tags, and stash files are written as usual.
 
-Clears `build.rolldownOptions.external` during build so every named external resolves through the stash-file CJS shim (`module.exports = React;`) — a shape Rolldown's IIFE wrapper always handles correctly:
-
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      interop: 'auto',
-      externals: {
-        react: 'React',
-        'react-dom': 'ReactDOM',
-        'react-dom/client': 'ReactDOM'
-      }
-    })
-  ],
-  build: {
-    rolldownOptions: {
-      output: {
-        format: 'iife'
-      }
-    }
-  }
-});
-```
-
-**8. nodeBuiltins + externalizeDeps — Node.js library build**
-
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      nodeBuiltins: true,
-      externalizeDeps: ['lodash', 'dayjs']
-    })
-  ],
-  build: {
-    lib: {
-      entry: 'src/main.ts',
-      formats: ['es'],
-      fileName: 'my-lib'
-    }
-  }
-});
-```
-
-**9. Vue externalization (IIFE lib build)**
-
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      externals: {
-        vue: 'Vue'
-      }
-    })
-  ],
-  build: {
-    lib: {
-      entry: 'src/vue-app.ts',
-      formats: ['iife'],
-      name: 'MyVueApp',
-      fileName: 'main'
-    }
-  }
-});
-```
-
-**10. Custom cacheDir for stash files**
-
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      cacheDir: '.external-cache',
-      externals: {
-        react: 'React',
-        'react-dom': 'ReactDOM',
-        'react-dom/client': 'ReactDOM'
-      }
-    })
-  ],
-  build: {
-    rolldownOptions: {
-      output: {
-        format: 'iife'
-      }
-    }
-  }
-});
-```
-
-**11. Per-mode override of externalizeDeps / nodeBuiltins (>= 8.0.3)**
-
-Mode blocks may override any `BasicOptions` field; `externalizeDeps` arrays are merged (concat + dedupe):
-
-```js
-import { defineConfig } from 'vite';
-import pluginExternal from 'vite-plugin-external';
-
-export default defineConfig({
-  plugins: [
-    pluginExternal({
-      externalizeDeps: ['lodash'],
-      production: {
-        externalizeDeps: ['dayjs'],
-        nodeBuiltins: true
-      }
-    })
-  ],
-  build: {
-    lib: {
-      entry: 'src/main.ts',
-      formats: ['es'],
-      fileName: 'my-lib'
-    }
-  }
-});
-```
+Other shapes — `externals` as an array of strings / RegExps, per-mode `development` /
+`production` overrides, `interop: 'auto'`, `nodeBuiltins`, a custom `cacheDir` for the stash
+files — are covered in the [usage guide](https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-external/usage).
 
 ## Q&A
 

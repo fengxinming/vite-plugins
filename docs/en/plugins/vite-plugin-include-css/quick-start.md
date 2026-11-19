@@ -36,7 +36,7 @@ export default defineConfig({
   ],
   build: {
     cssCodeSplit: false,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
         manualChunks: undefined,
         assetFileNames: 'assets/[name][extname]',

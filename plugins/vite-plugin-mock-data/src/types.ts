@@ -49,6 +49,9 @@ export interface RouteConfig {
   [route: string]: RouteValue;
 }
 
+/** `mockIn` 归一化后的取值；`false` 表示不注入浏览器端 mock。 */
+export type MockIn = false | 'build' | 'client';
+
 export interface Options {
   /**
    * The directory to serve files from.
@@ -89,6 +92,8 @@ export interface Options {
    */
   routes?: RouteConfig | Array<RouteConfig | string> | string;
 
+  base?: string;
+
   /**
    * 是否把 mock 路由提供给浏览器端运行时（`vite-plugin-mock-data/mock-client` 与
    * `vite-plugin-mock-data/axios-adapter`），使打包后的静态页面（双击打开或静态托管）
@@ -104,7 +109,31 @@ export interface Options {
    *
    * @default false
    */
+  /**
+   * @deprecated 用 `mockIn: 'build'` 代替。保留为兼容别名，内部等价于
+   * `mockIn: 'build'`（仅在未配置 `mockIn` 时生效），下个大版本移除。
+   */
   buildMock?: boolean;
+
+  /**
+   * 浏览器端 mock（`vite-plugin-mock-data/mock-client` 与
+   * `vite-plugin-mock-data/axios-adapter`）的注入时机。
+   *
+   * | 取值 | `vite build` | dev / serve |
+   * | ---- | ------------ | ----------- |
+   * | `false`（默认） | 不注入 | 不注入 |
+   * | `'build'` | 注入 | 不注入 |
+   * | `'client'` | 注入 | 注入 |
+   *
+   * `'client'` 是超集：浏览器端要 mock 就选它；只让静态产物带 mock 选 `'build'`。
+   * 只影响浏览器端这条链；dev 端的服务端 mock 由 fastify 中间件提供，不受影响。
+   * 仅支持文件型 `routes`（目录 / 目录数组）；内联 `RouteConfig` 对象是 dev-only，
+   * 不会被打包。前端要真的用到 mock，入口必须静态 import
+   * `vite-plugin-mock-data/axios-adapter`。
+   *
+   * @default false
+   */
+  mockIn?: boolean | 'build' | 'client';
 
   /**
    * Whether to output the banner
@@ -127,4 +156,8 @@ export interface MockResponse {
   statusText: string;
   headers: Record<string, string>;
   data: any;
+}
+
+export interface MockAdapterOptions {
+  request?: (req: MockRequest) => Promise<MockResponse>;
 }

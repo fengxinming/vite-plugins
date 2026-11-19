@@ -30,7 +30,7 @@ export default {
     buildChunk({
       build: [ // 必须配置顶层的 `build` 属性
         {
-          chunk: 'main.mjs', // 主构建输出目录（outDir）内的文件名
+          entry: 'main.mjs', // 主构建输出目录（outDir）内的文件；相对路径以该 outDir 为基准解析，绝对路径原样使用
           format: 'umd', // 构建格式（默认 'umd'）
           name: 'MyLib', // 全局变量名（仅 UMD/IIFE 生效）
         },
@@ -43,15 +43,16 @@ export default {
 
 ### **fileName 示例**
 ```typescript
-// 默认模板（如 es → main.mjs，cjs → main.js，umd → main.umd.js）
+// 未设置时：Vite 回退到 package.json 的 name（而非入口文件名）。
+// 二次打包 main.mjs 会得到形如 <pkgName>.umd.cjs 的文件，因此需显式设置 fileName 来控制名称。
 fileName: undefined,
 
-// 自定义模板字符串（`[name]` 等占位符会由 Vite 替换）
-fileName: '[name]',
+// 函数返回完整文件名（原样使用，不再追加扩展名）：
+fileName: () => 'main.umd.js',
 
-// 使用函数动态生成
+// 按格式动态生成：
 fileName: (format, entryName) => {
-  return `${entryName}-${format}.js`;
+  return `${entryName}.${format}.js`;
 }
 ```
 
@@ -62,7 +63,7 @@ fileName: (format, entryName) => {
    ```typescript
    buildChunk({ build: [...] })
    ```
-2. **入口路径**：`chunk` 是主构建输出目录（`outDir`）内的文件名，插件会以主构建的 `outDir` 为基准解析它，而不是项目根目录。
+2. **入口路径**：`entry` 指向主构建输出目录（`outDir`）内的文件；插件以主构建的 `outDir` 为基准解析相对 `entry`，而不是项目根目录。绝对 `entry` 则原样使用。（`chunk` 是 `entry` 的废弃别名。）
 3. **多配置支持**：通过 `build` 数组配置多个构建任务，每个任务生成独立的构建产物。
 4. **静默模式**：二次构建内部以 `logLevel: 'silent'` 运行，不会干扰主构建的输出。
 5. **格式默认值**：`format` 默认为 `umd`，若未指定将使用此格式。
@@ -74,14 +75,17 @@ fileName: (format, entryName) => {
 ```typescript
 {
   build: [{
-    chunk: 'main.mjs',
+    entry: 'main.mjs',
     name: 'MyLib',
-    format: 'umd'
+    format: 'umd',
+    fileName: () => 'main.umd.js'
   }]
 }
 ```
 
-生成的文件路径可能为：
+生成的文件路径为：
 ```
 dist/main.umd.js
 ```
+
+若省略 `fileName`，则改用 Vite 的默认命名，文件名取自 `package.json` 的 `name`（如 `dist/<pkgName>.umd.cjs`）。

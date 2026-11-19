@@ -14,13 +14,14 @@ export default defineConfig({
     pluginBuildChunk({
       build: [
         {
-          chunk: 'my-lib.js',
+          entry: 'dist/2/my-lib.js',
           name: 'MyLib',
           format: 'umd',
-          minify: false
+          minify: false,
+          fileName: () => 'my-lib.umd.js'
         },
         {
-          chunk: 'my-lib.js',
+          entry: 'dist/2/my-lib.js',
           name: 'MyLib',
           format: 'cjs',
           exports: 'named',

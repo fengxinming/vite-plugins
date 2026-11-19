@@ -1,5 +1,4 @@
-import type { InputOption } from 'rolldown';
-import type { ConfigEnv, ResolvedConfig, UserConfig } from 'vite';
+import type { ConfigEnv, ResolvedConfig, Rolldown, UserConfig } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
 export type SupportedTemplateEngines =
@@ -66,7 +65,7 @@ export interface Options {
    *
    * @default `index${extension}`
    */
-  entry?: InputOption;
+  entry?: Rolldown.InputOption;
 
   /**
    * 用于处理指定扩展名的文件，默认跟引擎名称保持一致

@@ -1,4 +1,4 @@
-import { rmSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -9,13 +9,17 @@ import { describe, expect, it } from 'vitest';
 import { runBuild } from '../../shared/example-testkit';
 
 /**
- * 客户端 axios adapter 集成测试（新架构：静态导入 + 虚拟模块，无全局变量）。
+ * 客户端 axios adapter 集成测试（config 8：`mockIn: 'client'`，dev/serve 与产物端都注入）。
  *
  * 装载链路（与浏览器产物完全一致）：
  *   `vite-plugin-mock-data/axios-adapter`
  *     → 静态 import `vite-plugin-mock-data/mock-client`
- *     → `virtual:mock-routes`（由 vitest.config.mts 注册的 pluginMockData
- *        { buildMock: true } 在构建/转换期注入 `./mock` 文件清单 + routeOptions）
+ *     → `virtual:mock-routes`（本套件以 `vitest --config vite.config.8.mts` 运行，
+ *        插件 { mockIn: 'client' } 在 configResolved 阶段注入 ./mock 文件清单 +
+ *        routeOptions + base）
+ *
+ * 本文件验证的是 `mockIn: 'client'` 这条开关：打开它，dev/serve 阶段的前端也有 mock 路由表。
+ * 只开 `mockIn: 'build'` 时 serve 阶段不注入，见 test/no-client-mock.test.ts。
  *
  * 覆盖：静态/函数 handler、命名参数、body 反序列化（transformRequest 序列化成
  * 字符串后由 client parseBody 还原）、query 剥离与合并、baseURL 拼接（axios.getUri）、
@@ -32,14 +36,11 @@ const root = resolve(__dirname, '..');
 const api = axios.create({ adapter: createMockAdapter() });
 
 describe('build:8 smoke (real `vite build` CLI)', () => {
-  it('config 8 (buildMock: true) builds successfully', async () => {
-    try {
-      const { code, stdout } = await runBuild(root, 'build', 8);
-      expect(code, `build:8 failed\n${stdout}`).toBe(0);
-    }
-    finally {
-      rmSync(resolve(root, 'dist/8'), { recursive: true, force: true });
-    }
+  it("config 8 (mockIn: 'client') builds successfully", async () => {
+    const { code, stdout } = await runBuild(root, 'build', 8);
+    expect(code, `build:8 failed\n${stdout}`).toBe(0);
+    // 产物保留在 dist/8：失败时可以直接翻产物排查，不做清理。
+    expect(existsSync(resolve(root, 'dist/8'))).toBe(true);
   }, 60000);
 });
 

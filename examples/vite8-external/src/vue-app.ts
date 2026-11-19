@@ -1,15 +1,11 @@
 /**
  * Vue 应用入口示例 — 配合 vue external 使用
  */
-import { createApp, defineComponent, h } from 'vue';
+import { createApp } from 'vue';
 
-const App = defineComponent({
-  setup() {
-    return () => h('div', 'Hello from vite-plugin-external + Vue');
-  }
-});
+import VueApp from './VueApp.vue';
 
 const el = document.getElementById('app');
 if (el) {
-  createApp(App).mount(el);
+  createApp(VueApp).mount(el);
 }

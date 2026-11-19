@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { cleanDist, type DevHandle, runBuild, runScript } from '../../shared/example-testkit';
+import { type DevHandle, runBuild, runScript } from '../../shared/example-testkit';
 
 const root = resolve(__dirname, '..');
 const dist = resolve(root, 'dist');
@@ -15,7 +15,6 @@ afterEach(async () => {
     await handle.close();
     handle = null;
   }
-  cleanDist(root);
 });
 
 async function start(configName: string): Promise<{ baseUrl: string }> {

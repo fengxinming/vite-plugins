@@ -31,6 +31,7 @@ function resolveRouteOptions(opts?: FastifyServerOptions): MockRouteOptions {
 
 export function createMockRoutesSource(
   mockFiles: string[],
+  base: string,
   fastifyOptions?: FastifyServerOptions,
 ) {
   const imports: string[] = [];
@@ -45,11 +46,14 @@ export function createMockRoutesSource(
 
   const routeOptions = resolveRouteOptions(fastifyOptions);
 
-  // routes（mock 文件清单）+ routeOptions（fastify 路由语义）一同注入虚拟模块，
-  // 作为构建期「只有构建期才知道的信息」随产物下发浏览器端。
+  // routes（mock 文件清单）+ routeOptions（fastify 路由语义）+ base（路由前缀）
+  // 一同注入虚拟模块，作为构建期「只有构建期才知道的信息」随产物下发浏览器端。
+  // base 单独成项、不并入 routeOptions：后者是 fastify routerOptions 的映射，
+  // 混入路径前缀会混淆两种语义。未配置 base 时下发空串，client 端视为无前缀。
   return imports.concat([
     `export const routes = [${vars.join(', ')}];`,
-    `export const routeOptions = ${JSON.stringify(routeOptions)};`
+    `export const routeOptions = ${JSON.stringify(routeOptions)};`,
+    `export const base = ${JSON.stringify(base)};`
   ]).join(EOL);
 }
 

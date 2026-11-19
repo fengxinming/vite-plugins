@@ -8,6 +8,7 @@ import pkg from './package.json' with { type: 'json' };
 export default defineConfig({
   plugins: [
     pluginExternal({
+      apply: 'build',
       nodeBuiltins: true,
       // 'vite' is a dev-only peer that must stay external when building the
       // dist, but resolvable at runtime during tests. 'externalizeDeps' is

@@ -14,7 +14,7 @@ const root = dirname(fileURLToPath(import.meta.url));
  * - react() / vue() 插件同时挂载，dev 时两类页面都由 Vite 转译管线处理
  *   （证明 @fastify/static 的 serve:false 没有劫持 .tsx / .vue 文件）
  * - mock 插件基于文件路由提供 GET /api/users
- * - 多页应用（MPA）：rollupOptions.input 列出 index.html / react.html / vue.html
+ * - 多页应用（MPA）：rolldownOptions.input 列出 index.html / react.html / vue.html
  *
  * 本配置用于验证：
  *   - React 页面（/react.html → /src/react/main.tsx）经 Vite 转译
@@ -29,7 +29,7 @@ export default defineConfig({
   ],
   build: {
     outDir: 'dist/6',
-    rollupOptions: {
+    rolldownOptions: {
       input: {
         main: resolve(root, 'index.html'),
         react: resolve(root, 'react.html'),

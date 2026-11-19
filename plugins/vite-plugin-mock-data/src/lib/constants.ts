@@ -1,4 +1,4 @@
-import { name } from '../../package.json' with { type: 'json' };
+import pkg from '../../package.json' with { type: 'json' };
 
 /**
  * 集中管理插件常量，避免字面量散落在各模块。
@@ -11,7 +11,7 @@ import { name } from '../../package.json' with { type: 'json' };
  */
 
 
-export const PLUGIN_NAME = name;
+export const PLUGIN_NAME = pkg.name;
 
 /** TS 转译临时文件缓存目录名（位于 node_modules 下，随 rm -rf node_modules 清理） */
 export const MOCK_CACHE_DIR = '.vite-plugin-mock-data';

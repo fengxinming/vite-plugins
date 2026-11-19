@@ -1,34 +1,42 @@
-import { name } from '../../package.json' with { type: 'json' };
+import pkg from '../../package.json' with { type: 'json' };
 
 /**
  * 对外暴露的 Vite 插件名，写入 plugin.name 字段，用户在 vite 日志中看到的就是它。
  */
-export const PLUGIN_NAME = name;
+export const PLUGIN_NAME = pkg.name;
+
+export const PLUGIN_CONFIG_NAME = `${PLUGIN_NAME}:config`;
 
 /**
  * 通过 optimizeDeps.rolldownOptions.plugins 注入到 DepsOptimizer 的 Rolldown 插件名。
  * 使用 PLUGIN_NAME 作为命名空间前缀，预打包日志中能明确溯源到本插件。
+ *
+ * 注入的插件按"一个 id 维度 = 一个插件 = 一个 resolveId = 一个 filter 正则"拆开
+ * （对齐 vite 自己的 vite:dep-pre-bundle-assets / vite:dep-pre-bundle 拆分）：
+ * 各插件的 filter 互不重叠，判定逻辑却共用同一个 Resolver，既不会让某个维度
+ * 的正则退化，也不会让三个维度各自复制一份下发代码。
  */
-export const ROLLDOWN_PLUGIN_NAME = `${name}:rolldown-resolve`;
+export const ROLLDOWN_PLUGIN_NAME = `${PLUGIN_NAME}:rolldown-resolve`;
+
+/** 入口维度：vite 把 optimizeDeps.include 解析成绝对路径后作为 rolldown 的 input。 */
+export const ROLLDOWN_PLUGIN_ENTRY_NAME = `${ROLLDOWN_PLUGIN_NAME}:entry`;
+
+/** 资源后缀维度：css / png / wasm 这类可能是相对路径的 id。 */
+export const ROLLDOWN_PLUGIN_ASSET_NAME = `${ROLLDOWN_PLUGIN_NAME}:asset`;
+
+/** 生命周期维度：buildEnd 记一条本轮 external 名单的日志，并把待落盘的写兜底 flush 掉；不参与判定。 */
+export const ROLLDOWN_PLUGIN_METADATA_NAME = `${ROLLDOWN_PLUGIN_NAME}:metadata`;
 
 /**
- * 预打包阶段"转入模块"的 id 前缀，load 靠它判断当前模块是自己的转换产物。
- * 对应 handleOptimizeDeps 中的纯 external 转路由（case b → case a）。
+ * `Resolver.scheduleFlushMetadata` 的防抖窗口（毫秒）。
  *
- * 为什么用 id 前缀而不是 resolveId 的 namespace 字段：
- *   rolldown 的 load 钩子只传 id（实测 argc=1，moduleInfo.meta 为空），
- *   namespace 字段既不会传给 load，也无法从 moduleInfo.meta 读到；
- *   vite 自身的约定也是把命名空间编码进 id 前缀（内部 idToPathAndNamespace
- *   按第一个冒号切分）。
- *
- * 为什么前缀里刻意不含冒号：
- *   vite 的 idToPathAndNamespace 按第一个冒号切分 id，含冒号的前缀会被解析成
- *   名不副实的 namespace + 残缺 path；不含冒号时该函数原样返回整个 id，不会误伤。
+ * 一轮并发 resolve 会给多个库各调一次 stash，窗口内只落一次盘；
+ * 500ms 足够覆盖一次页面首屏的模块解析，又不至于把名单压到请求链尾巴之后才可见。
  */
-export const DEP_PRE_BUNDLE_CONVERSION_PREFIX = `\0${name}-dep-conversion-`;
+export const METADATA_FLUSH_DEBOUNCE_MS = 500;
 
 /**
- * 为纯 external 模块拼接的 import 前缀。load 阶段生成的代码形如
- * 'export * from '<prefix>react''；下一轮 resolveId 命中这个前缀后会直接返回 external:true。
+ * 协议插件名：负责纯 external 的两段式转换（CONVERSION → load 生成 shim →
+ * EXTERNAL 前缀 → external），不参与"是不是 external"的判定。
  */
-export const DEP_PRE_BUNDLE_EXTERNAL_PREFIX = `${name}:dep-pre-bundle-external:`;
+export const ROLLDOWN_CONVERSION_PLUGIN_NAME = `${PLUGIN_NAME}:rolldown-conversion`;

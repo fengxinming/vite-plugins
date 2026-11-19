@@ -1,7 +1,7 @@
 import { EOL } from 'node:os';
 
 import type {
-  IdentifierName, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier
+  ExportSpecifier, IdentifierName, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier
 } from '@oxc-project/types';
 import { init, parse } from 'es-module-lexer';
 import type { Plugin } from 'vite';
@@ -20,8 +20,10 @@ interface LibInfo extends libConfig {
    */
   name: string;
   /**
-   * 替换新的模块路径
-   * Replace with new module path
+   * CJS 产物的路径替换器数组：每个函数把代码里的 es 路径换成对应 cjs 路径，
+   * 在 generateBundle 阶段对 cjs chunk 逐条执行（由 resolveModule / insertSideEffect 登记）。
+   * Replacers that rewrite es paths to their cjs counterparts in CJS output,
+   * registered by resolveModule / insertSideEffect and applied in generateBundle.
    */
   cjsTransformers: Array<(code: string) => string>;
  }
@@ -32,7 +34,7 @@ interface LibInfo extends libConfig {
  */
 function processLibs(
   libName: string,
-  specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>,
+  specifiers: Array<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier | ExportSpecifier>,
   lib: LibInfo
 ): string {
   const { resolveModule, insertSideEffect, cjsTransformers } = lib;
@@ -88,6 +90,30 @@ function processLibs(
             const { es, cjs, name: newImporter } = source || {};
             if (es) {
               newImportDeclarationStr += `import ${newImporter || importedName} from "${es}";${EOL}`;
+              if (cjs) {
+                cjsTransformers.push((code) => {
+                  return code.replace(es, cjs);
+                });
+              }
+            }
+          }
+        }
+        insertSourceFn(importedName, libName);
+        break;
+      }
+
+      case 'ExportSpecifier': {
+        const { name: importedName } = specifier.local as IdentifierName;
+        const { name: exportedName } = specifier.exported as IdentifierName;
+        if (importedName) {
+          if (typeof resolveModule === 'function') {
+            let source = resolveModule(importedName, libName);
+            if (typeof source === 'string') {
+              source = { es: source };
+            }
+            const { es, cjs } = source || {};
+            if (es) {
+              newImportDeclarationStr += `export { default as ${exportedName} } from "${es}";${EOL}`;
               if (cjs) {
                 cjsTransformers.push((code) => {
                   return code.replace(es, cjs);
@@ -206,36 +232,33 @@ function pluginSeparateImporter(
       // id: string
     ) {
       // 转换文件内容，处理模块导入语句
-      await init;
+      await init();
 
       const [imports] = parse(code);
-      // n: package name
-      // s: start
-      // e: end
-      // ss: statement start
-      // se: statement end
-      // d: dynamic import
-      // a: assert
 
       let dest = code;
-      for (const { n: libName, ss: startIndex, se: endIndex } of imports) {
-        // 申明语句字符串 Statement string
-        const importStr = code.substring(startIndex, endIndex);
-
-        // 忽略异常import申明语句 Ignore invalid import declaration
-        if (!libName || importStr.startsWith('import(')) {
+      for (const { type: importType, specifier: libName, importStart: startIndex, importEnd: endIndex } of imports) {
+        // 只处理静态导入 Only static imports
+        if (importType !== 'static' || !libName) {
           continue;
         }
+
+        // 申明语句字符串 Statement string
+        const importStr = code.substring(startIndex, endIndex);
 
         // 抽象语法树对象 AST Node object
         const ast = this.parse(importStr);
 
         const statement = ast.body[0];
+        const { type: statementType } = statement;
 
-        const { type } = statement;
+        // 只处理 import 与 named re-export Only ImportDeclaration / ExportNamedDeclaration
+        if (statementType !== 'ImportDeclaration' && statementType !== 'ExportNamedDeclaration') {
+          continue;
+        }
 
-        // 只处理import语法 Only ImportDeclaration
-        if (type !== 'ImportDeclaration') {
+        // re-export 必须带 source（export { x } from 'mod'）；本地 export { x } 无来源可拆
+        if (statementType === 'ExportNamedDeclaration' && !statement.source) {
           continue;
         }
 

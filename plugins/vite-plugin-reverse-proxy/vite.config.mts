@@ -8,6 +8,7 @@ const externalizeDeps = ['vite'];
 export default defineConfig({
   plugins: [
     pluginExternal({
+      apply: 'build',
       nodeBuiltins: true,
       externalizeDeps
     }),

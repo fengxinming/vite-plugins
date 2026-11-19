@@ -1,7 +1,7 @@
 import { statSync } from 'node:fs';
 import { join, parse, relative } from 'node:path';
 
-import type { CopyOptions } from 'fs-extra';
+import type { CopyOptions } from 'fs-extra/esm';
 import { isObject } from 'is-what-type';
 import type { GlobOptions } from 'tinyglobby';
 import { glob } from 'tinyglobby';
