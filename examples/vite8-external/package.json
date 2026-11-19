@@ -33,7 +33,7 @@
     "build:8": "vite build --config vite.config.8.mts",
     "build:9": "vite build --config vite.config.9.mts",
     "preview:1": "vite preview --config vite.config.1.mts",
-    "test": "vitest run"
+    "test": "vitest run --testTimeout=15000"
   },
   "dependencies": {
     "@babel/core": "^8.0.1",

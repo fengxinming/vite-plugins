@@ -16,7 +16,13 @@ export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
   logLevel?: UserConfig['logLevel'];
   output?: OutputOptions;
   /**
-   * @deprecated
+   * Deprecated legacy entry option.
+   *
+   * A relative value is resolved against the **main build's `outDir`** (legacy
+   * behaviour), so it is not equivalent to `entry`, whose relative value resolves
+   * against the project root.
+   *
+   * @deprecated Use `entry` instead and convert the path to be project-root relative.
    */
   chunk?: string;
   /**
@@ -88,14 +94,14 @@ export interface Options {
 
 | Parameter       | Type                                                                 | Required | Default Value          | Description                                                                 |
 |-----------------|----------------------------------------------------------------------|----------|------------------------|-----------------------------------------------------------------------------|
-| `entry`         | `NonNullable<LibraryOptions['entry']>`                                | Yes      | -                      | The file to re-bundle. A relative value is resolved against the **main build's `outDir`** (captured in `configResolved`); an absolute path is used as-is. |
-| `chunk`         | `string`                                                             | No       | -                      | **Deprecated** alias for `entry`; kept for backward compatibility. Prefer `entry`. |
+| `entry`         | `NonNullable<LibraryOptions['entry']>`                                | Yes      | -                      | The file to re-bundle (usually an artifact inside the main build's `outDir`). A relative value is resolved against the **project root**; an absolute path is used as-is. |
+| `chunk`         | `string`                                                             | No       | -                      | **Deprecated**; keeps the legacy behaviour only: a relative value is resolved against the **main build's `outDir`**. It is **not** equivalent to `entry` — a relative `entry` resolves against the project root, so convert the path when migrating. |
 | `name`          | `string`                                                            | No       | -                      | Global variable name; required when the output format is UMD or IIFE.      |
 | `format`        | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | No       | `'umd'`                | Build format (defaults to `umd`). Ignored when `formats` is provided.     |
 | `sourcemap`     | `boolean \| 'inline' \| 'hidden'`                                    | No       | `false`                | Whether to generate sourcemaps (supports inline or hidden modes).          |
 | `exports`       | `'default' \| 'named' \| 'none' \| 'auto'`                           | No       | `'auto'`               | Export type for the Rolldown output.                                      |
 | `minify`        | `boolean \| 'terser' \| 'esbuild'`                                   | No       | `false`                | Whether to enable output minification (supports `terser` or `esbuild`).   |
-| `outDir`        | `string`                                                            | No       | Main build's `outDir`  | Secondary build's output directory (relative to project root). Note: `entry` is resolved against the **main** build's outDir, not this value. |
+| `outDir`        | `string`                                                            | No       | Main build's `outDir`  | Secondary build's output directory (relative to project root). Note: a relative `entry` resolves against the project root, not this value; only the deprecated `chunk` is resolved against the **main** build's outDir. |
 | `fileName`      | `string \| ((format: LibraryFormats, entryName: string) => string)`  | No       | Vite default naming    | Output file name. When **unset**, Vite derives it from the `package.json` `name` (not the entry file name), so rebundling `my-lib.js` does NOT yield `my-lib.*`; set `fileName` explicitly to control the name. A function form returns the exact filename without extra extensions. |
 | `plugins`       | `PluginOption[]`                                                     | No       | -                      | **Deprecated** at this level; use the top-level `Options.plugins`.         |
 | `resolve`       | `UserConfig['resolve']`                                              | No       | -                      | **Deprecated** at this level; use the top-level `Options.resolve`.         |
@@ -117,7 +123,13 @@ export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
   logLevel?: UserConfig['logLevel'];
   output?: OutputOptions;
   /**
-   * @deprecated
+   * Deprecated legacy entry option.
+   *
+   * A relative value is resolved against the **main build's `outDir`** (legacy
+   * behaviour), so it is not equivalent to `entry`, whose relative value resolves
+   * against the project root.
+   *
+   * @deprecated Use `entry` instead and convert the path to be project-root relative.
    */
   chunk?: string;
   /**

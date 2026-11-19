@@ -1,4 +1,5 @@
-import { isAbsolute, join } from 'path';
+import { isAbsolute, join } from 'node:path';
+
 import type { Plugin } from 'vite';
 import { build } from 'vite';
 
@@ -45,6 +46,7 @@ export default function pluginBuildChunk(opts: Options): Plugin {
       await Promise.all(buildOptions.map(({
         chunk,
         format,
+        logLevel,
         plugins: legacyPlugin,
         resolve: legacyResolve,
         exports,
@@ -68,7 +70,7 @@ export default function pluginBuildChunk(opts: Options): Plugin {
         const { plugins, resolve } = opts;
 
         return build({
-          logLevel: rest.logLevel ?? 'silent',
+          logLevel: logLevel ?? 'silent',
           configFile: false,
           plugins: plugins ?? legacyPlugin,
           resolve: resolve ?? legacyResolve,

@@ -12,7 +12,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "release:all": "publish-pkgs packages/* plugins/*",
+    "release:all": "publish-pkgs -c ./publish.json",
     "build:vp-deps": "pnpm run --parallel --filter=vite-plugin-external... build",
     "build:starters": "pnpm run --parallel --filter=*-starter^... build",
     "build:all": "npm run build:vp-deps && pnpm run --parallel --filter=vite-plugin-* --filter=!vite-plugin-external build",

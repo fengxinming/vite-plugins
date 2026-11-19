@@ -16,7 +16,12 @@ export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
   logLevel?: UserConfig['logLevel'];
   output?: OutputOptions;
   /**
-   * @deprecated
+   * 已废弃的旧入口选项。
+   *
+   * 相对值以**主构建的 `outDir`** 为基准解析（旧版行为），因此与 `entry` 不等价：
+   * `entry` 的相对值按项目根目录解析。
+   *
+   * @deprecated 请改用 `entry`，并把路径换算成相对项目根的写法。
    */
   chunk?: string;
   /**
@@ -88,14 +93,14 @@ export interface Options {
 
 | 参数         | 类型                                                                 | 必填 | 默认值          | 说明                                                                 |
 |--------------|----------------------------------------------------------------------|------|-----------------|----------------------------------------------------------------------|
-| `entry`      | `NonNullable<LibraryOptions['entry']>`                                | 是   | -              | 要二次打包的文件。相对值以**主构建的 `outDir`**（在 `configResolved` 中捕获）为基准解析；绝对路径原样使用。 |
-| `chunk`      | `string`                                                             | 否   | -              | **已废弃**，等价于 `entry`，仅为向后兼容保留，建议改用 `entry`。        |
+| `entry`      | `NonNullable<LibraryOptions['entry']>`                                | 是   | -              | 要二次打包的文件（通常是主构建 `outDir` 内的产物）。相对值按**项目根目录**解析；绝对路径原样使用。 |
+| `chunk`      | `string`                                                             | 否   | -              | **已废弃**，仅保留旧版行为：相对值以**主构建的 `outDir`** 为基准解析。注意它与 `entry` **不等价** —— `entry` 的相对值按项目根目录解析，迁移时需自行换算路径。 |
 | `name`       | `string`                                                            | 否   | -              | 全局变量名；输出格式为 UMD 或 IIFE 时必填                             |
 | `format`     | `'es' \| 'cjs' \| 'umd' \| 'iife'`                                   | 否   | `'umd'`        | 构建格式（默认 `umd`）；提供 `formats` 时该项被忽略                   |
 | `sourcemap`  | `boolean \| 'inline' \| 'hidden'`                                    | 否   | `false`        | 是否生成 sourcemap（支持内联或隐藏模式）                           |
 | `exports`    | `'default' \| 'named' \| 'none' \| 'auto'`                           | 否   | `'auto'`       | Rolldown 输出的导出类型                                             |
 | `minify`     | `boolean \| 'terser' \| 'esbuild'`                                   | 否   | `false`        | 是否启用代码压缩（支持 `terser` 或 `esbuild`）                     |
-| `outDir`     | `string`                                                            | 否   | 主构建的 `outDir` | 二次构建的输出目录（相对项目根目录）。注意：`entry` 以**主构建**的 outDir 为基准解析，与此值无关。 |
+| `outDir`     | `string`                                                            | 否   | 主构建的 `outDir` | 二次构建的输出目录（相对项目根目录）。注意：`entry` 的相对值按项目根目录解析，与此值无关；只有已废弃的 `chunk` 才以**主构建**的 outDir 为基准。 |
 | `fileName`   | `string \| ((format: LibraryFormats, entryName: string) => string)`   | 否   | Vite 默认命名    | 输出文件名。**未设置**时 Vite 以 `package.json` 的 `name` 为基名（而非入口文件名），故二次打包 `my-lib.js` 并不会得到 `my-lib.*`；需显式设置 `fileName` 才能控制名称。函数形式返回的名称即为完整文件名，不再追加扩展名。 |
 | `plugins`    | `PluginOption[]`                                                     | 否   | -              | **此层级已废弃**，请改用顶层 `Options.plugins`。                       |
 | `resolve`    | `UserConfig['resolve']`                                              | 否   | -              | **此层级已废弃**，请改用顶层 `Options.resolve`。                       |
@@ -117,7 +122,12 @@ export interface BuildOptions extends BaseBuildOptions, LibraryOptions {
   logLevel?: UserConfig['logLevel'];
   output?: OutputOptions;
   /**
-   * @deprecated
+   * 已废弃的旧入口选项。
+   *
+   * 相对值以**主构建的 `outDir`** 为基准解析（旧版行为），因此与 `entry` 不等价：
+   * `entry` 的相对值按项目根目录解析。
+   *
+   * @deprecated 请改用 `entry`，并把路径换算成相对项目根的写法。
    */
   chunk?: string;
   /**
