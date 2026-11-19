@@ -28,9 +28,9 @@ export interface Options {
    * 文件首行带生成标记，进程被强杀留下的残留会在下次构建时被识别并覆盖；
    * 若同名文件已存在且不带标记（即用户自己的文件），构建会中断而不是覆盖它。
    *
-   * @default 'index.js'
+   * @default 'index.ts'
    */
-  target: string;
+  target?: string;
 
   /**
    * Custom function or boolean value for controlling the generation of export names.
@@ -81,7 +81,7 @@ export interface Options {
    *
    * 写入文件前处理代码字符串
    */
-  beforeWrite?: (code: string) => string | NullValue;
+  beforeWrite?: (code: string) => string | null | undefined;
 
   /**
    * Whether to output the banner
@@ -102,7 +102,6 @@ export interface Options {
 ## TypeScript Definitions
 
 ```typescript
-import type { NullValue } from 'rollup';
 import type { ConfigEnv, UserConfig } from 'vite';
 import type { PluginOptions as DtsPluginOptions } from 'vite-plugin-dts';
 import type { LogLevel } from 'vp-runtime-helper';
@@ -133,9 +132,9 @@ export interface Options {
    * 文件首行带生成标记，进程被强杀留下的残留会在下次构建时被识别并覆盖；
    * 若同名文件已存在且不带标记（即用户自己的文件），构建会中断而不是覆盖它。
    *
-   * @default 'index.js'
+   * @default 'index.ts'
    */
-  target: string;
+  target?: string;
 
   /**
    * Custom function or boolean value for controlling the generation of export names.
@@ -186,7 +185,7 @@ export interface Options {
    *
    * 写入文件前处理代码字符串
    */
-  beforeWrite?: (code: string) => string | NullValue;
+  beforeWrite?: (code: string) => string | null | undefined;
 
   /**
    * Whether to output the banner

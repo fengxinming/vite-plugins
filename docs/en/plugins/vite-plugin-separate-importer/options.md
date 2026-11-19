@@ -84,6 +84,7 @@ import type { LogLevel } from 'vp-runtime-helper';
 export interface ImportSource {
   es: string;
   cjs?: string;
+  name?: string;
 }
 
 export interface libConfig {

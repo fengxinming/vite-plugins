@@ -1,6 +1,6 @@
 import { ensureType, isPlainObject } from 'is-what-type';
 
-import type { ExternalFn, NullValue } from '../types';
+import type { ExternalEsConfig, ExternalFn, NullValue } from '../types/deps';
 
 function ensureArray<T>(
   items: Array<T | false | NullValue> | T | false | NullValue,
@@ -19,8 +19,9 @@ function ensureArray<T>(
  * 统一编译为一组 ExternalFn 判断函数，按插入顺序轮询，第一个 truthy 结果胜出。
  *
  * 设计背景：
- * 运行时 externals 的来源非常多：用户配置、externalizeDeps/nodeBuiltins 快捷开关、
- * vite.config 里本身的 rolldownOptions.external、以及按模式的 override 合并。
+ * 运行时 externals 的来源：用户配置、externalizeDeps/nodeBuiltins 快捷开关，
+ * 以及按模式的 override 合并。用户自己写的 rolldownOptions.external 会被 warn
+ * 后忽略、不注册成 hook（见 handleExternals），因此不在来源之列。
  * 如果每种来源都写一段独立分支，主流程会膨胀得难以审计。
  * ExternalHook 把所有来源统一"编译"为同签名函数列表，调用方只需一个循环：
  * 遍历 hooks，第一个 truthy 结果胜出。
@@ -40,7 +41,7 @@ export default class ExternalHook {
       | string
       | RegExp
       | Array<string | RegExp>
-      | Record<string, string>,
+      | Record<string, string | ExternalEsConfig>,
   ): this {
     let hook: ExternalFn;
     const type = typeof arg;
@@ -59,9 +60,10 @@ export default class ExternalHook {
       ) => (!id.startsWith('\0') && arg(id, importer, isResolved)) || false;
     }
 
-    // case 3: Record<string, string> {react:'React'}。命中就返回字符串 value，
-    // 交给上层 Resolver 判断是绝对 URL（ES CDN）还是全局名（IIFE）。
-    else if (isPlainObject<Record<string, string>>(arg)) {
+    // case 3: Record<string, string | ExternalEsConfig>。
+    // 命中就返回 value，交给上层 Resolver 判断是 URL（ES 链接）、全局名（IIFE），
+    // 还是显式声明了 format 的 ES 对象。
+    else if (isPlainObject<Record<string, string | ExternalEsConfig>>(arg)) {
       hook = (id: string) => arg[id];
     }
 

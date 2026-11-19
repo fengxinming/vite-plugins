@@ -373,7 +373,7 @@ export function createIndexHtmlMiddleware(
   const normalizedRoot = normalizePath(root);
 
   // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
-  return async function viteIndexHtmlMiddleware(req, res, next) {
+  return async function indexTemplateMiddleware(req, res, next) {
     if (res.writableEnded) {
       return next();
     }
@@ -607,15 +607,17 @@ export function createIndexHtmlMiddleware(
 }
 
 /**
- * Register the index-html middleware at the front of the middleware stack.
- * The middleware inspects each incoming request URL and renders the
- * matching template (if any) before any SPA-rewrite logic can alter the
- * path. When no template matches, the request passes untouched to the
- * rest of the stack.
+ * Register the index-html middleware immediately before Vite's
+ * htmlFallbackMiddleware. Templates are matched before any SPA-rewrite logic
+ * alters the path, while Vite's request guards (rejectInvalidRequest /
+ * hostValidation / cors) and static/transform middlewares still run first.
+ * When no template matches, the request passes untouched to the rest of the
+ * stack.
  *
- * 将 index-html 中间件注册到中间件栈的最前端。中间件在任何 SPA 重写逻辑
- * 修改路径之前，先检查每一个入站请求 URL 并渲染匹配的模板（若存在）。
- * 未命中模板时，请求原样透传给栈的其余部分继续处理。
+ * 将 index-html 中间件注册到 Vite 的 htmlFallbackMiddleware 紧前方：模板在
+ * 任何 SPA 重写逻辑修改路径之前被匹配，同时 Vite 的请求守卫（rejectInvalidRequest /
+ * hostValidation / cors）与静态/transform 中间件仍先于其执行。未命中模板时，
+ * 请求原样透传给栈的其余部分。
  */
 export function installIndexHtmlMiddleware(
   engine: Engine,
@@ -634,7 +636,28 @@ export function installIndexHtmlMiddleware(
   delegateWritten?: DelegateWrittenMap,
 ): void {
   const middleware = createIndexHtmlMiddleware(engine, root, server, delegateWritten);
-  // PREPEND to the middleware stack so we run before spaFallbackMiddleware.
-  // unshift 到中间件栈最顶端，保证在 spaFallbackMiddleware 之前跑。
-  (server.middlewares as any).stack.unshift({ route: '', handle: middleware });
+  const stack = server.middlewares.stack;
+  // 紧插在 htmlFallbackMiddleware 之前：既要早于它改写 URL（'/' → '/index.html'、
+  // SPA 兜底），又要晚于 Vite 的请求守卫（rejectInvalidRequest / hostValidation /
+  // cors）与静态/transform 中间件——unshift 到栈顶会绕过这些守卫。htmlFallback
+  // 在 configureServer 的 post-hook 执行前已安装，故必在栈中。
+  const fallbackIndex = stack.findIndex(
+    (layer) => typeof layer.handle === 'function' && layer.handle.name === 'viteHtmlFallbackMiddleware'
+  );
+  if (fallbackIndex !== -1) {
+    stack.splice(fallbackIndex, 0, { route: '', handle: middleware });
+    logger.debug(
+      'Installed index-html middleware before viteHtmlFallbackMiddleware '
+      + `at index ${fallbackIndex} (stack size ${stack.length}).`
+    );
+  }
+  else {
+    // appType 'custom' 不安装 htmlFallback/indexHtml，追加到静态中间件之后即可
+    // （error/notFound 在 post-hook 之后才安装）。
+    stack.push({ route: '', handle: middleware });
+    logger.debug(
+      'viteHtmlFallbackMiddleware not found; appended index-html middleware '
+      + `to the end of the stack (stack size ${stack.length}).`
+    );
+  }
 }

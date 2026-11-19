@@ -64,7 +64,7 @@ export default function pluginHookUse(opts: Options = {}): Plugin {
     'configurePreviewServer',
     'transformIndexHtml',
     'handleHotUpdate',
-    // rollup 钩子
+    // Rolldown 钩子
     'outputOptions',
     'renderStart',
     // Note: `resolveFileUrl`, `resolveImportMeta`, and `renderDynamicImport`

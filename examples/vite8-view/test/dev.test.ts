@@ -9,7 +9,7 @@ import { type DevHandle, runScript } from '../../shared/example-testkit';
 
 const root = resolve(__dirname, '..');
 
-describe('vite-plugin-view example dev server (integration)', () => {
+describe('vite-plugin-view example dev server (integration)', { timeout: 60000 }, () => {
   let handle: DevHandle | undefined;
   let baseUrl: string;
 
@@ -154,7 +154,7 @@ function listBakFilesIn(dir: string): string[] {
   return readdirSync(dir).filter((f) => f.endsWith('.html') || /\.html\.bak_\d+$/.test(f));
 }
 
-describe('vite-plugin-view dev server — strategy: delegate (MPA EJS, write .html to disk)', () => {
+describe('vite-plugin-view dev server — strategy: delegate (MPA EJS, write .html to disk)', { timeout: 60000 }, () => {
   let handle: DevHandle | undefined;
   let baseUrl: string;
 

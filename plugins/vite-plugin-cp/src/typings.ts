@@ -1,4 +1,4 @@
-import type { CopyOptions } from 'fs-extra';
+import type { CopyOptions } from 'fs-extra/esm';
 import type { GlobOptions } from 'tinyglobby';
 import type { LogLevel } from 'vp-runtime-helper';
 

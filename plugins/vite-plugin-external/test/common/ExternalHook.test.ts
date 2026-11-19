@@ -38,7 +38,7 @@ describe('common/ExternalHook', () => {
     });
   });
 
-  describe('use(Record<string, string>)', () => {
+  describe('use(Record<string, string | ExternalEsConfig>)', () => {
     it('returns the value of a hit key', () => {
       const hook = new ExternalHook().use({ react: 'React', vue: 'Vue' });
       const fn = hook.hooks[0];
@@ -50,6 +50,17 @@ describe('common/ExternalHook', () => {
       const hook = new ExternalHook().use({ react: 'React' });
       const fn = hook.hooks[0];
       expect(fn('lodash', undefined, false)).toBeUndefined();
+    });
+
+    it('returns an ES declaration object from a hit key', () => {
+      const config = {
+        format: 'es' as const,
+        url: 'https://esm.sh/react@19',
+        exports: 'named' as const
+      };
+      const hook = new ExternalHook().use({ react: config });
+      const fn = hook.hooks[0];
+      expect(fn('react', undefined, false)).toEqual(config);
     });
   });
 

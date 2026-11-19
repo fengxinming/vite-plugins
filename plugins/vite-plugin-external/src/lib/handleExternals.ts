@@ -1,40 +1,50 @@
 import { builtinModules } from 'node:module';
 import { types } from 'node:util';
 
-import type { Rolldown, UserConfig } from 'vite';
-import { escapeRegex, getValue } from 'vp-runtime-helper';
+import type { UserConfig } from 'vite';
+import { escapeRegex } from 'vp-runtime-helper';
 
 import ExternalHook from '../common/ExternalHook';
 import { logger } from '../common/logger';
-import type { ResolvedOptions } from '../internal-types';
-import type { ExternalFn } from '../types';
-import { setOutputGlobals } from './handleGlobals';
+import { isExternalEsConfig, Resolver } from '../common/Resolver';
+import type { ExternalsSetup } from '../types/_context';
+import type { ExternalEsConfig, ExternalFn } from '../types/deps';
+import type { ResolvedOptions } from '../types/options';
 
 /**
- * 构建并安装唯一的 resolve hook，供三处入口共享：
- *   1. build.rolldownOptions.external              —— Rolldown 构建阶段的原生 external 钩子
- *   2. Resolver.useHook(hook)                      —— dev + build 主 resolveId 路径
- *   3. optimizeDeps.rolldownOptions.plugins 中的 resolve —— DepsOptimizer 预打包阶段
+ * 用户在 build.rolldownOptions 里配置了 external 就 warn。
  *
- * 同一个 hook 在三处入口复用，保证任何 external 判断（命中 / 不命中 / 返回字符串）
- * 在 dev、build、预打包三个阶段结果完全一致，彻底避免"dev 是 external 但 build
- * 时不是"这种难以调试的诡异 bug。
+ * 只告警、不就地清空：真正的"忽略"由 config 钩子返回的 external 函数完成 ——
+ * 那个函数命中时不返回 true，合并后自然覆盖用户配置。把入参赋成 undefined 属于
+ * 就地写入，config 对象被复用时还会不可逆地抹掉用户原值。
  *
- * 注册顺序（先注册先匹配）：
- *   1. 用户声明的 opts.externals —— 用户最优先的意图。
- *   2. opts.nodeBuiltins + opts.externalizeDeps（仅 build 阶段）。
- *      命令行快捷开关，只在构建阶段生效。
- *   3. 用户在 vite.config 里直接写的 rolldownOptions.external —— 最后匹配，
- *      让用户可以"最后一搏"覆盖插件的判断。
+ * 用可选链直读，不走 getValue —— 后者在路径缺失时会回写空对象。
+ * rollupOptions 是 rolldownOptions 的代理（Vite 的 setupRollupOptionCompat），
+ * 两种 key 都会在这里被读到。
+ */
+function warnIgnoredExternal(config: UserConfig): void {
+  if (config.build?.rolldownOptions?.external) {
+    logger.warn(
+      '"build.rolldownOptions.external" is set but ignored by vite-plugin-external; '
+      + 'declare externals via this plugin\'s "externals" option instead.',
+    );
+  }
+}
+
+/**
+ * 构建 external 判断链并注册到 resolver，返回可放进 config 返回值的产出。
  *
- * 返回值附带副作用：每次命中字符串形态（Record 形式）时，id → globalName
- * 会登记进内部 globalObject 表；output.globals 在渲染阶段查这张表拿到全局名。
- * 解析必然先于渲染发生，所以 setOutputGlobals 只需在同一处装好即可。
+ * 纯构建，不改动用户 config：externalFn 由 config 钩子包成 rolldownOptions.external
+ * 返回，globalObject 由 outputOptions 钩子包成 output.globals。dev 重启每轮都从原始
+ * 配置重建，不会在同一对象上反复包裹 external / output.globals。
  */
 export function setExternals(
+  resolver: Resolver,
   opts: ResolvedOptions,
   config: UserConfig,
-): ExternalFn {
+): ExternalsSetup {
+  warnIgnoredExternal(config);
+
   const externalHooks = new ExternalHook();
 
   const { externals } = opts;
@@ -42,49 +52,39 @@ export function setExternals(
     externalHooks.use(externals);
   }
 
-  const rolldownOptions: Rolldown.RolldownOptions = getValue(
-    config,
-    'build.rolldownOptions',
-    {},
-  );
-
   const { nodeBuiltins, externalizeDeps, command } = opts;
 
   // 命令行快捷开关只在 build 阶段生效。dev 阶段不处理：
   //   - Node 内置模块在浏览器里本来就解析不到，不用额外 external。
   //   - externalizeDeps 的纯 external 已通过 DepsOptimizer 集成（setOptimizeDeps + Resolver）处理。
-  if (command === 'build') {
-    if (nodeBuiltins) {
-      const builtinModuleArray = builtinModules.map((builtinModule) => {
-        // 同时匹配 'fs'、'node:fs'、以及子路径如 'fs/promises' / 'node:fs/promises'。
-        return new RegExp(`^(?:node:)?${escapeRegex(builtinModule)}(?:/.+)*$`);
-      });
-      externalHooks.use(builtinModuleArray);
-      logger.debug('Externalize nodejs built-in modules:', builtinModuleArray);
-    }
-
-    if (externalizeDeps) {
-      const deps = externalizeDeps.map((dep) => {
-        // 子路径也匹配：externalizeDeps: ['antd'] → antd/es/button 也排除。
-        return types.isRegExp(dep)
-          ? dep
-          : new RegExp(`^${escapeRegex(dep)}(?:/.+)*$`);
-      });
-      externalHooks.use(deps);
-      logger.debug('Externalize given dependencies:', deps);
-    }
+  if (command === 'build' && nodeBuiltins) {
+    const builtinModuleArray = builtinModules.map((builtinModule) => {
+      // 同时匹配 'fs'、'node:fs'、以及子路径如 'fs/promises' / 'node:fs/promises'。
+      return new RegExp(`^(?:node:)?${escapeRegex(builtinModule)}(?:/.+)*$`);
+    });
+    externalHooks.use(builtinModuleArray);
+    logger.debug('Externalize nodejs built-in modules:', builtinModuleArray);
   }
 
-  // 用户 vite.config 里的 rolldownOptions.external 最后插入，让他们能覆盖插件判断。
-  if (rolldownOptions.external) {
-    externalHooks.use(rolldownOptions.external as ExternalFn);
+  if (externalizeDeps) {
+    const deps = externalizeDeps.map((dep) => {
+      // 子路径也匹配：externalizeDeps: ['antd'] → antd/es/button 也排除。
+      return types.isRegExp(dep)
+        ? dep
+        : new RegExp(`^${escapeRegex(dep)}(?:/.+)*$`);
+    });
+    externalHooks.use(deps);
+    logger.debug('Externalize given dependencies:', deps);
   }
+
+  // 用户 config 里的 rolldownOptions.external 已被 warnIgnoredExternal 拒绝：
+  // 不再注册为兜底 hook，避免与插件 externals 的合并产生歧义。
 
   // output.globals 按需调本 hook 反查字符串映射。
   const globalObject: Record<string, string> = {};
   const externalFn: ExternalFn = function (
     id, importer, isResolved,
-  ): string | boolean {
+  ): string | boolean | ExternalEsConfig {
     for (const hook of externalHooks.hooks) {
       const val = hook(id, importer, isResolved);
 
@@ -95,7 +95,15 @@ export function setExternals(
         return val;
       }
 
-      // truthy 非字符串 → 纯 external，不提供全局名 / shim。
+      // ES 声明对象 → 原样交给 Resolver 走 ES 链接路线。
+      // 不登记 output.globals：globals 只在 iife/umd 产物里被读取，把 URL 当全局名
+      // 会直接产出非法代码（实测 `})(https://esm.sh/dayjs@1);` 解析失败）；
+      // 不登记时 rolldown 回退到模块 id，产物仍合法。
+      if (isExternalEsConfig(val)) {
+        return val;
+      }
+
+      // truthy 非字符串/对象 → 纯 external，不提供全局名 / shim。
       if (val) {
         logger.debug(`Externalized: '${id}'.`);
         return true;
@@ -105,19 +113,7 @@ export function setExternals(
     return false;
   };
 
-  // Rolldown 1.2.4（Vite 8）的 external 函数只接受 boolean 返回值——
-  // 旧 Rollup 把 string 当模块 ID 重定向的行为被 Rolldown 移除。
-  // 这里把 resolveHook 的任意 truthy 返回压缩成 boolean；
-  // 字符串映射（react → React）由 output.globals 查 globalObject 表负责。
-  rolldownOptions.external = (
-    id: string,
-    importer: string | undefined,
-    isResolved: boolean,
-  ): boolean => !!externalFn(id, importer, isResolved);
+  resolver.useHook(externalFn);
 
-  // 安装 output.globals。globalObject 由上面的 resolveHook 在解析命中时填充；
-  // output.globals 在渲染阶段才查表，此时所有 external 均已解析完毕，表已填好。
-  setOutputGlobals(rolldownOptions, globalObject);
-
-  return externalFn;
+  return { externalFn, globalObject };
 }

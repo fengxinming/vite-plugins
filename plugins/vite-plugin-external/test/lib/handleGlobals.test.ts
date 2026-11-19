@@ -1,97 +1,48 @@
-import type { Rolldown } from 'vite';
 import { describe, expect, it } from 'vitest';
 
-import { setOutputGlobals } from '../../src/lib/handleGlobals';
+import { createGlobalsFn } from '../../src/lib/handleGlobals';
 
 describe('lib/handleGlobals', () => {
-  describe('setOutputGlobals', () => {
-    it('installs a function-shape output.globals that asks the globalObject table first', () => {
-      const rolldownOptions: Rolldown.RolldownOptions = {
-        output: { format: 'iife' }
-      };
-      // 模拟 resolveHook 在解析命中后登记的映射表：react → React、vue → Vue。
-      const globalObject: Record<string, string> = { react: 'React', vue: 'Vue' };
+  describe('createGlobalsFn', () => {
+    it('兜底到用户预先声明的函数形态 globals（表未命中时）', () => {
+      const globals = createGlobalsFn({ react: 'React' }, (id: string) => `__${id}`);
 
-      setOutputGlobals(rolldownOptions, globalObject);
-
-      const output = rolldownOptions.output as Rolldown.OutputOptions;
-      const globals = output.globals as (id: string) => string;
-
-      expect(typeof globals).toBe('function');
+      // react 在表里有映射 → 插件声明优先。
       expect(globals('react')).toBe('React');
-      expect(globals('vue')).toBe('Vue');
-    });
-
-    it('falls back to the original function-shape output.globals for unmapped libs', () => {
-      const originalGlobals = (id: string) => `__${id}`;
-      const rolldownOptions: Rolldown.RolldownOptions = {
-        output: { format: 'iife', globals: originalGlobals }
-      };
-      const globalObject: Record<string, string> = { react: 'React' };
-
-      setOutputGlobals(rolldownOptions, globalObject);
-
-      const output = rolldownOptions.output as Rolldown.OutputOptions;
-      const globals = output.globals as (id: string) => string;
-
-      // react has a string mapping in the table → plugin wins.
-      // react 在表里有 string 映射 → 插件声明优先。
-      expect(globals('react')).toBe('React');
-      // lodash is NOT mapped → fall back to user's original function.
       // lodash 没映射 → 兜底到用户的原始函数。
       expect(globals('lodash')).toBe('__lodash');
     });
 
-    it('falls back to the original object-shape output.globals for unmapped libs', () => {
-      const rolldownOptions: Rolldown.RolldownOptions = {
-        output: {
-          format: 'iife',
-          globals: { lodash: '_' }
-        }
-      };
-      const globalObject: Record<string, string> = { react: 'React' };
-
-      setOutputGlobals(rolldownOptions, globalObject);
-
-      const output = rolldownOptions.output as Rolldown.OutputOptions;
-      const globals = output.globals as (id: string) => string;
+    it('兜底到用户预先声明的对象形态 globals（表未命中时）', () => {
+      const globals = createGlobalsFn({ react: 'React' }, { lodash: '_' });
 
       expect(globals('react')).toBe('React');
       expect(globals('lodash')).toBe('_');
     });
 
-    it('treats pure externals (no table entry) as "no global name" and falls back', () => {
-      // 纯 external（resolveHook 返回 true）不会向 globalObject 登记全局名；
-      // 插件要兜底用用户的 output.globals 拿名字。
-      const rolldownOptions: Rolldown.RolldownOptions = {
-        output: { format: 'iife', globals: { lodash: '_' } }
-      };
-      const globalObject: Record<string, string> = {};
+    /*
+     * 表里没有 + 用户也没声明 globals：源码里 `globalName as string` 只是把
+     * undefined 强转掉，实际仍返回 undefined。这是唯一让 Rolldown 拿到空全局名的分支，
+     * 断言钉住当前行为，将来若改成抛错/回退这里会红。
+     */
+    it('表与用户声明都没有时返回 undefined（强转不改变实际值）', () => {
+      const globals = createGlobalsFn({}, undefined);
 
-      setOutputGlobals(rolldownOptions, globalObject);
-
-      const output = rolldownOptions.output as Rolldown.OutputOptions;
-      const globals = output.globals as (id: string) => string;
-      expect(globals('lodash')).toBe('_');
+      expect(globals('lodash')).toBeUndefined();
     });
 
-    it('installs globals on EVERY output entry when output is an array', () => {
-      const rolldownOptions: Rolldown.RolldownOptions = {
-        output: [
-          { format: 'iife' },
-          { format: 'es' }
-        ]
-      };
-      const globalObject: Record<string, string> = { react: 'React' };
+    /*
+     * 纯函数契约：config 钩子每轮都从原始配置重建，若这里偷改入参，
+     * dev 重启就会在共享对象上累积。断言入参不被触碰。
+     */
+    it('不修改传入的 globalObject 与 originalGlobals', () => {
+      const table: Record<string, string> = { react: 'React' };
+      const original = { lodash: '_' };
 
-      setOutputGlobals(rolldownOptions, globalObject);
+      createGlobalsFn(table, original);
 
-      const outputs = rolldownOptions.output as Rolldown.OutputOptions[];
-      expect(Array.isArray(outputs)).toBe(true);
-      expect(typeof outputs[0].globals).toBe('function');
-      expect(typeof outputs[1].globals).toBe('function');
-      expect((outputs[0].globals as (id: string) => string)('react')).toBe('React');
-      expect((outputs[1].globals as (id: string) => string)('react')).toBe('React');
+      expect(table).toEqual({ react: 'React' });
+      expect(original).toEqual({ lodash: '_' });
     });
   });
 });

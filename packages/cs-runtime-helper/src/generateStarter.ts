@@ -3,7 +3,7 @@ import { writeFile } from 'node:fs/promises';
 import { EOL } from 'node:os';
 import { join, resolve } from 'node:path';
 
-import { copy } from 'fs-extra';
+import { copy } from 'fs-extra/esm';
 
 const filters = [
   'bin',

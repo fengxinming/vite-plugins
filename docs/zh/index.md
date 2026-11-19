@@ -52,7 +52,7 @@ features:
     linkText: 快速入门
   - title: vite-plugin-mock-data
     icon: 🎭
-    details: "基于文件路由定义提供 mock 接口：开发服务器可用，开启 `buildMock` 后也能打进浏览器产物供静态页面使用。"
+    details: "基于文件路由定义提供 mock 接口：开发服务器可用，开启 `mockIn` 后也能打进浏览器产物供静态页面使用。"
     link: /zh/plugins/vite-plugin-mock-data/quick-start
     linkText: 快速入门
   - title: vite-plugin-reverse-proxy

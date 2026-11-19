@@ -15,7 +15,7 @@ export default defineConfig({
   plugins: [
     pluginBuildChunk({
       build: {
-        chunk: 'my-lib.js',
+        entry: 'dist/3/my-lib.js',
         name: 'MyLib',
         format: 'umd',
         sourcemap: 'inline',

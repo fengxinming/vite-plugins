@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-view",
-  "version": "8.1.1",
+  "version": "8.1.2",
   "description": "Dynamically render pages using custom template engines instead of the static `.html` entry file.",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -45,7 +45,6 @@
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {
-    "rolldown": "^1.2.5",
     "vite": "^8.0.0",
     "vite-plugin-dts": "^5.0.3",
     "vite-plugin-external": "workspace:^"

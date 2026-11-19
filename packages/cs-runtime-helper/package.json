@@ -35,7 +35,7 @@
     "vite-plugin-dts": "^5.0.3"
   },
   "dependencies": {
-    "fs-extra": "^11.3.0"
+    "fs-extra": "^11.4.1"
   },
   "files": [
     "dist"

@@ -101,8 +101,8 @@ export default defineConfig({
 
 development `index.html`
 ```html
-<script src="//unpkg.com/react@18.3.1/umd/react.development.js"></script>
-<script src="//unpkg.com/react-dom@18.3.1/umd/react.development.js"></script>
+<script src="//unpkg.com/umd-react/dist/react.development.js"></script>
+<script src="//unpkg.com/umd-react/dist/react-dom.development.js"></script>
 ```
 
 production `index.html`
@@ -137,7 +137,7 @@ export default defineConfig({
 
 > 开发运行时，插件会根据 `externals` 配置项，将外部依赖映射成 `module.exports = ${globalName};`。
 
-> 构建时，插件会根据 `externals` 配置项，将外部依赖映射成 `rollupOptions.external` 和 `rollupOptions.output`。
+> 构建时，插件会根据 `externals` 配置项，将外部依赖映射成 `rolldownOptions.external` 和 `rolldownOptions.output`。
 
 > `interop` 配置项，用于控制是否沿用第一种策略。
 
@@ -422,7 +422,7 @@ export default defineConfig({
     minify: false,
     lib: {
       formats: ['es', 'cjs'],
-      entry: globbySync('src/*.js'),
+      entry: globSync('src/*.js'),
       fileName(format, entryName) {
         return entryName + (format === 'es' ? '.mjs' : '.js');
       }

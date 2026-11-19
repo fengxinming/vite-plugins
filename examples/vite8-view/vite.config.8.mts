@@ -71,11 +71,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist/8',
-    rollupOptions: {
-      output: {
-        format: 'iife'
-      }
-    },
     rolldownOptions: {
       output: {
         codeSplitting: true

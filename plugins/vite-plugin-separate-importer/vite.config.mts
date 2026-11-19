@@ -8,8 +8,9 @@ import pkg from './package.json' with { type: 'json' };
 export default defineConfig({
   plugins: [
     pluginExternal({
+      apply: 'build',
       nodeBuiltins: true,
-      externalizeDeps: Object.keys(pkg.dependencies)
+      externalizeDeps: Object.keys(pkg.dependencies).concat('vite')
     }),
     dts({
       entryRoot: 'src',
@@ -17,9 +18,6 @@ export default defineConfig({
     })
   ],
   build: {
-    rolldownOptions: {
-      external: ['vite']
-    },
     lib: {
       entry: 'src/index.ts',
       formats: ['es'],

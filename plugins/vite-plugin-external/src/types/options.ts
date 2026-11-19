@@ -1,58 +1,8 @@
-import type { ConfigEnv, Rolldown, UserConfig } from 'vite';
+import type { ConfigEnv, UserConfig } from 'vite';
 import type { LogLevel } from 'vp-runtime-helper';
 
-/**
- * Return value helpers shared across the plugin decision-making pipeline.
- * Defined locally because Vite 8 dropped the direct rollup peer dep.
- *
- * 决策管线中所有返回值类型。本地定义是因为 Vite 8 不再直接依赖 rollup，
- * 我们也不想从 rolldown 里引这些底层类型。
- */
-export type NullValue = null | undefined | void;
+import type { ExternalEsConfig, ExternalFn } from './deps';
 
-
-export interface ResolveIdExtraOptions{
-  kind?: Rolldown.ImportKind;
-  custom?: Rolldown.CustomPluginOptions;
-  ssr?: boolean | undefined;
-
-  isEntry: boolean;
-}
-
-/**
- * The single signature that every "external decision" hook inside this plugin
- * compiles down to (see ExternalHook).
- *
- * 设计背景（Design rationale）：
- * 用户能用非常多的形态声明 externals（Record、function、string、RegExp、数组、
- * true …）。为了让 dev/build/pre-bundle 三处入口共享一套判断逻辑，我们把所有
- * 输入形态都"编译"为同签名函数（详见 ExternalHook）。后续主流程不再关心
- * 原始形态。
- *
- * All user-facing external shapes are normalised to this single signature so
- * every entry point (dev resolveId, build resolveId, DepsOptimizer
- * pre-bundling) shares the exact same decision logic — no divergence.
- *
- * 返回值语义（Return values）：
- *   - true  → import is external, **without** a global-name/URL mapping.
- *            Used by externalizeDeps and string/RegExp matches.
- *            标记为 external，但不提供替换规则（只不打包）。用于 externalizeDeps。
- *   - string (non-empty) → an absolute URL → ESM CDN route; otherwise → IIFE
- *             global route (see makeCjsExternalCode / makeEsExternalCode).
- *             非空字符串：绝对 URL → ES CDN 重导出；否则 → IIFE 全局变量（写 CJS shim）。
- *   - falsy（含空字符串 ''）→ not external; proceed to the next hook / normal
- *             resolution. 不是 external，继续正常解析。
- */
-export type ExternalFn = (
-  id: string,
-  parentId: string | undefined,
-  isResolved: boolean | ResolveIdExtraOptions | Rolldown.ResolveIdExtraOptions
-) => string | boolean | NullValue;
-
-export type RolldownOptions = NonNullable<NonNullable<UserConfig['build']>['rolldownOptions']>;
-
-
-export type { LogLevel } from 'vp-runtime-helper';
 
 /**
  * Options that are valid for both the root Options and any per-mode
@@ -76,8 +26,10 @@ export interface BasicOptions {
    * External dependencies. 配置外部依赖。
    *
    * Five accepted shapes（五种输入形态）：
-   *   1. Record<string, string>  —— {react:React} 或 {react:https://esm.sh/...}
-   *   2. ExternalFn             —— (src, imp, resolved) => string|true|false
+   *   1. Record<string, string | ExternalEsConfig>
+   *                               —— {react:React}、{react:https://esm.sh/...}，
+   *                                  或 ES 声明对象 {react:{format:'es',url:'https://esm.sh/react'}}
+   *   2. ExternalFn             —— (src, imp, resolved) => string|true|false|ExternalEsConfig
    *                                必须同步函数；传 async 函数会在配置阶段直接 throw
    *                                （external/globals 判断都是同步边界）。
    *   3. string / RegExp        —— single match rule, hit → pure external
@@ -92,7 +44,7 @@ export interface BasicOptions {
     | string
     | RegExp
     | Array<string | RegExp>
-    | Record<string, string>;
+    | Record<string, string | ExternalEsConfig>;
 
   /** Log level. 输出日志等级。 */
   logLevel?: LogLevel;
@@ -132,10 +84,13 @@ export interface BasicOptions {
   /**
    * Shortcut: treat these libraries (strings or regexes) as pure externals
    * — they are not bundled, but no global-name / CDN shim is provided for
-   * them. Only active during command === build.
+   * them. Active in both dev and build.
    *
-   * 快捷开关：这些依赖（字符串或正则）一律不打包进产物。不提供全局名 / CDN shim，
-   * 等价于对每个 dep 调用 externalHook.use 匹配命中即 true。只在 build 阶段生效。
+   * 快捷开关：这些依赖（字符串或正则）一律不打包。不提供全局名 / CDN shim，
+   * 等价于对每个 dep 调用 externalHook.use，命中即 true；dev 与 build 都生效。
+   * dev 下 vite 会把这类裸说明符改写成 `/@id/<说明符>`（实测：`external: true`
+   * 与 `external: 'absolute'` 两种写法结果相同），运行时地址由使用方自己兜 ——
+   * 浏览器侧就是 `<script type="importmap">`，Node 侧由宿主解析。
    */
   externalizeDeps?: Array<string | RegExp>;
 }
@@ -186,14 +141,14 @@ export interface Options extends BasicOptions, ModeOptions {
   /**
    * Interop escape hatch — preserved behaviour from pre-Vite-8 versions.
    *
-   * 历史行为：当设置 interop: auto 时，build 阶段会**清空**
-   * build.rolldownOptions.external，强制所有 external 通过 stash 文件路径
-   * 走 resolveId 解析（而不是 Rolldown 原生 external 机制）。
+   * 历史行为：当设置 interop: auto 时，build 阶段的 config 钩子会声明式覆盖
+   * build.rolldownOptions.external 为恒 false（不在用户对象上就地清空），
+   * 强制所有 external 通过 stash 文件路径走 resolveId 解析（而不是 Rolldown 原生 external 机制）。
    *
-   * Historical behaviour preserved intact: if interop is auto the build
-   * step clears build.rolldownOptions.external, forcing every external
-   * to resolve through the stash-file path instead of Rolldown native
-   * external flag.
+   * Historical behaviour preserved: if interop is auto the build config hook
+   * declaratively overrides build.rolldownOptions.external with an always-false
+   * function (without clearing it in place on the user object), forcing every external
+   * to resolve through the stash-file path instead of Rolldown native external flag.
    *
    * Why this exists：
    * 原场景是 IIFE 构建时某些库被 output.globals 处理后仍生成错误的 require
@@ -210,26 +165,61 @@ export interface Options extends BasicOptions, ModeOptions {
    */
   interop?: 'auto';
 
-  // /**
-  //  * Plugin enforce. External-related resolveId/load MUST run before generic
-  //  * plugins — otherwise @vitejs/plugin-react or similar may resolve
-  //  * react to node_modules/react before we get a chance to redirect it.
-  //  * external.ts therefore defaults to enforce: pre. Users can still
-  //  * override to post for edge cases.
-  //  *
-  //  * Vite 插件 enforce。external 的 resolveId/load 必须在普通插件之前执行，
-  //  * 否则其他插件（比如 @vitejs/plugin-react）可能会先把 react 解析到
-  //  * node_modules/react，本插件就没有机会重定向了。因此 external.ts 默认
-  //  * enforce: pre，用户仍可显式改成 post 用于特殊场景。
-  //  */
-  // enforce?: 'pre' | 'post';
+  /**
+   * Emit the URL-valued entries of `externals` as an import map in the build
+   * HTML instead of pointing the bundle at the CDN URL directly.
+   *
+   * Build only: dev still resolves CDN externals through the DepsOptimizer and
+   * keeps no import map. The stash files are still written — the switch only
+   * changes what build resolveId returns and what transformIndexHtml injects.
+   *
+   * 只在 build 阶段生效。dev 仍由 DepsOptimizer 把 CDN external 预打包成本地
+   * deps 模块，页面不会得到导入映射表。build 阶段 `resolveId` 对 ES 形态条目返回
+   * `{ id: '<说明符>', external: 'absolute' }`，产物保留裸 import；
+   * `transformIndexHtml` 注入以裸说明符为键的
+   * `<script type="importmap">{"imports":{…}}</script>`，并为每个 URL 附一条
+   * `<link rel="modulepreload" crossorigin>`。
+   *
+   * stash 文件照常写入（dev 预打包与标签名单都依赖它），开关不改写盘行为。
+   * 任意能解析出 ES URL 的 externals 形态都适用；纯 external（返回 true）不产生条目，
+   * 全局名条目仍走 IIFE stash。插件级开关，不能按模式覆盖。
+   */
+  importmap?: boolean;
+
+  /**
+   * Plugin enforce. Applies to the config plugin — the one that installs the
+   * external decision into build.rolldownOptions.external / output.globals —
+   * so it can run after other plugins that mutate the user config
+   * (default 'post'). The resolve plugin is pinned to 'pre' and is NOT
+   * affected by this option: external decisions must beat generic resolvers
+   * (@vitejs/plugin-react or similar may otherwise resolve react to
+   * node_modules/react before we get a chance to redirect it).
+   *
+   * Read at plugin-factory time (before the config hook runs), so it is a
+   * plugin-level field and cannot be overridden per mode.
+   *
+   * Vite 插件 enforce。只作用于 config 插件（负责改写 rolldownOptions.external /
+   * output.globals 的那个），缺省 'post'，保证它在其他修改用户配置的插件之后执行。
+   * 解析插件固定为 'pre'，不受本选项影响：external 判定必须先于通用解析器，
+   * 否则 @vitejs/plugin-react 之类的插件可能先把 react 解析到 node_modules/react。
+   * 它在插件工厂阶段读取（config 钩子之前），因此是插件级字段，不能按模式覆盖。
+   *
+   * @default 'post'
+   */
+  enforce?: 'pre' | 'post';
 
   /**
    * Apply the plugin only for serve or build, or on certain conditions.
    *
    * @see https://vitejs.dev/guide/api-plugin.html#apply
    *
+   * Read at plugin-factory time (before the config hook runs), so it is a
+   * plugin-level field and cannot be overridden per mode.
+   *
    * 仅在 serve 或 build 阶段生效，或在满足条件时生效。
+   * 在插件工厂阶段读取（config 钩子之前），因此是插件级字段，不能按模式覆盖。
+   *
+   * @default (config, env) => !env.isPreview
    */
   apply?:
     | 'serve'
@@ -240,3 +230,15 @@ export interface Options extends BasicOptions, ModeOptions {
   enableBanner?: boolean;
 }
 
+
+/**
+ * 内部"最终版选项"形态，由 buildOptions() 生成后透传给所有下游步骤。
+ *
+ * buildOptions() 的处理包括：合并模式 override、补齐 cwd/cacheDir 默认值、
+ * 设置日志级别、再把 ConfigEnv 字段（mode、command 等）一起挂上去。
+ * 这样下游判断"现在是 build 还是 serve"时，不需要再单独拿 ConfigEnv 参数。
+ */
+export interface ResolvedOptions extends Options, ConfigEnv {
+  cwd: string;
+  cacheDir: string;
+}

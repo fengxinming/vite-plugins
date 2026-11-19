@@ -6,19 +6,20 @@ import { banner, colorful, getRuntimeVersion } from 'vp-runtime-helper';
 import pkg from '../package.json' with { type: 'json' };
 import { PLUGIN_NAME } from './common/constants';
 import { logger } from './common/logger';
-import type { Options } from './types';
+import type { Options } from './types/public';
 import v8, { cleanupCache } from './v8';
 
 /**
  * 插件对外的工厂函数。包装合并后的 Vite 8 实现，外层加三件事：
  *   - 当 enableBanner 为真时输出 banner 行
  *   - 启动时彩色日志打印 Vite 与插件版本
- *   - 把用户的 apply 选项透传到最终 plugin 对象
+ *   - 把用户的 apply / enforce 选项透传到最终 plugin 对象
  *
  * 为什么要把 index.ts 和 v8.ts 的实现分成两个工厂？
  * 分拆后"插件钩子实际行为"（v8.ts）和"插件在 Vite 生态中的展示层"
- * （banner、apply、类型重导出）互不耦合。单测可以直接测试 v8()
- * 返回的纯钩子对象，而不用 mock vp-runtime-helper 的 banner 彩色输出。
+ * （banner、版本行、类型重导出）互不耦合。apply / enforce 属于插件级字段，
+ * 由 v8() 在工厂阶段分别落到两个插件对象上（早于 config 钩子），单测可以直接
+ * 测试 v8() 返回的纯钩子对象，而不用 mock vp-runtime-helper 的 banner 彩色输出。
  *
  * 功能：提供一种将依赖排除在运行时代码和构建产物之外的方法。
  *
@@ -45,7 +46,7 @@ import v8, { cleanupCache } from './v8';
  * @param opts 插件配置项，默认为 {}。
  * @returns Vite 插件实例。
  */
-export default function vitePluginExternal(opts: Options = {}): Plugin {
+export default function vitePluginExternal(opts: Options = {}): Plugin[] {
   if (opts.enableBanner) {
     banner(pkg.name);
   }
@@ -58,12 +59,7 @@ export default function vitePluginExternal(opts: Options = {}): Plugin {
   // "用户跑的是 Vite 8 合并版实现"（如果有旧分支还在跑 alias 实现也能区分）。
   logger.name = `${PLUGIN_NAME}-v8`;
 
-  const base: Plugin = {
-    name: PLUGIN_NAME,
-    apply: opts.apply
-  };
-
-  return Object.assign(base, v8(opts));
+  return v8(opts);
 }
 
 /**
@@ -71,5 +67,6 @@ export default function vitePluginExternal(opts: Options = {}): Plugin {
  * DepsOptimizer metadata 里的 external 条目。极少需要，但为了历史 API
  * 兼容性保留。
  */
+export { ExternalError } from './common/ExternalError';
 export { cleanupCache, vitePluginExternal };
-export * from './types';
+export * from './types/public';

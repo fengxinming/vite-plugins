@@ -3,9 +3,13 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { cleanDir, cleanDist, runBuild } from '../../shared/example-testkit';
+import { cleanDir, runBuild } from '../../shared/example-testkit';
 
 const root = join(__dirname, '..');
+
+afterEach(() => {
+  cleanDir(root, 'deploy');
+});
 
 async function build(n: number) {
   const { code, stdout } = await runBuild(root, 'build', n);
@@ -17,11 +21,6 @@ async function build(n: number) {
 function read(...segments: string[]) {
   return readFileSync(join(root, ...segments), 'utf-8');
 }
-
-afterEach(() => {
-  cleanDist(root);
-  cleanDir(root, 'deploy');
-});
 
 describe('vite-plugin-cp example configs', () => {
   it('config 1: copy dist + rename file', async () => {

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import pluginExternal from 'vite-plugin-external';
 import pluginSeparateImporter from 'vite-plugin-separate-importer';
 
 /**
@@ -9,9 +10,17 @@ import pluginSeparateImporter from 'vite-plugin-separate-importer';
  *
  * 典型场景：antd 等 UI 库的按需引入，
  * import { Button } from 'antd' → import 'antd/es/button' + import 'antd/es/button/style'
+ *
+ * 搭配 vite-plugin-external 把 antd（含子路径）标记为 external，
+ * 拆出的子路径 import 才会保留进 dist 产物，而不是被整库打包进去。
+ * es 产物留 antd/es/*，cjs 产物经 generateBundle 替换为 antd/lib/*。
  */
 export default defineConfig({
   plugins: [
+    pluginExternal({
+      cacheDir: './node_modules/.vite_external/1',
+      externalizeDeps: ['antd']
+    }),
     pluginSeparateImporter({
       libs: [
         {
@@ -36,6 +45,7 @@ export default defineConfig({
   ],
   build: {
     outDir: 'dist/1',
+    minify: false,
     lib: {
       entry: 'src/index.ts',
       formats: ['es', 'cjs'],

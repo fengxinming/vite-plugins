@@ -94,7 +94,8 @@ export async function runScript(root: string, cmd: string, n?: number): Promise<
   const proc = spawn('pnpm', ['run', script], {
     cwd: root,
     detached: true,
-    env: { ...process.env, FORCE_COLOR: '0' },
+    // 同 runBuild：避免继承 vitest 的 NODE_ENV=test
+    env: { ...process.env, FORCE_COLOR: '0', NODE_ENV: 'development' },
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
@@ -121,7 +122,9 @@ export function runBuild(root: string, cmd = 'build', n?: number): Promise<Build
     const proc = spawn('pnpm', ['run', script], {
       cwd: root,
       detached: true,
-      env: { ...process.env, FORCE_COLOR: '0' },
+      // 显式钉死 NODE_ENV：vitest 会把自身的 'test' 泄漏给子进程，
+      // 导致 @vitejs/plugin-react 注入 dev 版 jsx-runtime 并被打包进产物。
+      env: { ...process.env, FORCE_COLOR: '0', NODE_ENV: 'production' },
       stdio: ['ignore', 'pipe', 'pipe']
     });
     const chunks: Buffer[] = [];

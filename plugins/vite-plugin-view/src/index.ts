@@ -58,8 +58,7 @@ export default function view(opts: Options): Plugin | Plugin[] {
   const tpl2html = new Map<string, string>();
 
   // delegate 策略写入的 `.html` 文件记录，供进程退出钩子清理与还原备份。
-  // 与 tpl2html 同级声明，保证 configureServer/configurePreviewServer 的
-  // HMR 重启后数据仍保留。
+  // 与 tpl2html 同级声明，保证 configureServer 的 HMR 重启后数据仍保留。
   const delegateWritten: DelegateWrittenMap = new Map();
 
   /**
@@ -119,7 +118,8 @@ export default function view(opts: Options): Plugin | Plugin[] {
     },
 
     configureServer(server) {
-      // PREPEND 到中间件栈顶端，保证在 spaFallbackMiddleware 之前匹配模板。
+      // 插到 viteHtmlFallbackMiddleware 之前，保证在 SPA 兜底改写路径前匹配模板，
+      // 又不绕过 Vite 的请求守卫（见 installIndexHtmlMiddleware 的注释与 debug 日志）。
       // delegate 策略下传入可写的 delegateWritten Map 记录磁盘写入。
       return () => installIndexHtmlMiddleware(
         engine,
@@ -130,8 +130,17 @@ export default function view(opts: Options): Plugin | Plugin[] {
     },
 
     configurePreviewServer(server) {
-      // preview 模式同样注册中间件，基于磁盘原始模板动态渲染（无需重建）。
-      return () => installIndexHtmlMiddleware(engine, resolvedConfig.root, server);
+      // 只有 template 策略需要接管 preview：该策略移除了编译产物 .html，
+      // dist 里只剩注入资源标签后的模板，必须经引擎渲染才能返回 HTML。
+      // html / both 策略 dist 里有 .html，交给 Vite 默认静态服务——
+      // 写死渲染模板会盖掉本该直接服务的 html。
+      if (buildStrategy !== 'template') {
+        return;
+      }
+      // 对齐宿主 preview 的 distDir 公式：模板产物在 outDir 而非项目根，
+      // 指向 root 会渲染未注入资源标签的源码模板。
+      const distDir = path.resolve(resolvedConfig.root, resolvedConfig.build.outDir);
+      return () => installIndexHtmlMiddleware(engine, distDir, server);
     }
   };
 

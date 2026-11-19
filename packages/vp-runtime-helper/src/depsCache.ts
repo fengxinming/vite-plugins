@@ -40,17 +40,23 @@ const limitFlattenIdLength = (
   return `${id.slice(0, limit - (FLATTEN_ID_HASH_LENGTH + 1))}_${getHash(id)}`;
 };
 
-const replaceSlashOrColonRE = /[/:]/g;
-const replaceDotRE = /\./g;
+/**
+ * 会被 sanitizeFileName 改写的字符：控制字符、URL/路径保留字符。
+ * 拍平后必须编码掉，否则 Windows 上 `? * < > | "` 这些直接是非法文件名。
+ */
+// eslint-disable-next-line no-control-regex
+const invalidUrlPathCharRE = /[\u0000-\u001F"#$%&*+,:;<=>?[\]^`{|}\u007F]/g;
 const replaceNestedIdRE = /\s*>\s*/g;
-const replaceHashRE = /#/g;
 export function flattenId(id: string): string {
   const flatId = limitFlattenIdLength(
     id
-      .replace(replaceSlashOrColonRE, '_')
-      .replace(replaceDotRE, '__')
-      .replace(replaceNestedIdRE, '___')
-      .replace(replaceHashRE, '____'),
+      // 先转义原串自带的下划线，后面的分隔符编码才不会和它撞名
+      // （否则 'a__b' 和 'a.b' 会拍成同一个文件名）。
+      .replaceAll(/_+/g, '$&__')
+      .replaceAll('/', '_')
+      .replaceAll('.', '__')
+      .replace(replaceNestedIdRE, '_n_')
+      .replace(invalidUrlPathCharRE, (c) => `_0${c.charCodeAt(0).toString(16)}_`),
   );
   return flatId;
 }

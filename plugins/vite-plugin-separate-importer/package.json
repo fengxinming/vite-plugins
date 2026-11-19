@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-separate-importer",
-  "version": "8.0.1",
+  "version": "8.0.2",
   "description": "Transform bulk imports from a single source module into individual file imports from the source module.",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -37,7 +37,7 @@
   "homepage": "https://fengxinming.github.io/vite-plugins/plugins/vite-plugin-separate-importer/quick-start",
   "dependencies": {
     "@oxc-project/types": "^0.146.0",
-    "es-module-lexer": "^2.3.2",
+    "es-module-lexer": "^3.0.4",
     "vp-runtime-helper": "workspace:^"
   },
   "devDependencies": {

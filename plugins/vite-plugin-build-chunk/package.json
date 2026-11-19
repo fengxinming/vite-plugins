@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-build-chunk",
-  "version": "8.0.2",
+  "version": "8.0.3",
   "description": "Generate additional build artifacts (e.g., chunk files in different formats) after Vite's main build process. Ideal for scenarios requiring multi-format outputs or secondary builds.",
   "type": "module",
   "types": "./dist/index.d.ts",

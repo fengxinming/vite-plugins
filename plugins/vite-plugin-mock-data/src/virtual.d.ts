@@ -6,4 +6,6 @@ declare module 'virtual:mock-routes' {
   export const routes: Array<Record<string, RouteValue>>;
   /** 由 fastify `routerOptions` 三级取值推导的路径编译选项，随产物下发给浏览器端 */
   export const routeOptions: MockRouteOptions;
+  /** 构建期下发的路由前缀，与 dev 端 configureServer 注册 fastify 路由时的 prefix 同源；未配置时为空串 */
+  export const base: string;
 }

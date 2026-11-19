@@ -18,6 +18,9 @@
     "build:12": "vite build --config vite.config.12.mts",
     "dev:7": "vite --config vite.config.7.mts --port 5187",
     "dev:8": "vite --config vite.config.8.mts --port 5188",
+    "preview:1": "vite preview --config vite.config.1.mts --port 4181 --strictPort",
+    "preview:8": "vite preview --config vite.config.8.mts --port 4188 --strictPort",
+    "preview:9": "vite preview --config vite.config.9.mts --port 4189 --strictPort",
     "test": "vitest run"
   },
   "devDependencies": {

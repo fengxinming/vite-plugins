@@ -10,10 +10,11 @@ export default defineConfig({
   plugins: [
     pluginBuildChunk({
       build: {
-        chunk: 'my-lib.js',
+        entry: 'dist/1/my-lib.js',
         name: 'MyLib',
         format: 'umd',
-        minify: false
+        minify: false,
+        fileName: () => 'my-lib.umd.js'
       }
     })
   ],

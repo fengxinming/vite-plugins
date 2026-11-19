@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { copy } from 'fs-extra';
+import { copy } from 'fs-extra/esm';
 import { describe, expect, it } from 'vitest';
 
 import { changeName, makeCopy, stringify } from '../../src/util';

@@ -1,9 +1,9 @@
-import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { mkdir, unlink, writeFile } from 'node:fs/promises';
+import { unlink } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { isAbsolute, join, parse, resolve } from 'node:path';
 
+import { outputFile } from 'fs-extra/esm';
 import { isObject } from 'is-what-type';
 import { globSync } from 'tinyglobby';
 import { transformWithOxc } from 'vite';
@@ -57,10 +57,9 @@ async function getRoute(filename: string, tmpDir: string): Promise<RouteConfig |
     // types without lowering syntax (equivalent to `loader: 'ts'`,
     // `target: 'esnext'` previously used with `transformWithOxc`).
     const { code } = await transformWithOxc(readFileSync(filename, 'utf-8'), filename);
-    const hash = createHash('sha256').update(filename).digest('hex').slice(0, 12);
+    const hash = (Date.now() + Math.random()).toString(36).replace('.', '');
     const tmpFile = join(tmpDir, `${hash}-${name}${MOCK_TEMP_SUFFIX}`);
-    await mkdir(tmpDir, { recursive: true });
-    await writeFile(tmpFile, code);
+    await outputFile(tmpFile, code);
     try {
       const singleRoutes = await import(tmpFile);
       return singleRoutes.default ?? singleRoutes;

@@ -11,6 +11,8 @@ import pluginExternal from 'vite-plugin-external';
 export default defineConfig({
   plugins: [
     pluginExternal({
+      // 每个 config 用各自的 stash 目录，测试串行复用缓存时互不覆盖。
+      cacheDir: './node_modules/.vite_external/8',
       nodeBuiltins: true,
       externalizeDeps: ['lodash', 'dayjs']
     })
